@@ -1,0 +1,47 @@
+---
+import Base from '../layouts/Base.astro';
+
+const repos = [
+  {
+    nombre: 'n8n-io/n8n',
+    desc: 'Motor de automatización low-code que usamos en producción para flujos de calificación de leads y notificaciones.',
+    url: 'https://github.com/n8n-io/n8n',
+  },
+  {
+    nombre: 'evolution-api/evolution-api',
+    desc: 'Gateway no oficial de WhatsApp. Útil en desarrollo; para producción preferimos Meta Cloud API por riesgo de ban.',
+    url: 'https://github.com/EvolutionAPI/evolution-api',
+  },
+  {
+    nombre: 'listmonk/listmonk',
+    desc: 'Newsletter self-hosted, alternativa liviana a Mailchimp para quienes ya operan su propio VPS.',
+    url: 'https://github.com/knadh/listmonk',
+  },
+];
+---
+<Base title="Repos" description="Repositorios open source que probamos antes de recomendarlos.">
+  <section class="page-head">
+    <p class="eyebrow">Curaduría</p>
+    <h1>Repos</h1>
+    <p class="lede">Herramientas open source que evaluamos con uso real, no solo por estrellas en GitHub.</p>
+  </section>
+
+  <ul class="repo-list">
+    {repos.map((r) => (
+      <li class="repo-card">
+        <a href={r.url} class="repo-name mono" target="_blank" rel="noopener">{r.nombre} ↗</a>
+        <p>{r.desc}</p>
+      </li>
+    ))}
+  </ul>
+</Base>
+
+<style>
+  .page-head { padding: 40px 0 8px; }
+  .page-head h1 { font-size: 2rem; margin: 8px 0 12px; }
+  .lede { color: var(--text-dim); max-width: 55ch; }
+  .repo-list { list-style: none; padding: 0; margin: 32px 0 60px; display: flex; flex-direction: column; gap: 20px; }
+  .repo-card { border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+  .repo-name { font-size: 1rem; }
+  .repo-card p { color: var(--text-dim); margin: 8px 0 0; }
+</style>

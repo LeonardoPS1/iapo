@@ -1,0 +1,51 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const posts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const pilarLabel: Record<string, string> = {
+  salud: 'IA en salud',
+  automatizacion: 'Automatización',
+  'ia-general': 'IA general',
+};
+const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+---
+<Base title="Blog" description="Tips y artículos de IA aplicada, automatización y salud digital.">
+  <section class="page-head">
+    <p class="eyebrow">Blog</p>
+    <h1>Todas las publicaciones</h1>
+  </section>
+  <ul class="post-list">
+    {posts.map((post) => (
+      <li>
+        <a href={`/blog/${post.id}`} class="post-row">
+          <span class="tag" data-pilar={post.data.pilar}>{pilarLabel[post.data.pilar]}</span>
+          <span class="post-title">{post.data.title}</span>
+          <span class="eyebrow post-date">{dateFmt(post.data.pubDate)}</span>
+        </a>
+      </li>
+    ))}
+    {posts.length === 0 && <p class="empty">Todavía no hay publicaciones. Vuelve pronto.</p>}
+  </ul>
+</Base>
+
+<style>
+  .page-head { padding: 40px 0 20px; }
+  .page-head h1 { font-size: 2rem; margin: 8px 0 0; }
+  .post-list { list-style: none; padding: 0; margin: 0 0 60px; }
+  .post-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .post-row:hover { text-decoration: none; }
+  .post-row:hover .post-title { color: var(--accent); }
+  .post-title { flex: 1; font-size: 1.02rem; }
+  .post-date { white-space: nowrap; }
+  .empty { color: var(--text-dim); padding: 20px 0; }
+</style>

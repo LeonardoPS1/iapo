@@ -1,0 +1,117 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/jetbrains-mono/2.304/css/jetbrains-mono.min.css');
+
+:root {
+  /* Color tokens — "señal" concept: dark signal-room bg, electric blue ping */
+  --bg: #0b0d12;
+  --bg-raised: #12151d;
+  --border: #22262f;
+  --text: #e8eaed;
+  --text-dim: #8b93a1;
+  --accent: #4f8cff;
+  --accent-dim: #2c4a8c;
+  --accent-soft: rgba(79, 140, 255, 0.12);
+  --salud: #38c793;
+  --automatizacion: #4f8cff;
+  --ia-general: #c98fff;
+
+  /* Type */
+  --font-display: 'Georgia', 'Iowan Old Style', serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --radius: 3px;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  background: var(--bg);
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+code, pre, .mono {
+  font-family: var(--font-mono);
+}
+
+pre {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  overflow-x: auto;
+  font-size: 14px;
+}
+
+code {
+  background: var(--bg-raised);
+  padding: 0.15em 0.4em;
+  border-radius: var(--radius);
+  font-size: 0.9em;
+}
+
+pre code { background: none; padding: 0; }
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 40px 0;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+.tag[data-pilar="salud"] { color: var(--salud); border-color: var(--salud); }
+.tag[data-pilar="automatizacion"] { color: var(--automatizacion); border-color: var(--automatizacion); }
+.tag[data-pilar="ia-general"] { color: var(--ia-general); border-color: var(--ia-general); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .ping { animation: ping 2.4s ease-out infinite; }
+}
+@keyframes ping {
+  0% { opacity: 0.9; transform: scale(1); }
+  70% { opacity: 0; transform: scale(2.6); }
+  100% { opacity: 0; transform: scale(2.6); }
+}

@@ -1,0 +1,28 @@
+---
+const year = new Date().getFullYear();
+---
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <p class="mono">iapo.cl · señal de IA aplicada, desde Chile</p>
+    <p class="mono">© {year} · un proyecto de <a href="https://aicorebots.com">Aicore Agency</a></p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 0 60px;
+    margin-top: 60px;
+  }
+  .footer-inner {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .footer p {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin: 0;
+  }
+</style>

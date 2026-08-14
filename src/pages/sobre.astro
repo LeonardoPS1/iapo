@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Sobre" description="Quién está detrás de iapo.cl">
+  <section class="page-head">
+    <p class="eyebrow">Sobre</p>
+    <h1>Por qué existe iapo.cl</h1>
+  </section>
+  <div class="prose">
+    <p>
+      iapo.cl es un proyecto de <a href="https://aicorebots.com" target="_blank" rel="noopener">Aicore Agency</a>,
+      agencia de automatización con IA con base en Santiago de Chile. Construimos
+      <a href="https://med.aicorebots.com" target="_blank" rel="noopener">AiCoreMed</a>, un sistema de
+      captación y gestión de pacientes para clínicas, y en el camino acumulamos aprendizajes técnicos
+      que no siempre caben en un caso de venta.
+    </p>
+    <p>
+      Este sitio existe para compartir eso: los prompts que realmente usamos, las herramientas que
+      evaluamos antes de recomendarlas, y los repos que probamos con carga real, no solo con un demo.
+      Sin traducciones genéricas del inglés, con foco en Chile y la región.
+    </p>
+    <p>
+      Si trabajas en salud o gestionas una clínica y quieres saber cómo aplicamos esto en la práctica,
+      revisa <a href="/casos">los casos de estudio</a> o escríbenos.
+    </p>
+  </div>
+</Base>
+
+<style>
+  .page-head { padding: 40px 0 8px; }
+  .page-head h1 { font-size: 2rem; margin: 8px 0 12px; }
+  .prose { max-width: 60ch; margin: 24px 0 80px; color: var(--text); }
+  .prose p { margin: 1.2em 0; }
+</style>

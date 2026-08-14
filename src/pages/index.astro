@@ -1,0 +1,117 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const posts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 6);
+
+const pilarLabel: Record<string, string> = {
+  salud: 'IA en salud',
+  automatizacion: 'Automatización',
+  'ia-general': 'IA general',
+};
+const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+---
+<Base title="Inicio">
+  <section class="hero">
+    <p class="eyebrow">Señal de IA aplicada · Chile</p>
+    <h1>Tips, prompts y repos que <em>sí</em> usamos.</h1>
+    <p class="lede">
+      Un espacio para practicantes, no para hype: automatización, IA aplicada a salud y las
+      herramientas que probamos antes de recomendarlas. Sin traducciones genéricas del inglés.
+    </p>
+    <div class="hero-actions">
+      <a class="btn" href="#suscribir">Suscribirme</a>
+      <a class="btn btn-ghost" href="/blog">Ver todo el blog →</a>
+    </div>
+  </section>
+
+  <hr />
+
+  <section class="latest">
+    <div class="section-head">
+      <h2>Últimas publicaciones</h2>
+    </div>
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li>
+          <a href={`/blog/${post.id}`} class="post-row">
+            <span class="tag" data-pilar={post.data.pilar}>{pilarLabel[post.data.pilar]}</span>
+            <span class="post-title">{post.data.title}</span>
+            <span class="eyebrow post-date">{dateFmt(post.data.pubDate)}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <hr />
+
+  <section id="suscribir" class="subscribe">
+    <h2>No te pierdas la próxima señal</h2>
+    <p class="lede">Un correo a la semana: 3 tips, 1 repo curado, 1 caso de uso real.</p>
+    <form class="subscribe-form" action="https://newsletter.iapo.cl/subscription/form" method="post">
+      <input type="email" name="email" placeholder="tu@correo.cl" required aria-label="Correo electrónico" />
+      <button type="submit">Suscribirme</button>
+    </form>
+  </section>
+</Base>
+
+<style>
+  .hero { padding: 56px 0 32px; }
+  .hero h1 { font-size: 2.6rem; margin: 14px 0 18px; max-width: 14ch; }
+  .hero h1 em { color: var(--accent); font-style: normal; }
+  .lede { color: var(--text-dim); font-size: 1.1rem; max-width: 55ch; }
+  .hero-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .btn {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: var(--radius);
+    background: var(--accent);
+    color: #06090f;
+    text-decoration: none;
+  }
+  .btn:hover { text-decoration: none; opacity: 0.9; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+
+  .section-head { margin-bottom: 20px; }
+  .section-head h2 { font-size: 1.4rem; margin: 0; }
+
+  .post-list { list-style: none; padding: 0; margin: 0; }
+  .post-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .post-row:hover { text-decoration: none; }
+  .post-row:hover .post-title { color: var(--accent); }
+  .post-title { flex: 1; font-size: 1.02rem; }
+  .post-date { white-space: nowrap; }
+
+  .subscribe { padding: 20px 0 60px; }
+  .subscribe h2 { font-size: 1.5rem; margin: 0 0 8px; }
+  .subscribe-form { display: flex; gap: 10px; margin-top: 20px; max-width: 420px; flex-wrap: wrap; }
+  .subscribe-form input {
+    flex: 1;
+    min-width: 200px;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: var(--font-body);
+  }
+  .subscribe-form button {
+    font-family: var(--font-mono);
+    background: var(--accent);
+    color: #06090f;
+    border: none;
+    border-radius: var(--radius);
+    padding: 10px 18px;
+    cursor: pointer;
+  }
+</style>

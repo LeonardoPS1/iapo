@@ -1,0 +1,61 @@
+---
+import Base from '../layouts/Base.astro';
+
+const prompts = [
+  {
+    titulo: 'Calificación de leads por WhatsApp',
+    pilar: 'automatizacion',
+    texto: `Eres un asistente de recepción para una clínica de [especialidad]. Un paciente escribió por WhatsApp preguntando por una hora. Tu tarea:
+1. Saluda de forma breve y cálida.
+2. Pregunta el motivo de consulta en una sola pregunta.
+3. Pregunta si es primera vez o control.
+4. No agendes tú: deriva a un horario disponible que te entregará el sistema.
+Responde siempre en español de Chile, en un máximo de 2 líneas por mensaje.`,
+  },
+  {
+    titulo: 'Resumen de ficha clínica para el profesional',
+    pilar: 'salud',
+    texto: `Resume la siguiente ficha clínica en máximo 5 líneas, priorizando: motivo de consulta actual, antecedentes relevantes, medicación activa y alertas (alergias, condiciones crónicas). No inventes datos que no estén en el texto. Si falta un campo, indícalo como "no registrado".`,
+  },
+  {
+    titulo: 'Recordatorio de cita con reprogramación',
+    pilar: 'automatizacion',
+    texto: `Redacta un recordatorio de cita por WhatsApp para mañana a las {hora} con {profesional}. Debe incluir una opción clara para confirmar o reprogramar respondiendo el mismo mensaje, en un tono directo y breve, sin firma formal.`,
+  },
+];
+---
+<Base title="Prompts" description="Prompts probados en producción para clínicas y automatización con IA.">
+  <section class="page-head">
+    <p class="eyebrow">Directorio</p>
+    <h1>Prompts</h1>
+    <p class="lede">Prompts que usamos en producción, no genéricos de Twitter. Cópialos y ajusta lo que está entre llaves.</p>
+  </section>
+
+  <div class="prompt-list">
+    {prompts.map((p) => (
+      <article class="prompt-card">
+        <div class="prompt-head">
+          <h2>{p.titulo}</h2>
+          <span class="tag" data-pilar={p.pilar}>{p.pilar === 'salud' ? 'IA en salud' : 'Automatización'}</span>
+        </div>
+        <pre><code>{p.texto}</code></pre>
+      </article>
+    ))}
+  </div>
+</Base>
+
+<style>
+  .page-head { padding: 40px 0 8px; }
+  .page-head h1 { font-size: 2rem; margin: 8px 0 12px; }
+  .lede { color: var(--text-dim); max-width: 55ch; }
+  .prompt-list { display: flex; flex-direction: column; gap: 24px; margin: 32px 0 60px; }
+  .prompt-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    background: var(--bg-raised);
+  }
+  .prompt-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .prompt-head h2 { font-size: 1.05rem; margin: 0; font-family: var(--font-body); font-weight: 600; }
+  pre { white-space: pre-wrap; margin: 0; }
+</style>
