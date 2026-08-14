@@ -20,28 +20,30 @@ const repos = [
 ];
 ---
 <Base title="Repos" description="Repositorios open source que probamos antes de recomendarlos.">
-  <section class="page-head">
-    <p class="eyebrow">Curaduría</p>
+  <section class="page-head" data-reveal>
+    <span class="eyebrow">// Curaduría de código</span>
     <h1>Repos</h1>
     <p class="lede">Herramientas open source que evaluamos con uso real, no solo por estrellas en GitHub.</p>
   </section>
 
-  <ul class="repo-list">
+  <div class="repo-list">
     {repos.map((r) => (
-      <li class="repo-card">
-        <a href={r.url} class="repo-name mono" target="_blank" rel="noopener">{r.nombre} ↗</a>
+      <a href={r.url} target="_blank" rel="noopener" class="repo-card bracket-card" data-reveal>
+        <span class="repo-name mono">{r.nombre} ↗</span>
         <p>{r.desc}</p>
-      </li>
+      </a>
     ))}
-  </ul>
+  </div>
 </Base>
 
 <style>
-  .page-head { padding: 40px 0 8px; }
-  .page-head h1 { font-size: 2rem; margin: 8px 0 12px; }
-  .lede { color: var(--text-dim); max-width: 55ch; }
-  .repo-list { list-style: none; padding: 0; margin: 32px 0 60px; display: flex; flex-direction: column; gap: 20px; }
-  .repo-card { border-bottom: 1px solid var(--border); padding-bottom: 20px; }
-  .repo-name { font-size: 1rem; }
-  .repo-card p { color: var(--text-dim); margin: 8px 0 0; }
+  .page-head { padding: 44px 0 10px; }
+  .page-head h1 { font-size: clamp(1.9rem, 4vw, 2.3rem); margin: 10px 0 14px; }
+  .lede { color: var(--text-dim); max-width: 55ch; margin: 0; }
+  .repo-list { display: flex; flex-direction: column; gap: 16px; margin: 34px 0 70px; }
+  .repo-card { display: block; padding: 20px 22px; color: var(--text); text-decoration: none; }
+  .repo-card:hover { text-decoration: none; }
+  .repo-name { font-size: 1rem; color: var(--amber); transition: filter 0.2s ease; }
+  .repo-card:hover .repo-name { filter: brightness(1.15); }
+  .repo-card p { color: var(--text-dim); margin: 10px 0 0; }
 </style>

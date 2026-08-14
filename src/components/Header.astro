@@ -1,4 +1,6 @@
 ---
+import SignalTrace from './SignalTrace.astro';
+
 const nav = [
   { href: '/blog', label: 'Blog' },
   { href: '/prompts', label: 'Prompts' },
@@ -10,10 +12,7 @@ const nav = [
 <header class="header">
   <div class="wrap header-inner">
     <a href="/" class="logo">
-      <span class="dot-wrap">
-        <span class="dot"></span>
-        <span class="dot ping"></span>
-      </span>
+      <span class="logo-mark"><SignalTrace height={20} color="var(--amber)" /></span>
       iapo<span class="tld">.cl</span>
     </a>
     <nav class="nav">
@@ -27,17 +26,20 @@ const nav = [
 <style>
   .header {
     border-bottom: 1px solid var(--border);
-    padding: 20px 0;
+    padding: 22px 0;
+    position: relative;
+    z-index: 10;
   }
   .header-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 20px;
     flex-wrap: wrap;
   }
   .logo {
     font-family: var(--font-mono);
+    font-weight: 700;
     font-size: 18px;
     color: var(--text);
     display: inline-flex;
@@ -46,26 +48,35 @@ const nav = [
     text-decoration: none;
   }
   .logo:hover { text-decoration: none; }
-  .tld { color: var(--text-dim); }
-  .dot-wrap {
-    position: relative;
-    width: 8px;
-    height: 8px;
+  .tld { color: var(--text-faint); font-weight: 400; }
+  .logo-mark {
+    width: 30px;
     display: inline-block;
   }
-  .dot {
-    position: absolute;
-    inset: 0;
-    background: var(--accent);
-    border-radius: 50%;
-  }
-  .dot.ping { background: transparent; border: 1px solid var(--accent); }
   .nav {
     display: flex;
-    gap: 20px;
+    gap: 26px;
     font-family: var(--font-mono);
-    font-size: 14px;
+    font-size: 13.5px;
   }
-  .nav a { color: var(--text-dim); }
-  .nav a:hover { color: var(--text); text-decoration: none; }
+  .nav a {
+    color: var(--text-dim);
+    position: relative;
+    padding-bottom: 3px;
+  }
+  .nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 1px;
+    background: var(--amber);
+    transition: width 0.25s ease;
+  }
+  .nav a:hover {
+    color: var(--text);
+    text-decoration: none;
+  }
+  .nav a:hover::after { width: 100%; }
 </style>

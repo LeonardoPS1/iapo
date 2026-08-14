@@ -1,5 +1,6 @@
 ---
 import Base from './Base.astro';
+import SignalTrace from '../components/SignalTrace.astro';
 
 interface Props {
   title: string;
@@ -25,7 +26,7 @@ const dateFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long'
     </div>
     <h1>{title}</h1>
     <p class="deck">{description}</p>
-    <hr />
+    <div class="post-divider"><SignalTrace height={28} color="var(--border-bright)" /></div>
     <div class="content">
       <slot />
     </div>
@@ -33,19 +34,21 @@ const dateFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long'
 </Base>
 
 <style>
-  .post { padding: 40px 0 20px; }
-  .post-meta { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
-  h1 { font-size: 2.1rem; margin: 0 0 12px; }
-  .deck { color: var(--text-dim); font-size: 1.1rem; margin: 0; }
-  .content :global(h2) { margin-top: 2.2em; font-size: 1.4rem; }
-  .content :global(h3) { margin-top: 1.8em; font-size: 1.15rem; }
-  .content :global(p) { margin: 1em 0; }
+  .post { padding: 44px 0 20px; }
+  .post-meta { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
+  h1 { font-size: clamp(1.9rem, 4.5vw, 2.4rem); margin: 0 0 14px; }
+  .deck { color: var(--text-dim); font-size: 1.1rem; margin: 0; max-width: 56ch; }
+  .post-divider { margin: 36px 0; opacity: 0.6; }
+  .content :global(h2) { margin-top: 2.4em; font-size: 1.4rem; font-weight: 500; }
+  .content :global(h3) { margin-top: 1.9em; font-size: 1.15rem; font-weight: 500; }
+  .content :global(p) { margin: 1.1em 0; }
   .content :global(ul), .content :global(ol) { padding-left: 1.4em; }
-  .content :global(li) { margin: 0.4em 0; }
+  .content :global(li) { margin: 0.45em 0; }
   .content :global(blockquote) {
-    border-left: 2px solid var(--accent);
-    margin: 1.5em 0;
-    padding: 0.2em 0 0.2em 1.2em;
+    border-left: 2px solid var(--amber);
+    margin: 1.6em 0;
+    padding: 0.2em 0 0.2em 1.3em;
     color: var(--text-dim);
   }
+  .content :global(a) { text-underline-offset: 2px; }
 </style>

@@ -23,20 +23,22 @@ Responde siempre en español de Chile, en un máximo de 2 líneas por mensaje.`,
     texto: `Redacta un recordatorio de cita por WhatsApp para mañana a las {hora} con {profesional}. Debe incluir una opción clara para confirmar o reprogramar respondiendo el mismo mensaje, en un tono directo y breve, sin firma formal.`,
   },
 ];
+
+const pilarLabel: Record<string, string> = { salud: 'IA en salud', automatizacion: 'Automatización' };
 ---
 <Base title="Prompts" description="Prompts probados en producción para clínicas y automatización con IA.">
-  <section class="page-head">
-    <p class="eyebrow">Directorio</p>
+  <section class="page-head" data-reveal>
+    <span class="eyebrow">// Directorio de prompts</span>
     <h1>Prompts</h1>
     <p class="lede">Prompts que usamos en producción, no genéricos de Twitter. Cópialos y ajusta lo que está entre llaves.</p>
   </section>
 
   <div class="prompt-list">
     {prompts.map((p) => (
-      <article class="prompt-card">
+      <article class="prompt-card bracket-card" data-reveal>
         <div class="prompt-head">
           <h2>{p.titulo}</h2>
-          <span class="tag" data-pilar={p.pilar}>{p.pilar === 'salud' ? 'IA en salud' : 'Automatización'}</span>
+          <span class="tag" data-pilar={p.pilar}>{pilarLabel[p.pilar]}</span>
         </div>
         <pre><code>{p.texto}</code></pre>
       </article>
@@ -45,17 +47,12 @@ Responde siempre en español de Chile, en un máximo de 2 líneas por mensaje.`,
 </Base>
 
 <style>
-  .page-head { padding: 40px 0 8px; }
-  .page-head h1 { font-size: 2rem; margin: 8px 0 12px; }
-  .lede { color: var(--text-dim); max-width: 55ch; }
-  .prompt-list { display: flex; flex-direction: column; gap: 24px; margin: 32px 0 60px; }
-  .prompt-card {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    background: var(--bg-raised);
-  }
-  .prompt-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
-  .prompt-head h2 { font-size: 1.05rem; margin: 0; font-family: var(--font-body); font-weight: 600; }
+  .page-head { padding: 44px 0 10px; }
+  .page-head h1 { font-size: clamp(1.9rem, 4vw, 2.3rem); margin: 10px 0 14px; }
+  .lede { color: var(--text-dim); max-width: 55ch; margin: 0; }
+  .prompt-list { display: flex; flex-direction: column; gap: 20px; margin: 34px 0 70px; }
+  .prompt-card { padding: 22px; }
+  .prompt-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .prompt-head h2 { font-size: 1.05rem; font-weight: 500; font-family: var(--font-body); }
   pre { white-space: pre-wrap; margin: 0; }
 </style>

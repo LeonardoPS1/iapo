@@ -3,8 +3,11 @@ const year = new Date().getFullYear();
 ---
 <footer class="footer">
   <div class="wrap footer-inner">
-    <p class="mono">iapo.cl · señal de IA aplicada, desde Chile</p>
-    <p class="mono">© {year} · un proyecto de <a href="https://aicorebots.com">Aicore Agency</a></p>
+    <div class="footer-left">
+      <span class="status-pill"><span class="status-dot"></span>EN VIVO · SANTIAGO, CL</span>
+      <p class="mono coords">-33.4489° S · -70.6693° W</p>
+    </div>
+    <p class="mono credit">© {year} · un proyecto de <a href="https://aicorebots.com">Aicore Agency</a></p>
   </div>
 </footer>
 
@@ -17,11 +20,22 @@ const year = new Date().getFullYear();
   .footer-inner {
     display: flex;
     justify-content: space-between;
+    align-items: flex-end;
     flex-wrap: wrap;
+    gap: 16px;
+  }
+  .footer-left {
+    display: flex;
+    flex-direction: column;
     gap: 8px;
   }
-  .footer p {
-    font-size: 13px;
+  .coords {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin: 0;
+  }
+  .credit {
+    font-size: 12.5px;
     color: var(--text-dim);
     margin: 0;
   }
