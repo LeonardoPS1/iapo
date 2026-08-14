@@ -1,5 +1,5 @@
 ---
-import SignalTrace from './SignalTrace.astro';
+import PulseLine from './PulseLine.astro';
 
 const nav = [
   { href: '/blog', label: 'Blog' },
@@ -12,7 +12,7 @@ const nav = [
 <header class="header">
   <div class="wrap header-inner">
     <a href="/" class="logo">
-      <span class="logo-mark"><SignalTrace height={20} color="var(--amber)" /></span>
+      <span class="logo-mark"><PulseLine height={20} cycles={1} color="var(--core)" /></span>
       iapo<span class="tld">.cl</span>
     </a>
     <nav class="nav">
@@ -71,7 +71,7 @@ const nav = [
     bottom: 0;
     width: 0;
     height: 1px;
-    background: var(--amber);
+    background: var(--core);
     transition: width 0.25s ease;
   }
   .nav a:hover {

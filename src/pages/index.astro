@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
-import SignalTrace from '../components/SignalTrace.astro';
+import PulseLine from '../components/PulseLine.astro';
+import NeuralCore from '../components/NeuralCore.astro';
 import { getCollection } from 'astro:content';
 
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
@@ -15,17 +16,24 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
 ---
 <Base title="Inicio">
   <section class="hero">
-    <span class="status-pill"><span class="status-dot"></span>SEÑAL ACTIVA · -33.45, -70.66</span>
-    <h1>Tips, prompts y repos<br /><em>que sí usamos.</em></h1>
-    <p class="lede">
-      Un espacio para practicantes, no para hype: automatización, IA aplicada a salud y las
-      herramientas que probamos antes de recomendarlas. Sin traducciones genéricas del inglés.
-    </p>
-    <div class="hero-trace"><SignalTrace height={90} /></div>
-    <div class="hero-actions">
-      <a class="btn" href="#suscribir">Suscribirme</a>
-      <a class="btn btn-ghost" href="/blog">Ver todo el blog →</a>
+    <div class="hero-grid">
+      <div class="hero-text">
+        <span class="status-pill"><span class="status-dot"></span>SEÑAL ACTIVA · VIÑA DEL MAR, CL</span>
+        <h1>Tips, prompts y repos<br /><em>que sí usamos.</em></h1>
+        <p class="lede">
+          Un espacio para practicantes, no para hype: automatización, IA aplicada a salud y las
+          herramientas que probamos antes de recomendarlas. Sin traducciones genéricas del inglés.
+        </p>
+        <div class="hero-actions">
+          <a class="btn" href="#suscribir">Suscribirme</a>
+          <a class="btn btn-ghost" href="/blog">Ver todo el blog →</a>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <NeuralCore size={380} />
+      </div>
     </div>
+    <div class="hero-trace"><PulseLine height={70} cycles={4} /></div>
   </section>
 
   <hr />
@@ -64,24 +72,36 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
 </Base>
 
 <style>
-  .hero { padding: 64px 0 20px; }
-  .hero h1 {
-    font-size: clamp(2.4rem, 5vw, 3.4rem);
-    margin: 20px 0 18px;
-    max-width: 16ch;
+  .hero { padding: 56px 0 20px; }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 24px;
+    align-items: center;
   }
-  .hero h1 em { color: var(--amber); font-style: italic; font-weight: 400; }
-  .lede { color: var(--text-dim); font-size: 1.1rem; max-width: 54ch; margin: 0; }
-  .hero-trace { margin: 40px 0 32px; opacity: 0.85; }
-  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+  .hero h1 {
+    font-size: clamp(2.3rem, 4.6vw, 3.3rem);
+    margin: 20px 0 18px;
+    max-width: 15ch;
+  }
+  .hero h1 em { color: var(--core); font-style: italic; font-weight: 400; }
+  .lede { color: var(--text-dim); font-size: 1.08rem; max-width: 52ch; margin: 0; }
+  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 30px; }
+  .hero-visual {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .hero-trace { margin: 44px 0 28px; opacity: 0.9; }
+
   .btn {
     font-family: var(--font-mono);
     font-size: 13.5px;
     letter-spacing: 0.02em;
     padding: 11px 20px;
     border-radius: var(--radius);
-    background: var(--amber);
-    color: #0a0d17;
+    background: var(--core);
+    color: #071410;
     text-decoration: none;
     font-weight: 700;
     transition: filter 0.2s ease, transform 0.2s ease;
@@ -93,35 +113,17 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
     color: var(--text);
     font-weight: 400;
   }
-  .btn-ghost:hover { border-color: var(--amber); }
+  .btn-ghost:hover { border-color: var(--core); }
 
   .section-head { margin-bottom: 26px; }
   .section-head h2 { font-size: 1.5rem; margin-top: 8px; }
 
-  .post-grid {
-    display: grid;
-    gap: 16px;
-  }
-  .post-card {
-    display: block;
-    padding: 22px;
-    color: var(--text);
-    text-decoration: none;
-  }
+  .post-grid { display: grid; gap: 16px; }
+  .post-card { display: block; padding: 22px; color: var(--text); text-decoration: none; }
   .post-card:hover { text-decoration: none; }
-  .post-title {
-    font-size: 1.15rem;
-    margin: 12px 0 8px;
-    font-weight: 500;
-    transition: color 0.2s ease;
-  }
-  .post-card:hover .post-title { color: var(--amber); }
-  .post-desc {
-    color: var(--text-dim);
-    font-size: 0.95rem;
-    margin: 0 0 14px;
-    line-height: 1.55;
-  }
+  .post-title { font-size: 1.15rem; margin: 12px 0 8px; font-weight: 500; transition: color 0.2s ease; }
+  .post-card:hover .post-title { color: var(--core); }
+  .post-desc { color: var(--text-dim); font-size: 0.95rem; margin: 0 0 14px; line-height: 1.55; }
   .empty { color: var(--text-dim); padding: 20px 0; }
 
   .subscribe { padding: 0; margin: 40px 0 60px; }
@@ -138,12 +140,12 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
     color: var(--text);
     font-family: var(--font-body);
   }
-  .subscribe-form input:focus { outline: 2px solid var(--amber); outline-offset: 1px; }
+  .subscribe-form input:focus { outline: 2px solid var(--core); outline-offset: 1px; }
   .subscribe-form button {
     font-family: var(--font-mono);
     font-weight: 700;
-    background: var(--amber);
-    color: #0a0d17;
+    background: var(--core);
+    color: #071410;
     border: none;
     border-radius: var(--radius);
     padding: 11px 20px;
@@ -151,4 +153,11 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
     transition: filter 0.2s ease;
   }
   .subscribe-form button:hover { filter: brightness(1.12); }
+
+  @media (max-width: 760px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-visual { order: -1; margin-bottom: 8px; }
+    .hero-visual :global(.core-wrap) { width: 220px; }
+    .hero h1 { max-width: none; }
+  }
 </style>

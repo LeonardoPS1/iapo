@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import SignalTrace from '../components/SignalTrace.astro';
+import PulseLine from '../components/PulseLine.astro';
 ---
 <Base title="Casos" description="Casos reales de clínicas que automatizaron captación y gestión de pacientes.">
   <section class="page-head" data-reveal>
@@ -13,7 +13,7 @@ import SignalTrace from '../components/SignalTrace.astro';
   </section>
   <div class="soon bracket-card" data-reveal>
     <div class="soon-inner">
-      <SignalTrace height={40} color="var(--border-bright)" />
+      <PulseLine height={40} cycles={2} color="var(--border-bright)" />
       <p class="mono">→ primer caso en camino</p>
     </div>
   </div>

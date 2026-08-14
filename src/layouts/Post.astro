@@ -1,6 +1,6 @@
 ---
 import Base from './Base.astro';
-import SignalTrace from '../components/SignalTrace.astro';
+import PulseLine from '../components/PulseLine.astro';
 
 interface Props {
   title: string;
@@ -26,7 +26,7 @@ const dateFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long'
     </div>
     <h1>{title}</h1>
     <p class="deck">{description}</p>
-    <div class="post-divider"><SignalTrace height={28} color="var(--border-bright)" /></div>
+    <div class="post-divider"><PulseLine height={28} cycles={2} color="var(--border-bright)" /></div>
     <div class="content">
       <slot />
     </div>

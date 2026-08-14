@@ -1,0 +1,83 @@
+---
+interface Props {
+  height?: number;
+  color?: string;
+  cycles?: number;
+}
+const { height = 64, color = 'var(--core)', cycles = 3 } = Astro.props;
+
+// One ECG-style cycle as [fractionOfCycleWidth, fractionOfHeight] keyframes.
+// Negative y = upward spike. Modeled loosely on a real vital-signs trace:
+// flat baseline -> small P bump -> sharp QRS spike -> T wave -> flat.
+const CYCLE: [number, number][] = [
+  [0.0, 0],
+  [0.11, 0],
+  [0.145, -0.16],
+  [0.18, 0],
+  [0.225, 0.06],
+  [0.255, -0.92],
+  [0.285, 0.42],
+  [0.32, 0],
+  [0.40, 0],
+  [0.45, -0.22],
+  [0.52, 0],
+  [1.0, 0],
+];
+
+function buildPath(width: number, h: number, cycles: number, seed: number) {
+  const cw = width / cycles;
+  const points: string[] = [];
+  for (let c = 0; c < cycles; c++) {
+    // tiny per-cycle jitter on the main spike so repeats don't look mechanical
+    const jitter = 1 + (Math.sin(seed + c * 2.1) * 0.06);
+    for (const [fx, fy] of CYCLE) {
+      const x = c * cw + fx * cw;
+      const scaledY = fy * jitter;
+      const y = h / 2 + scaledY * (h / 2 - 3);
+      points.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+    }
+  }
+  return `M${points.join(' L')}`;
+}
+
+const width = 1000;
+const path = buildPath(width, height, cycles, 2.4);
+---
+<svg
+  class="pulse-line"
+  viewBox={`0 0 ${width} ${height}`}
+  preserveAspectRatio="none"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+>
+  <line x1="0" y1={height / 2} x2={width} y2={height / 2} class="pulse-baseline" />
+  <path d={path} fill="none" stroke={color} stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
+
+<style define:vars={{ traceColor: color }}>
+  .pulse-line {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .pulse-baseline {
+    stroke: var(--border);
+    stroke-width: 1;
+  }
+  .pulse-line path {
+    stroke-dasharray: 3400;
+    stroke-dashoffset: 3400;
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--traceColor) 60%, transparent));
+    animation: draw-pulse 2.8s cubic-bezier(0.6, 0, 0.4, 1) forwards;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pulse-line path {
+      stroke-dashoffset: 0;
+      animation: none;
+    }
+  }
+  @keyframes draw-pulse {
+    to { stroke-dashoffset: 0; }
+  }
+</style>
