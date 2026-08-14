@@ -1,0 +1,25 @@
+services:
+  iapo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # Dokploy inyecta las labels de Traefik automáticamente cuando
+    # defines el dominio en la UI de la app. Si prefieres definirlas
+    # aquí a mano, usa este bloque como referencia (ajusta el nombre
+    # de la red externa de Traefik a la que ya usa tu stack):
+    #
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.iapo.rule=Host(`iapo.cl`) || Host(`www.iapo.cl`)"
+    #   - "traefik.http.routers.iapo.entrypoints=websecure"
+    #   - "traefik.http.routers.iapo.tls.certresolver=letsencrypt"
+    #   - "traefik.http.services.iapo.loadbalancer.server.port=80"
+    # networks:
+    #   - dokploy-network
+    expose:
+      - "80"
+
+# networks:
+#   dokploy-network:
+#     external: true
