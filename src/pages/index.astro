@@ -1,7 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
 import Wordmark from '../components/Wordmark.astro';
-import CoastalArt from '../components/CoastalArt.astro';
 import Sidebar from '../components/Sidebar.astro';
 import { getCollection } from 'astro:content';
 
@@ -18,22 +17,17 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
 ---
 <Base title="Inicio">
   <section class="hero">
-    <div class="hero-grid">
-      <div class="hero-text">
-        <h1 class="hero-h1">
-          Menos hype,<br />más <Wordmark size={44} />
-        </h1>
-        <p class="lede">
-          Automatización, IA aplicada a salud y las herramientas que probamos antes de
-          recomendarlas. Directo, sin traducciones genéricas del inglés.
-        </p>
-        <div class="hero-actions">
-          <a class="btn" href="#suscribir">Suscribirme</a>
-          <a class="btn btn-ghost" href="/blog">Ver todo el blog →</a>
-        </div>
-      </div>
-      <div class="hero-visual" data-reveal>
-        <CoastalArt />
+    <div class="hero-text">
+      <h1 class="hero-h1">
+        Menos hype,<br />más <Wordmark size={44} />
+      </h1>
+      <p class="lede">
+        Automatización, IA aplicada a salud y las herramientas que probamos antes de
+        recomendarlas. Directo, sin traducciones genéricas del inglés.
+      </p>
+      <div class="hero-actions">
+        <a class="btn" href="#suscribir">Suscribirme</a>
+        <a class="btn btn-ghost" href="/blog">Ver todo el blog →</a>
       </div>
     </div>
   </section>
@@ -93,24 +87,18 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
 </Base>
 
 <style>
-  .hero { padding: 52px 0 36px; }
-  .hero-grid {
-    display: grid;
-    grid-template-columns: 1.15fr 0.85fr;
-    gap: 40px;
-    align-items: center;
-  }
-  .hero-visual { display: flex; justify-content: center; }
+  .hero { padding: 56px 0 44px; text-align: center; }
+  .hero-text { max-width: 640px; margin: 0 auto; }
   .hero-h1 {
     font-family: var(--font-display);
-    font-size: clamp(2.1rem, 4.6vw, 3.1rem);
+    font-size: clamp(2.3rem, 5.2vw, 3.6rem);
     font-weight: 500;
-    line-height: 1.4;
+    line-height: 1.35;
     margin: 0 0 20px;
-    max-width: 18ch;
   }
-  .lede { color: var(--ink-dim); font-size: 1.08rem; max-width: 52ch; margin: 0; }
-  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 28px; }
+  .lede { color: var(--ink-dim); font-size: 1.1rem; max-width: 52ch; margin: 0; }
+  .hero .lede { margin: 0 auto; }
+  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 28px; justify-content: center; }
 
   .btn {
     font-family: var(--font-mono);
@@ -195,10 +183,5 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
 
   @media (max-width: 880px) {
     .mag-grid { grid-template-columns: 1fr; }
-  }
-
-  @media (max-width: 760px) {
-    .hero-grid { grid-template-columns: 1fr; }
-    .hero-visual { order: -1; margin-bottom: 8px; max-width: 320px; margin-left: auto; margin-right: auto; }
   }
 </style>

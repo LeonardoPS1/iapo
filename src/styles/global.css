@@ -1,7 +1,8 @@
 /* ===== Fonts =====
-   Anton: bold poster/tabloid nameplate. Fraunces: editorial headlines.
-   Inter: body. Space Mono: data/labels/dates. Caveat: rare marker accents. */
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Caveat:wght@600;700&display=swap');
+   Fraunces (high weight, tight optical size) for the nameplate and all
+   editorial headlines — a classic high-contrast newspaper serif, closer
+   to a real masthead than a poster-sans. Inter: body. Space Mono: data/labels/dates. */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
   /* ===== Color tokens — "diario de IA" concept =====
@@ -25,11 +26,10 @@
   --automatizacion: var(--comic-red);
   --ia-general: #7454d1;
 
-  --font-nameplate: 'Anton', sans-serif;
+  --font-nameplate: 'Fraunces', 'Iowan Old Style', serif;
   --font-display: 'Fraunces', 'Iowan Old Style', serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'Space Mono', ui-monospace, 'SFMono-Regular', monospace;
-  --font-marker: 'Caveat', cursive;
 
   --radius: 3px;
   --shell: 1240px;

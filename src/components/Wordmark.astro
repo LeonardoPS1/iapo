@@ -13,6 +13,7 @@ const { size = 28 } = Astro.props;
     display: inline-flex;
     align-items: baseline;
     font-family: var(--font-nameplate);
+    font-weight: 700;
     line-height: 1;
     letter-spacing: -0.01em;
   }
@@ -20,19 +21,10 @@ const { size = 28 } = Astro.props;
     color: var(--ink);
   }
   .wm-po {
-    position: relative;
-    color: var(--core);
-    margin-left: 0.02em;
-  }
-  .wm-po::after {
-    content: '';
-    position: absolute;
-    left: 0.02em;
-    right: 0.02em;
-    bottom: -0.09em;
-    height: 0.05em;
-    background: var(--comic-red);
-    border-radius: 2px;
+    display: inline-block;
+    color: var(--comic-red);
+    transform: rotate(-6deg);
+    margin-left: 0.03em;
   }
   .wm-tld {
     font-family: var(--font-mono);
@@ -40,7 +32,7 @@ const { size = 28 } = Astro.props;
     font-weight: 400;
     color: var(--ink-faint);
     align-self: flex-end;
-    margin-left: 0.18em;
+    margin-left: 0.2em;
     margin-bottom: 0.05em;
   }
 </style>
