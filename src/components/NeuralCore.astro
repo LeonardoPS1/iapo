@@ -1,0 +1,135 @@
+---
+interface Props {
+  size?: number;
+}
+const { size = 420 } = Astro.props;
+
+const cx = size / 2;
+const cy = size / 2;
+const nodeCount = 9;
+const coreR = size * 0.052;
+
+const nodes = Array.from({ length: nodeCount }, (_, i) => {
+  const angle = (i / nodeCount) * Math.PI * 2 + 0.3;
+  // vary radius per node so the mesh feels organic, not a perfect starburst
+  const dist = size * (0.28 + ((i * 37) % 17) / 17 * 0.14);
+  const x = cx + Math.cos(angle) * dist;
+  const y = cy + Math.sin(angle) * dist;
+  return { x, y, delay: (i * 0.35).toFixed(2) };
+});
+---
+<div class="core-wrap" style={`--size:${size}px`}>
+  <svg
+    viewBox={`0 0 ${size} ${size}`}
+    class="core-svg"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <defs>
+      <filter id="core-glow" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation={size * 0.025} result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+
+    {/* expanding sonar rings, broadcasting outward from the core */}
+    <g class="rings">
+      <circle cx={cx} cy={cy} r={coreR} class="ring ring-1" />
+      <circle cx={cx} cy={cy} r={coreR} class="ring ring-2" />
+      <circle cx={cx} cy={cy} r={coreR} class="ring ring-3" />
+    </g>
+
+    {/* neural connections radiating from the core, each carrying a traveling pulse */}
+    <g class="mesh">
+      {nodes.map((n) => {
+        const pathD = `M${cx},${cy} L${n.x.toFixed(1)},${n.y.toFixed(1)}`;
+        return (
+          <g>
+            <path d={pathD} class="mesh-line" />
+            <circle cx={n.x} cy={n.y} r={size * 0.009} class="mesh-node" />
+            <circle
+              r={size * 0.008}
+              class="mesh-pulse"
+              style={`offset-path: path('${pathD}'); animation-delay: ${n.delay}s;`}
+            />
+          </g>
+        );
+      })}
+    </g>
+
+    {/* the core itself */}
+    <circle cx={cx} cy={cy} r={coreR} class="core" filter="url(#core-glow)" />
+  </svg>
+</div>
+
+<style>
+  .core-wrap {
+    width: var(--size);
+    max-width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+  .core-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+  .core {
+    fill: var(--core);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .core { animation: core-breathe 3.2s ease-in-out infinite; }
+  }
+  @keyframes core-breathe {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.14); opacity: 0.85; }
+  }
+
+  .ring {
+    fill: none;
+    stroke: var(--core);
+    stroke-width: 1.5;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ring-1 { animation: ring-pulse 3.6s ease-out infinite; }
+    .ring-2 { animation: ring-pulse 3.6s ease-out infinite 1.2s; }
+    .ring-3 { animation: ring-pulse 3.6s ease-out infinite 2.4s; }
+  }
+  @keyframes ring-pulse {
+    0% { transform: scale(1); opacity: 0.55; }
+    100% { transform: scale(7); opacity: 0; }
+  }
+
+  .mesh-line {
+    fill: none;
+    stroke: var(--border-bright);
+    stroke-width: 1;
+  }
+  .mesh-node {
+    fill: var(--panel-raised);
+    stroke: var(--border-bright);
+    stroke-width: 1;
+  }
+  .mesh-pulse {
+    fill: var(--core);
+    offset-distance: 0%;
+    filter: drop-shadow(0 0 4px var(--core));
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .mesh-pulse { animation: travel 2.8s ease-in-out infinite; }
+  }
+  @keyframes travel {
+    0% { offset-distance: 0%; opacity: 0; }
+    8% { opacity: 1; }
+    92% { opacity: 1; }
+    100% { offset-distance: 100%; opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mesh-pulse { opacity: 0; }
+  }
+</style>
