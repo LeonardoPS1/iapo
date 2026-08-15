@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import Wordmark from '../components/Wordmark.astro';
+import Mascot from '../components/Mascot.astro';
 import Sidebar from '../components/Sidebar.astro';
 import { getCollection } from 'astro:content';
 
@@ -16,20 +17,25 @@ const pilarLabel: Record<string, string> = {
 const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
 ---
 <Base title="Inicio">
-  <section class="hero halftone-wrap">
-    <div class="halftone hero-halftone" aria-hidden="true"></div>
-    <span class="status-pill"><span class="status-dot"></span>SEÑAL ACTIVA</span>
-    <h1 class="hero-h1">
-      Menos hype,<br />más <Wordmark size={44} />
-    </h1>
-    <p class="lede">
-      <strong>iapo.cl</strong> — porque "ia po" es como decimos "ya" en Chile. Y de paso, de IA.
-      Tips, prompts y repos que sí usamos: automatización, IA aplicada a salud y las herramientas
-      que probamos antes de recomendarlas. Sin traducciones genéricas del inglés.
-    </p>
-    <div class="hero-actions">
-      <a class="btn" href="#suscribir">Suscribirme</a>
-      <a class="btn btn-ghost" href="/blog">Ver todo el blog →</a>
+  <section class="hero">
+    <div class="hero-grid">
+      <div class="hero-text">
+        <h1 class="hero-h1">
+          Menos hype,<br />más <Wordmark size={44} />
+        </h1>
+        <p class="lede">
+          <strong>iapo.cl</strong> — porque "ia po" es como decimos "ya" en Chile. Y de paso, de IA.
+          Tips, prompts y repos que sí usamos: automatización, IA aplicada a salud y las herramientas
+          que probamos antes de recomendarlas. Sin traducciones genéricas del inglés.
+        </p>
+        <div class="hero-actions">
+          <a class="btn" href="#suscribir">Suscribirme</a>
+          <a class="btn btn-ghost" href="/blog">Ver todo el blog →</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <Mascot size={260} />
+      </div>
     </div>
   </section>
 
@@ -88,24 +94,20 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
 </Base>
 
 <style>
-  .halftone-wrap { position: relative; overflow: hidden; }
-  .hero-halftone {
-    position: absolute;
-    top: -40px;
-    right: -60px;
-    width: 340px;
-    height: 340px;
-    border-radius: 50%;
-    z-index: 0;
+  .hero { padding: 52px 0 36px; }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 32px;
+    align-items: center;
   }
-  .hero { padding: 52px 0 36px; position: relative; }
-  .hero > * { position: relative; z-index: 1; }
+  .hero-visual { display: flex; justify-content: center; }
   .hero-h1 {
     font-family: var(--font-display);
     font-size: clamp(2.1rem, 4.6vw, 3.1rem);
     font-weight: 500;
-    line-height: 1.15;
-    margin: 22px 0 20px;
+    line-height: 1.4;
+    margin: 0 0 20px;
     max-width: 18ch;
   }
   .lede { color: var(--ink-dim); font-size: 1.08rem; max-width: 62ch; margin: 0; }
@@ -192,5 +194,11 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
 
   @media (max-width: 880px) {
     .mag-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 760px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-visual { order: -1; margin-bottom: 8px; }
+    .hero-visual :global(.mascot) { width: 180px; }
   }
 </style>
