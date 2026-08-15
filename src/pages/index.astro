@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import Wordmark from '../components/Wordmark.astro';
-import Mascot from '../components/Mascot.astro';
+import CoastalArt from '../components/CoastalArt.astro';
 import Sidebar from '../components/Sidebar.astro';
 import { getCollection } from 'astro:content';
 
@@ -24,17 +24,16 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
           Menos hype,<br />más <Wordmark size={44} />
         </h1>
         <p class="lede">
-          <strong>iapo.cl</strong> — porque "ia po" es como decimos "ya" en Chile. Y de paso, de IA.
-          Tips, prompts y repos que sí usamos: automatización, IA aplicada a salud y las herramientas
-          que probamos antes de recomendarlas. Sin traducciones genéricas del inglés.
+          Automatización, IA aplicada a salud y las herramientas que probamos antes de
+          recomendarlas. Directo, sin traducciones genéricas del inglés.
         </p>
         <div class="hero-actions">
           <a class="btn" href="#suscribir">Suscribirme</a>
           <a class="btn btn-ghost" href="/blog">Ver todo el blog →</a>
         </div>
       </div>
-      <div class="hero-visual">
-        <Mascot size={260} />
+      <div class="hero-visual" data-reveal>
+        <CoastalArt />
       </div>
     </div>
   </section>
@@ -97,8 +96,8 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
   .hero { padding: 52px 0 36px; }
   .hero-grid {
     display: grid;
-    grid-template-columns: 1.2fr 0.8fr;
-    gap: 32px;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 40px;
     align-items: center;
   }
   .hero-visual { display: flex; justify-content: center; }
@@ -110,29 +109,29 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
     margin: 0 0 20px;
     max-width: 18ch;
   }
-  .lede { color: var(--ink-dim); font-size: 1.08rem; max-width: 62ch; margin: 0; }
-  .lede strong { color: var(--ink); }
+  .lede { color: var(--ink-dim); font-size: 1.08rem; max-width: 52ch; margin: 0; }
   .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 28px; }
 
   .btn {
     font-family: var(--font-mono);
     font-size: 13.5px;
     letter-spacing: 0.02em;
-    padding: 11px 20px;
-    border-radius: var(--radius);
+    padding: 12px 22px;
+    border-radius: 999px;
     background: var(--core);
     color: var(--paper-raised);
-    border: 2px solid var(--ink);
+    border: 1px solid var(--core);
     text-decoration: none;
     font-weight: 700;
-    box-shadow: 3px 3px 0 var(--ink);
-    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.2s ease, filter 0.15s ease;
   }
-  .btn:hover { text-decoration: none; transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+  .btn:hover { text-decoration: none; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(14, 138, 118, 0.25); filter: brightness(1.05); }
   .btn-ghost {
-    background: var(--paper-raised);
+    background: transparent;
+    border: 1px solid var(--rule-strong);
     color: var(--ink);
   }
+  .btn-ghost:hover { box-shadow: none; border-color: var(--ink); background: var(--paper-raised); }
 
   .tear-line { margin: 44px 0; }
 
@@ -160,8 +159,9 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
     padding: 16px 4px;
     border-bottom: 1px solid var(--rule);
     color: var(--ink);
+    transition: padding-left 0.2s ease;
   }
-  .post-row:hover { text-decoration: none; }
+  .post-row:hover { text-decoration: none; padding-left: 6px; }
   .post-row:hover .post-row-title { color: var(--core); }
   .post-row-title { flex: 1; font-size: 1rem; font-weight: 500; transition: color 0.15s ease; }
   .empty { color: var(--ink-dim); padding: 20px 0; }
@@ -174,9 +174,9 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
     flex: 1;
     min-width: 200px;
     background: var(--paper);
-    border: 1.5px solid var(--ink);
-    border-radius: var(--radius);
-    padding: 11px 13px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 11px 16px;
     font-family: var(--font-body);
   }
   .subscribe-form input:focus { outline: 2px solid var(--core); outline-offset: 1px; }
@@ -185,12 +185,13 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
     font-weight: 700;
     background: var(--core);
     color: var(--paper-raised);
-    border: 1.5px solid var(--ink);
-    border-radius: var(--radius);
-    padding: 11px 20px;
+    border: none;
+    border-radius: 999px;
+    padding: 11px 22px;
     cursor: pointer;
+    transition: filter 0.15s ease, transform 0.2s ease;
   }
-  .subscribe-form button:hover { filter: brightness(1.1); }
+  .subscribe-form button:hover { filter: brightness(1.08); transform: translateY(-1px); }
 
   @media (max-width: 880px) {
     .mag-grid { grid-template-columns: 1fr; }
@@ -198,7 +199,6 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
 
   @media (max-width: 760px) {
     .hero-grid { grid-template-columns: 1fr; }
-    .hero-visual { order: -1; margin-bottom: 8px; }
-    .hero-visual :global(.mascot) { width: 180px; }
+    .hero-visual { order: -1; margin-bottom: 8px; max-width: 320px; margin-left: auto; margin-right: auto; }
   }
 </style>

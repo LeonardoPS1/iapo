@@ -105,7 +105,7 @@ pre code { background: none; border: none; padding: 0; }
   color: var(--ink-faint);
 }
 
-/* ===== Pilar stamp (rubber-stamp tag) ===== */
+/* ===== Pilar label ===== */
 .tag {
   display: inline-flex;
   align-items: center;
@@ -116,27 +116,27 @@ pre code { background: none; border: none; padding: 0; }
   text-transform: uppercase;
   font-weight: 700;
   padding: 4px 9px;
-  border-radius: var(--radius);
-  border: 1.5px solid currentColor;
-  transform: rotate(-2deg);
+  border-radius: 999px;
+  border: 1px solid currentColor;
   background: var(--paper-raised);
 }
 .tag[data-pilar="salud"] { color: var(--salud); }
 .tag[data-pilar="automatizacion"] { color: var(--automatizacion); }
 .tag[data-pilar="ia-general"] { color: var(--ia-general); }
 
-/* ===== Signature: comic panel — hard offset shadow, thick ink border ===== */
+/* ===== Signature: editorial panel — thin rule, soft lifted shadow ===== */
 .panel {
   position: relative;
   background: var(--paper-raised);
-  border: 2px solid var(--ink);
-  border-radius: var(--radius);
-  box-shadow: 5px 5px 0 var(--ink);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(21, 23, 28, 0.04);
+  transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.25s cubic-bezier(0.2, 0.7, 0.3, 1), border-color 0.25s ease;
 }
 .panel:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 7px 7px 0 var(--ink);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px rgba(21, 23, 28, 0.1);
+  border-color: var(--core);
 }
 a.panel:hover { text-decoration: none; }
 
