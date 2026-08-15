@@ -1,87 +1,52 @@
-/* ===== Fonts ===== */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+/* ===== Fonts =====
+   Anton: bold poster/tabloid nameplate. Fraunces: editorial headlines.
+   Inter: body. Space Mono: data/labels/dates. Caveat: rare marker accents. */
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Caveat:wght@600;700&display=swap');
 
 :root {
-  /* ===== Color tokens — "núcleo de señal" concept =====
-     Deep-space navy console. --core (teal) is the primary brand signal,
-     a nod to the "Ai" teal in AiCoreMed's own identity — this site is
-     part of the same family. Amber / phosphor / violet are reserved as
-     instrument-panel status colors, one per content pillar. */
-  --bg: #0a0d17;
-  --panel: #121729;
-  --panel-raised: #171c33;
-  --border: #262c47;
-  --border-bright: #3a4270;
-  --text: #eef0f7;
-  --text-dim: #8b91ab;
-  --text-faint: #565d7d;
+  /* ===== Color tokens — "diario de IA" concept =====
+     Cool-toned newsprint paper (not the cream+terracotta AI default),
+     near-black ink, Aicore teal as brand chrome, comic-red as the one
+     spot color for playful stamps/accents. */
+  --paper: #edeee7;
+  --paper-raised: #ffffff;
+  --ink: #15171c;
+  --ink-dim: #52565f;
+  --ink-faint: #8a8e96;
+  --rule: #d5d6cd;
+  --rule-strong: var(--ink);
 
-  --core: #3fe6c4;
-  --core-dim: #1f7568;
+  --core: #0e8a76;
+  --core-bright: #12ab92;
+  --comic-red: #e6432a;
+  --comic-red-dim: #f7d9d1;
 
-  --amber: #e2984a;
-  --amber-dim: #7a5a34;
-  --phosphor: #7fe0b4;
-  --phosphor-dim: #3f7a63;
-  --violet: #a394ff;
-  --violet-dim: #5b52a3;
+  --salud: #2f8f5b;
+  --automatizacion: var(--comic-red);
+  --ia-general: #7454d1;
 
-  --salud: var(--phosphor);
-  --automatizacion: var(--amber);
-  --ia-general: var(--violet);
-
+  --font-nameplate: 'Anton', sans-serif;
   --font-display: 'Fraunces', 'Iowan Old Style', serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'Space Mono', ui-monospace, 'SFMono-Regular', monospace;
+  --font-marker: 'Caveat', cursive;
 
-  --radius: 2px;
+  --radius: 3px;
+  --shell: 1240px;
 }
 
 * { box-sizing: border-box; }
 
-html {
-  background: var(--bg);
-  color-scheme: dark;
-  scroll-behavior: smooth;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-}
+html { background: var(--paper); }
 
 body {
   margin: 0;
-  overflow-x: hidden;
-  background:
-    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(226, 152, 74, 0.07), transparent),
-    radial-gradient(ellipse 700px 500px at 100% 10%, rgba(127, 224, 180, 0.05), transparent),
-    var(--bg);
-  color: var(--text);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-body);
   font-size: 17px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  position: relative;
-}
-
-/* Subtle starfield texture, fixed so it doesn't repeat oddly on scroll */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.5;
-  background-image:
-    radial-gradient(1px 1px at 10% 20%, #ffffff55 50%, transparent 50%),
-    radial-gradient(1px 1px at 25% 65%, #ffffff40 50%, transparent 50%),
-    radial-gradient(1.5px 1.5px at 40% 15%, #ffffff50 50%, transparent 50%),
-    radial-gradient(1px 1px at 60% 80%, #ffffff35 50%, transparent 50%),
-    radial-gradient(1px 1px at 75% 35%, #ffffff45 50%, transparent 50%),
-    radial-gradient(1.5px 1.5px at 90% 60%, #ffffff40 50%, transparent 50%),
-    radial-gradient(1px 1px at 50% 50%, #ffffff30 50%, transparent 50%),
-    radial-gradient(1px 1px at 5% 85%, #ffffff35 50%, transparent 50%);
-  background-size: 100% 100%;
 }
 
 a { color: var(--core); text-decoration: none; }
@@ -92,11 +57,13 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 }
 
 .wrap {
-  max-width: 800px;
+  max-width: var(--shell);
   margin: 0 auto;
-  padding: 0 24px;
-  position: relative;
-  z-index: 1;
+  padding: 0 28px;
+}
+
+.prose-col {
+  max-width: 680px;
 }
 
 h1, h2, h3 {
@@ -112,8 +79,8 @@ code, pre, .mono {
 }
 
 pre {
-  background: var(--panel);
-  border: 1px solid var(--border);
+  background: var(--paper-raised);
+  border: 1.5px solid var(--ink);
   border-radius: var(--radius);
   padding: 16px;
   overflow-x: auto;
@@ -121,82 +88,82 @@ pre {
 }
 
 code {
-  background: var(--panel);
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
   padding: 0.15em 0.4em;
   border-radius: var(--radius);
   font-size: 0.88em;
 }
 
-pre code { background: none; padding: 0; }
-
-hr {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 48px 0;
-}
+pre code { background: none; border: none; padding: 0; }
 
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 11.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--ink-faint);
 }
 
+/* ===== Pilar stamp (rubber-stamp tag) ===== */
 .tag {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   font-family: var(--font-mono);
   font-size: 10.5px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  padding: 4px 9px 4px 7px;
+  font-weight: 700;
+  padding: 4px 9px;
   border-radius: var(--radius);
-  border: 1px solid var(--border-bright);
-  color: var(--text-dim);
+  border: 1.5px solid currentColor;
+  transform: rotate(-2deg);
+  background: var(--paper-raised);
 }
-.tag::before {
-  content: '';
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-  flex-shrink: 0;
-}
-.tag[data-pilar="salud"] { color: var(--salud); border-color: color-mix(in srgb, var(--salud) 40%, var(--border-bright)); }
-.tag[data-pilar="automatizacion"] { color: var(--automatizacion); border-color: color-mix(in srgb, var(--automatizacion) 40%, var(--border-bright)); }
-.tag[data-pilar="ia-general"] { color: var(--ia-general); border-color: color-mix(in srgb, var(--ia-general) 40%, var(--border-bright)); }
+.tag[data-pilar="salud"] { color: var(--salud); }
+.tag[data-pilar="automatizacion"] { color: var(--automatizacion); }
+.tag[data-pilar="ia-general"] { color: var(--ia-general); }
 
-/* ===== Signature: corner-bracket "tracking reticle" card frame ===== */
-.bracket-card {
+/* ===== Signature: comic panel — hard offset shadow, thick ink border ===== */
+.panel {
   position: relative;
-  border: 1px solid var(--border);
-  background: linear-gradient(180deg, var(--panel), var(--panel) 60%, var(--panel-raised));
+  background: var(--paper-raised);
+  border: 2px solid var(--ink);
   border-radius: var(--radius);
-  transition: border-color 0.25s ease, transform 0.25s ease;
+  box-shadow: 5px 5px 0 var(--ink);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-.bracket-card::before,
-.bracket-card::after {
-  content: '';
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border: 1.5px solid var(--core);
-  opacity: 0;
-  transition: opacity 0.25s ease;
+.panel:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 var(--ink);
 }
-.bracket-card::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
-.bracket-card::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
-.bracket-card:hover { border-color: var(--border-bright); }
-.bracket-card:hover::before,
-.bracket-card:hover::after { opacity: 1; }
+a.panel:hover { text-decoration: none; }
+
+/* ===== Coupon edge — perforated dashed border, for "clip and use" prompts ===== */
+.coupon {
+  position: relative;
+  background: var(--paper-raised);
+  border: 2px dashed var(--ink-faint);
+  border-radius: var(--radius);
+}
+
+/* ===== Tear line — perforated section divider ===== */
+.tear-line {
+  border: none;
+  height: 1px;
+  background-image: radial-gradient(circle, var(--ink-faint) 1.4px, transparent 1.4px);
+  background-size: 9px 1px;
+  background-repeat: repeat-x;
+  opacity: 0.55;
+  margin: 52px 0;
+}
 
 /* ===== Scroll reveal ===== */
 [data-reveal] {
   opacity: 0;
   transform: translateY(14px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: opacity 0.55s ease, transform 0.55s ease;
 }
 [data-reveal].is-visible {
   opacity: 1;
@@ -206,7 +173,7 @@ hr {
   [data-reveal] { opacity: 1; transform: none; transition: none; }
 }
 
-/* ===== Status pill (live indicator) ===== */
+/* ===== Status pill ===== */
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -214,23 +181,31 @@ hr {
   font-family: var(--font-mono);
   font-size: 11.5px;
   letter-spacing: 0.05em;
-  color: var(--text-dim);
-  border: 1px solid var(--border);
+  color: var(--ink-dim);
+  border: 1px solid var(--rule);
   border-radius: 999px;
   padding: 5px 12px 5px 9px;
+  background: var(--paper-raised);
 }
 .status-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--phosphor);
-  box-shadow: 0 0 0 0 rgba(127, 224, 180, 0.5);
+  background: var(--core);
+  box-shadow: 0 0 0 0 rgba(14, 138, 118, 0.5);
 }
 @media (prefers-reduced-motion: no-preference) {
   .status-dot { animation: dot-pulse 2.4s ease-out infinite; }
 }
 @keyframes dot-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(127, 224, 180, 0.45); }
-  70% { box-shadow: 0 0 0 7px rgba(127, 224, 180, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(127, 224, 180, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(14, 138, 118, 0.4); }
+  70% { box-shadow: 0 0 0 7px rgba(14, 138, 118, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(14, 138, 118, 0); }
+}
+
+/* ===== Halftone texture — used once, sparingly, behind the masthead ===== */
+.halftone {
+  background-image: radial-gradient(var(--ink) 1px, transparent 1px);
+  background-size: 10px 10px;
+  opacity: 0.06;
 }

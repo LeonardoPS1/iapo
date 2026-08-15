@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Sidebar from '../../components/Sidebar.astro';
 import { getCollection } from 'astro:content';
 
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
@@ -14,30 +15,41 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
 ---
 <Base title="Blog" description="Tips y artículos de IA aplicada, automatización y salud digital.">
   <section class="page-head" data-reveal>
-    <span class="eyebrow">// Archivo de transmisiones</span>
+    <span class="eyebrow">// Archivo</span>
     <h1>Todas las publicaciones</h1>
   </section>
-  <div class="post-grid">
-    {posts.map((post) => (
-      <a href={`/blog/${post.id}`} class="post-card bracket-card" data-reveal>
-        <span class="tag" data-pilar={post.data.pilar}>{pilarLabel[post.data.pilar]}</span>
-        <h2 class="post-title">{post.data.title}</h2>
-        <p class="post-desc">{post.data.description}</p>
-        <span class="eyebrow post-date">{dateFmt(post.data.pubDate)}</span>
-      </a>
-    ))}
-    {posts.length === 0 && <p class="empty">Todavía no hay publicaciones. Vuelve pronto.</p>}
+
+  <div class="mag-grid">
+    <main class="mag-main">
+      <div class="post-grid">
+        {posts.map((post) => (
+          <a href={`/blog/${post.id}`} class="post-card panel" data-reveal>
+            <span class="tag" data-pilar={post.data.pilar}>{pilarLabel[post.data.pilar]}</span>
+            <h2 class="post-title">{post.data.title}</h2>
+            <p class="post-desc">{post.data.description}</p>
+            <span class="eyebrow post-date">{dateFmt(post.data.pubDate)}</span>
+          </a>
+        ))}
+        {posts.length === 0 && <p class="empty">Todavía no hay publicaciones. Vuelve pronto.</p>}
+      </div>
+    </main>
+    <Sidebar posts={posts} />
   </div>
 </Base>
 
 <style>
-  .page-head { padding: 44px 0 30px; }
+  .page-head { padding: 40px 0 30px; }
   .page-head h1 { font-size: clamp(1.9rem, 4vw, 2.3rem); margin: 10px 0 0; }
-  .post-grid { display: grid; gap: 16px; margin-bottom: 70px; }
-  .post-card { display: block; padding: 22px; color: var(--text); text-decoration: none; }
-  .post-card:hover { text-decoration: none; }
-  .post-title { font-size: 1.15rem; margin: 12px 0 8px; font-weight: 500; transition: color 0.2s ease; }
+
+  .mag-grid { display: grid; grid-template-columns: 1fr 300px; gap: 48px; align-items: start; margin-bottom: 70px; }
+  .post-grid { display: grid; gap: 18px; }
+  .post-card { display: block; padding: 22px; }
+  .post-title { font-size: 1.15rem; margin: 12px 0 8px; font-weight: 500; transition: color 0.15s ease; }
   .post-card:hover .post-title { color: var(--core); }
-  .post-desc { color: var(--text-dim); font-size: 0.95rem; margin: 0 0 14px; line-height: 1.55; }
-  .empty { color: var(--text-dim); padding: 20px 0; }
+  .post-desc { color: var(--ink-dim); font-size: 0.95rem; margin: 0 0 14px; line-height: 1.55; }
+  .empty { color: var(--ink-dim); padding: 20px 0; }
+
+  @media (max-width: 880px) {
+    .mag-grid { grid-template-columns: 1fr; }
+  }
 </style>

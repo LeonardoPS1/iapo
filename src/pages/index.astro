@@ -1,11 +1,12 @@
 ---
 import Base from '../layouts/Base.astro';
-import PulseLine from '../components/PulseLine.astro';
-import NeuralCore from '../components/NeuralCore.astro';
+import Wordmark from '../components/Wordmark.astro';
+import Sidebar from '../components/Sidebar.astro';
 import { getCollection } from 'astro:content';
 
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
-const posts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 6);
+const posts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const [featured, ...rest] = posts;
 
 const pilarLabel: Record<string, string> = {
   salud: 'IA en salud',
@@ -15,50 +16,65 @@ const pilarLabel: Record<string, string> = {
 const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
 ---
 <Base title="Inicio">
-  <section class="hero">
-    <div class="hero-grid">
-      <div class="hero-text">
-        <span class="status-pill"><span class="status-dot"></span>SEÑAL ACTIVA · VIÑA DEL MAR, CL</span>
-        <h1>Tips, prompts y repos<br /><em>que sí usamos.</em></h1>
-        <p class="lede">
-          Un espacio para practicantes, no para hype: automatización, IA aplicada a salud y las
-          herramientas que probamos antes de recomendarlas. Sin traducciones genéricas del inglés.
-        </p>
-        <div class="hero-actions">
-          <a class="btn" href="#suscribir">Suscribirme</a>
-          <a class="btn btn-ghost" href="/blog">Ver todo el blog →</a>
-        </div>
-      </div>
-      <div class="hero-visual" aria-hidden="true">
-        <NeuralCore size={380} />
-      </div>
+  <section class="hero halftone-wrap">
+    <div class="halftone hero-halftone" aria-hidden="true"></div>
+    <span class="status-pill"><span class="status-dot"></span>SEÑAL ACTIVA</span>
+    <h1 class="hero-h1">
+      Menos hype,<br />más <Wordmark size={44} />
+    </h1>
+    <p class="lede">
+      <strong>iapo.cl</strong> — porque "ia po" es como decimos "ya" en Chile. Y de paso, de IA.
+      Tips, prompts y repos que sí usamos: automatización, IA aplicada a salud y las herramientas
+      que probamos antes de recomendarlas. Sin traducciones genéricas del inglés.
+    </p>
+    <div class="hero-actions">
+      <a class="btn" href="#suscribir">Suscribirme</a>
+      <a class="btn btn-ghost" href="/blog">Ver todo el blog →</a>
     </div>
-    <div class="hero-trace"><PulseLine height={70} cycles={4} /></div>
   </section>
 
-  <hr />
+  <hr class="tear-line" />
 
-  <section class="latest">
-    <div class="section-head" data-reveal>
-      <span class="eyebrow">// Últimas transmisiones</span>
-      <h2>Publicaciones recientes</h2>
-    </div>
-    <div class="post-grid">
-      {posts.map((post) => (
-        <a href={`/blog/${post.id}`} class="post-card bracket-card" data-reveal>
-          <span class="tag" data-pilar={post.data.pilar}>{pilarLabel[post.data.pilar]}</span>
-          <h3 class="post-title">{post.data.title}</h3>
-          <p class="post-desc">{post.data.description}</p>
-          <span class="eyebrow post-date">{dateFmt(post.data.pubDate)}</span>
+  <div class="mag-grid">
+    <main class="mag-main">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">// Portada</span>
+        <h2>Última transmisión</h2>
+      </div>
+
+      {featured && (
+        <a href={`/blog/${featured.id}`} class="featured panel" data-reveal>
+          <div class="featured-meta">
+            <span class="tag" data-pilar={featured.data.pilar}>{pilarLabel[featured.data.pilar]}</span>
+            <span class="eyebrow">{dateFmt(featured.data.pubDate)}</span>
+          </div>
+          <h3 class="featured-title">{featured.data.title}</h3>
+          <p class="featured-desc">{featured.data.description}</p>
+          <span class="featured-cta mono">Leer artículo →</span>
         </a>
-      ))}
+      )}
+
+      {rest.length > 0 && (
+        <div class="more-list">
+          {rest.map((post) => (
+            <a href={`/blog/${post.id}`} class="post-row" data-reveal>
+              <span class="tag" data-pilar={post.data.pilar}>{pilarLabel[post.data.pilar]}</span>
+              <span class="post-row-title">{post.data.title}</span>
+              <span class="eyebrow">{dateFmt(post.data.pubDate)}</span>
+            </a>
+          ))}
+        </div>
+      )}
+
       {posts.length === 0 && <p class="empty">Todavía no hay publicaciones. Vuelve pronto.</p>}
-    </div>
-  </section>
+    </main>
 
-  <hr />
+    <Sidebar posts={posts} />
+  </div>
 
-  <section id="suscribir" class="subscribe bracket-card" data-reveal>
+  <hr class="tear-line" />
+
+  <section id="suscribir" class="subscribe panel" data-reveal>
     <div class="subscribe-inner">
       <span class="eyebrow">// Frecuencia semanal</span>
       <h2>No te pierdas la próxima señal</h2>
@@ -72,27 +88,29 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
 </Base>
 
 <style>
-  .hero { padding: 56px 0 20px; }
-  .hero-grid {
-    display: grid;
-    grid-template-columns: 1.15fr 0.85fr;
-    gap: 24px;
-    align-items: center;
+  .halftone-wrap { position: relative; overflow: hidden; }
+  .hero-halftone {
+    position: absolute;
+    top: -40px;
+    right: -60px;
+    width: 340px;
+    height: 340px;
+    border-radius: 50%;
+    z-index: 0;
   }
-  .hero h1 {
-    font-size: clamp(2.3rem, 4.6vw, 3.3rem);
-    margin: 20px 0 18px;
-    max-width: 15ch;
+  .hero { padding: 52px 0 36px; position: relative; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero-h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.1rem, 4.6vw, 3.1rem);
+    font-weight: 500;
+    line-height: 1.15;
+    margin: 22px 0 20px;
+    max-width: 18ch;
   }
-  .hero h1 em { color: var(--core); font-style: italic; font-weight: 400; }
-  .lede { color: var(--text-dim); font-size: 1.08rem; max-width: 52ch; margin: 0; }
-  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 30px; }
-  .hero-visual {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .hero-trace { margin: 44px 0 28px; opacity: 0.9; }
+  .lede { color: var(--ink-dim); font-size: 1.08rem; max-width: 62ch; margin: 0; }
+  .lede strong { color: var(--ink); }
+  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 28px; }
 
   .btn {
     font-family: var(--font-mono);
@@ -101,43 +119,62 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
     padding: 11px 20px;
     border-radius: var(--radius);
     background: var(--core);
-    color: #071410;
+    color: var(--paper-raised);
+    border: 2px solid var(--ink);
     text-decoration: none;
     font-weight: 700;
-    transition: filter 0.2s ease, transform 0.2s ease;
+    box-shadow: 3px 3px 0 var(--ink);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
   }
-  .btn:hover { text-decoration: none; filter: brightness(1.12); transform: translateY(-1px); }
+  .btn:hover { text-decoration: none; transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
   .btn-ghost {
-    background: transparent;
-    border: 1px solid var(--border-bright);
-    color: var(--text);
-    font-weight: 400;
+    background: var(--paper-raised);
+    color: var(--ink);
   }
-  .btn-ghost:hover { border-color: var(--core); }
 
-  .section-head { margin-bottom: 26px; }
-  .section-head h2 { font-size: 1.5rem; margin-top: 8px; }
+  .tear-line { margin: 44px 0; }
 
-  .post-grid { display: grid; gap: 16px; }
-  .post-card { display: block; padding: 22px; color: var(--text); text-decoration: none; }
-  .post-card:hover { text-decoration: none; }
-  .post-title { font-size: 1.15rem; margin: 12px 0 8px; font-weight: 500; transition: color 0.2s ease; }
-  .post-card:hover .post-title { color: var(--core); }
-  .post-desc { color: var(--text-dim); font-size: 0.95rem; margin: 0 0 14px; line-height: 1.55; }
-  .empty { color: var(--text-dim); padding: 20px 0; }
+  .mag-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 48px;
+    align-items: start;
+  }
 
-  .subscribe { padding: 0; margin: 40px 0 60px; }
+  .section-head { margin-bottom: 22px; }
+  .section-head h2 { font-size: 1.4rem; margin-top: 6px; }
+
+  .featured { display: block; padding: 26px; margin-bottom: 28px; }
+  .featured-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .featured-title { font-size: 1.5rem; margin: 0 0 12px; line-height: 1.25; }
+  .featured-desc { color: var(--ink-dim); font-size: 1rem; line-height: 1.6; margin: 0 0 18px; }
+  .featured-cta { font-size: 12.5px; font-weight: 700; color: var(--core); }
+
+  .more-list { display: flex; flex-direction: column; }
+  .post-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 4px;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink);
+  }
+  .post-row:hover { text-decoration: none; }
+  .post-row:hover .post-row-title { color: var(--core); }
+  .post-row-title { flex: 1; font-size: 1rem; font-weight: 500; transition: color 0.15s ease; }
+  .empty { color: var(--ink-dim); padding: 20px 0; }
+
+  .subscribe { padding: 0; margin: 0 0 60px; }
   .subscribe-inner { padding: 36px 32px; }
   .subscribe h2 { font-size: 1.5rem; margin: 10px 0 10px; }
   .subscribe-form { display: flex; gap: 10px; margin-top: 22px; max-width: 440px; flex-wrap: wrap; }
   .subscribe-form input {
     flex: 1;
     min-width: 200px;
-    background: var(--bg);
-    border: 1px solid var(--border-bright);
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
     border-radius: var(--radius);
     padding: 11px 13px;
-    color: var(--text);
     font-family: var(--font-body);
   }
   .subscribe-form input:focus { outline: 2px solid var(--core); outline-offset: 1px; }
@@ -145,19 +182,15 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
     font-family: var(--font-mono);
     font-weight: 700;
     background: var(--core);
-    color: #071410;
-    border: none;
+    color: var(--paper-raised);
+    border: 1.5px solid var(--ink);
     border-radius: var(--radius);
     padding: 11px 20px;
     cursor: pointer;
-    transition: filter 0.2s ease;
   }
-  .subscribe-form button:hover { filter: brightness(1.12); }
+  .subscribe-form button:hover { filter: brightness(1.1); }
 
-  @media (max-width: 760px) {
-    .hero-grid { grid-template-columns: 1fr; }
-    .hero-visual { order: -1; margin-bottom: 8px; }
-    .hero-visual :global(.core-wrap) { width: 220px; }
-    .hero h1 { max-width: none; }
+  @media (max-width: 880px) {
+    .mag-grid { grid-template-columns: 1fr; }
   }
 </style>

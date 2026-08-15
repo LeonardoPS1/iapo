@@ -1,0 +1,64 @@
+---
+interface Props {
+  size?: number; // px, controls the whole lockup via em-based children
+}
+const { size = 28 } = Astro.props;
+---
+<span class="wordmark" style={`font-size:${size}px`}>
+  <span class="wm-ia">
+    ia
+    <svg class="wm-chip" viewBox="0 0 20 20" aria-hidden="true">
+      <rect x="7" y="7" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.4" />
+      <path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.5 4.5l2 2M13.5 13.5l2 2M4.5 15.5l2-2M13.5 6.5l2-2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+    </svg>
+  </span><span class="wm-po">po<svg class="wm-spark wm-spark-1" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 0l2 8 8 2-8 2-2 8-2-8-8-2 8-2z" fill="currentColor" /></svg><svg class="wm-spark wm-spark-2" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 0l2 8 8 2-8 2-2 8-2-8-8-2 8-2z" fill="currentColor" /></svg></span><span class="wm-tld mono">.cl</span>
+</span>
+
+<style>
+  .wordmark {
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+    font-family: var(--font-nameplate);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .wm-ia {
+    position: relative;
+    color: var(--core);
+    display: inline-block;
+  }
+  .wm-chip {
+    position: absolute;
+    top: -0.42em;
+    right: -0.3em;
+    width: 0.42em;
+    height: 0.42em;
+    color: var(--core);
+    opacity: 0.85;
+  }
+  .wm-po {
+    position: relative;
+    display: inline-block;
+    color: var(--comic-red);
+    transform: rotate(-7deg);
+    margin-left: 0.04em;
+  }
+  .wm-spark {
+    position: absolute;
+    width: 0.16em;
+    height: 0.16em;
+    color: var(--comic-red);
+  }
+  .wm-spark-1 { top: -0.32em; right: -0.22em; }
+  .wm-spark-2 { bottom: -0.1em; right: -0.4em; width: 0.11em; height: 0.11em; opacity: 0.8; }
+  .wm-tld {
+    font-family: var(--font-mono);
+    font-size: 0.36em;
+    font-weight: 400;
+    color: var(--ink-faint);
+    align-self: flex-end;
+    margin-left: 0.15em;
+    margin-bottom: 0.05em;
+  }
+</style>

@@ -28,7 +28,7 @@ const repos = [
 
   <div class="repo-list">
     {repos.map((r) => (
-      <a href={r.url} target="_blank" rel="noopener" class="repo-card bracket-card" data-reveal>
+      <a href={r.url} target="_blank" rel="noopener" class="repo-card panel" data-reveal>
         <span class="repo-name mono">{r.nombre} ↗</span>
         <p>{r.desc}</p>
       </a>
@@ -37,13 +37,13 @@ const repos = [
 </Base>
 
 <style>
-  .page-head { padding: 44px 0 10px; }
+  .page-head { padding: 40px 0 10px; }
   .page-head h1 { font-size: clamp(1.9rem, 4vw, 2.3rem); margin: 10px 0 14px; }
-  .lede { color: var(--text-dim); max-width: 55ch; margin: 0; }
-  .repo-list { display: flex; flex-direction: column; gap: 16px; margin: 34px 0 70px; }
-  .repo-card { display: block; padding: 20px 22px; color: var(--text); text-decoration: none; }
+  .lede { color: var(--ink-dim); max-width: 55ch; margin: 0; }
+  .repo-list { display: flex; flex-direction: column; gap: 18px; margin: 34px 0 70px; max-width: 780px; }
+  .repo-card { display: block; padding: 20px 22px; color: var(--ink); text-decoration: none; }
   .repo-card:hover { text-decoration: none; }
-  .repo-name { font-size: 1rem; color: var(--core); transition: filter 0.2s ease; }
+  .repo-name { font-size: 1rem; color: var(--core); transition: filter 0.15s ease; }
   .repo-card:hover .repo-name { filter: brightness(1.15); }
-  .repo-card p { color: var(--text-dim); margin: 10px 0 0; }
+  .repo-card p { color: var(--ink-dim); margin: 10px 0 0; }
 </style>
