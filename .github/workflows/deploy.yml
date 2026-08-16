@@ -50,22 +50,21 @@ jobs:
             ghcr.io/leonardops1/iapo:sha-${{ github.sha }}
 
   deploy:
-    name: Deploy to Dokploy
+    name: Deploy to VPS (Dokploy)
     runs-on: ubuntu-latest
     needs: docker-push
     steps:
-      - name: Trigger Dokploy deploy webhook
-        env:
-          PAYLOAD: ${{ toJSON(github.event) }}
+      - name: Setup SSH key
         run: |
-          code=$(curl -s -o /tmp/dok_resp.json -w "%{http_code}" -X POST \
-            --max-time 300 \
-            -H "Content-Type: application/json" \
-            -H "x-github-event: push" \
-            -H "x-github-delivery: ${{ github.run_id }}" \
-            -d "$PAYLOAD" \
-            "https://dokploy.aicorebots.com/api/deploy/fK9WZ9rE6pxrhFp-4zJ1Y")
-          echo "HTTP $code"
-          cat /tmp/dok_resp.json
-          echo ""
-          if [ "$code" != "200" ]; then exit 1; fi
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H 51.222.207.250 >> ~/.ssh/known_hosts 2>/dev/null
+      - name: Redeploy iapo on VPS
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ubuntu@51.222.207.250 \
+            'sudo git config --global --add safe.directory /etc/dokploy/applications/iapo-iapo-srsxbv/code \
+             && sudo git -C /etc/dokploy/applications/iapo-iapo-srsxbv/code pull origin main \
+             && cd /etc/dokploy/applications/iapo-iapo-srsxbv/code \
+             && sudo docker build -t iapo-iapo-srsxbv:latest . \
+             && sudo docker service update --image iapo-iapo-srsxbv:latest --force iapo-iapo-srsxbv'
