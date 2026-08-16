@@ -1,7 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
 import Wordmark from '../components/Wordmark.astro';
-import SealBadge from '../components/SealBadge.astro';
 import PilarArt from '../components/PilarArt.astro';
 import Sidebar from '../components/Sidebar.astro';
 import { getCollection } from 'astro:content';
@@ -61,9 +60,6 @@ const nav = [
           <span class="hl-line" style="width:56%">IA aplicada a lo que haces todos los días.</span>
         </h1>
         <p class="hero-deck">Tips, prompts y skills que probamos en negocios reales — con código, capturas y pasos. Desde Chile.</p>
-      </div>
-      <div class="hero-seal">
-        <SealBadge size={104} />
       </div>
     </section>
 
@@ -195,7 +191,7 @@ const nav = [
   .mast-nav a:hover { color: var(--ink); text-decoration: none; }
   .mast-nav a:hover::after { width: 100%; }
 
-  .hero { position: relative; padding: 40px 0 8px; display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: start; }
+  .hero { position: relative; padding: 40px 0 8px; }
   .hero-h1 { font-family: var(--font-display); font-weight: 600; line-height: 1.04; letter-spacing: -0.015em; margin: 0; }
   .hl-line { display: block; max-width: 100%; }
   .hl-line:nth-child(1) { font-size: clamp(2.5rem, 6.6vw, 4.1rem); }
@@ -208,13 +204,6 @@ const nav = [
     transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .hl-line.is-in { opacity: 1; transform: translateY(0); }
-
-  .hero-seal {
-    position: relative; z-index: 10;
-    margin-top: 6px;
-    display: flex; justify-content: flex-end;
-    pointer-events: none;
-  }
 
   .hero-deck {
     max-width: 52ch;
@@ -310,8 +299,6 @@ const nav = [
   @media (max-width: 860px) {
     .sheet { padding: 32px 28px 40px; }
     .mast-nav { gap: 16px; flex-wrap: wrap; }
-    .hero { grid-template-columns: 1fr; gap: 18px; }
-    .hero-seal { justify-content: flex-start; margin-top: 0; }
     .mag-grid { grid-template-columns: 1fr; }
   }
 </style>
