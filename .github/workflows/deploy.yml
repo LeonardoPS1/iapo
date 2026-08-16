@@ -55,8 +55,17 @@ jobs:
     needs: docker-push
     steps:
       - name: Trigger Dokploy deploy webhook
+        env:
+          PAYLOAD: ${{ toJSON(github.event) }}
         run: |
-          curl -X POST \
-            -f \
+          code=$(curl -s -o /tmp/dok_resp.json -w "%{http_code}" -X POST \
             --max-time 300 \
-            "https://dokploy.aicorebots.com/api/deploy/fK9WZ9rE6pxrhFp-4zJ1Y"
+            -H "Content-Type: application/json" \
+            -H "x-github-event: push" \
+            -H "x-github-delivery: ${{ github.run_id }}" \
+            -d "$PAYLOAD" \
+            "https://dokploy.aicorebots.com/api/deploy/fK9WZ9rE6pxrhFp-4zJ1Y")
+          echo "HTTP $code"
+          cat /tmp/dok_resp.json
+          echo ""
+          if [ "$code" != "200" ]; then exit 1; fi
