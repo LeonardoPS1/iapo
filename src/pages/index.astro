@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import Wordmark from '../components/Wordmark.astro';
-import DispatchArt from '../components/DispatchArt.astro';
+import SealBadge from '../components/SealBadge.astro';
 import PilarArt from '../components/PilarArt.astro';
 import Sidebar from '../components/Sidebar.astro';
 import { getCollection } from 'astro:content';
@@ -55,27 +55,28 @@ const nav = [
     </header>
 
     <section class="hero">
-      <h1 class="hero-h1">
-        <span class="hl-line" style="width:62%">Menos hype,</span>
-        <span class="hl-line" style="width:52%">más <span class="hl-accent">iapo</span>.</span>
-        <span class="hl-line" style="width:44%">directo.</span>
-      </h1>
-      <p class="hero-deck">Tips, prompts y skills de IA aplicada, probados en negocios reales. Desde Chile.</p>
-      <div class="hero-art">
-        <DispatchArt size={340} />
+      <div class="hero-main">
+        <h1 class="hero-h1">
+          <span class="hl-line" style="width:64%">Menos hype, más <span class="hl-accent">iapo</span>.</span>
+          <span class="hl-line" style="width:56%">IA aplicada a lo que haces todos los días.</span>
+        </h1>
+        <p class="hero-deck">Tips, prompts y skills que probamos en negocios reales — con código, capturas y pasos. Desde Chile.</p>
+      </div>
+      <div class="hero-seal">
+        <SealBadge size={104} />
       </div>
     </section>
 
     <section class="editorial">
-      <h3 class="ed-h3">IA aplicada, sin traducciones genéricas.</h3>
+      <h3 class="ed-h3">Hecho en la práctica, no en la teoría.</h3>
       <div class="ed-grid">
         <p><span class="ed-lead">Automatización real.</span> Herramientas que corremos en negocios reales — no demos. Cada workflow se explica paso a paso, con código, capturas y casos.</p>
         <p><span class="ed-lead">Salud primero.</span> IA aplicada a clínicas y consultorios: menos carga administrativa, más tiempo para pacientes. Sin inventos, sin promesas de otro planeta.</p>
         <p><span class="ed-lead">Probado antes de recomendar.</span> Cada skill, prompt y repo que publicamos pasó por pruebas reales antes de llegar a esta hoja.</p>
       </div>
       <div class="hero-actions">
-        <a class="btn" href="#suscribir">Suscribirme</a>
-        <a class="btn btn-ghost" href="/blog">Ver todo el blog →</a>
+        <a class="btn" href="#suscribir">Suscribirme gratis</a>
+        <a class="btn btn-ghost" href="/blog">Leer el blog →</a>
       </div>
     </section>
 
@@ -126,7 +127,7 @@ const nav = [
       <div class="subscribe-inner">
         <span class="eyebrow">// Frecuencia semanal</span>
         <h2>No te pierdas la próxima señal</h2>
-        <p class="lede">Un correo a la semana: 3 tips, 1 repo curado, 1 caso de uso real.</p>
+        <p class="lede">3 tips útiles, 1 repo curado, 1 caso real. Cada semana en tu correo.</p>
         <form class="subscribe-form" action="https://newsletter.iapo.cl/subscription/form" method="post">
           <input type="email" name="email" placeholder="tu@correo.cl" required aria-label="Correo electrónico" />
           <button type="submit">Suscribirme</button>
@@ -194,12 +195,11 @@ const nav = [
   .mast-nav a:hover { color: var(--ink); text-decoration: none; }
   .mast-nav a:hover::after { width: 100%; }
 
-  .hero { position: relative; padding: 40px 0 8px; }
+  .hero { position: relative; padding: 40px 0 8px; display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: start; }
   .hero-h1 { font-family: var(--font-display); font-weight: 600; line-height: 1.04; letter-spacing: -0.015em; margin: 0; }
   .hl-line { display: block; max-width: 100%; }
   .hl-line:nth-child(1) { font-size: clamp(2.5rem, 6.6vw, 4.1rem); }
-  .hl-line:nth-child(2) { font-size: clamp(2.3rem, 6vw, 3.8rem); }
-  .hl-line:nth-child(3) { font-size: clamp(1.9rem, 4.8vw, 3.1rem); color: var(--ink-dim); }
+  .hl-line:nth-child(2) { font-size: clamp(2.3rem, 6vw, 3.8rem); color: var(--ink-dim); }
   .hl-accent { color: var(--comic-red); display: inline-block; transform: rotate(-3deg); }
 
   .hl-line {
@@ -209,9 +209,9 @@ const nav = [
   }
   .hl-line.is-in { opacity: 1; transform: translateY(0); }
 
-  .hero-art {
+  .hero-seal {
     position: relative; z-index: 10;
-    margin-top: -58px; margin-right: -8px;
+    margin-top: 6px;
     display: flex; justify-content: flex-end;
     pointer-events: none;
   }
@@ -310,7 +310,8 @@ const nav = [
   @media (max-width: 860px) {
     .sheet { padding: 32px 28px 40px; }
     .mast-nav { gap: 16px; flex-wrap: wrap; }
-    .hero-art { margin-top: -30px; }
+    .hero { grid-template-columns: 1fr; gap: 18px; }
+    .hero-seal { justify-content: flex-start; margin-top: 0; }
     .mag-grid { grid-template-columns: 1fr; }
   }
 </style>
