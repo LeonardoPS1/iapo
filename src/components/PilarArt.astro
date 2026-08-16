@@ -1,0 +1,72 @@
+---
+interface Props {
+  pilar: 'salud' | 'automatizacion' | 'ia-general';
+  size?: number;
+}
+const { pilar, size = 120 } = Astro.props;
+---
+<div class="pilar-art" style={`width:${size}px`} data-pilar={pilar} aria-hidden="true">
+  <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg">
+    {pilar === 'salud' && (
+      <>
+        <!-- cruz médica -->
+        <rect x="28" y="24" width="8" height="34" rx="2" fill="var(--salud)" />
+        <rect x="16" y="36" width="32" height="8" rx="2" fill="var(--salud)" />
+        <!-- latido -->
+        <path d="M6 58 h18 l8 -14 10 22 8 -12 10 4 h20" stroke="var(--salud)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <!-- corazón -->
+        <path d="M104 46 c-3 -4 -9 -3 -9 2 0 3 4 5 9 8 5 -3 9 -5 9 -8 0 -5 -6 -6 -9 -2 z" fill="var(--salud)" />
+      </>
+    )}
+    {pilar === 'automatizacion' && (
+      <>
+        <!-- engranaje -->
+        <g class="pa-gear">
+          <circle cx="44" cy="44" r="14" fill="none" stroke="var(--automatizacion)" stroke-width="6" />
+          <path d="M44 12 v10 M44 66 v10 M12 44 h10 M66 44 h10 M21 21 l7 7 M60 60 l7 7 M21 67 l7 -7 M60 30 l7 -7" stroke="var(--automatizacion)" stroke-width="6" stroke-linecap="round" />
+        </g>
+        <!-- nodos y flechas -->
+        <circle cx="92" cy="24" r="8" fill="var(--automatizacion)" />
+        <circle cx="92" cy="66" r="8" fill="none" stroke="var(--automatizacion)" stroke-width="4" />
+        <path d="M84 30 l-14 12 M84 60 l-14 -12" stroke="var(--automatizacion)" stroke-width="3" stroke-linecap="round" />
+      </>
+    )}
+    {pilar === 'ia-general' && (
+      <>
+        <!-- red neuronal -->
+        <g class="pa-net">
+          <circle cx="24" cy="22" r="6" fill="var(--ia-general)" />
+          <circle cx="52" cy="16" r="6" fill="var(--ia-general)" />
+          <circle cx="80" cy="22" r="6" fill="var(--ia-general)" />
+          <circle cx="36" cy="46" r="6" fill="var(--ia-general)" />
+          <circle cx="66" cy="46" r="6" fill="var(--ia-general)" />
+          <circle cx="24" cy="70" r="6" fill="var(--ia-general)" />
+          <circle cx="56" cy="72" r="6" fill="var(--ia-general)" />
+          <circle cx="86" cy="66" r="6" fill="var(--ia-general)" />
+          <path d="M24 22 L36 46 M52 16 L36 46 L66 46 M80 22 L66 46 M36 46 L24 70 L56 72 M66 46 L86 66 M24 70 L56 72 M56 72 L86 66" stroke="var(--ia-general)" stroke-width="2.5" fill="none" />
+        </g>
+      </>
+    )}
+  </svg>
+</div>
+
+<style>
+  .pilar-art { display: block; max-width: 100%; }
+  .pilar-art svg { width: 100%; height: 100%; display: block; }
+  .pa-gear, .pa-net {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .pa-gear { animation: pa-spin 10s linear infinite; }
+    .pa-net { animation: pa-pulse 3.2s ease-in-out infinite; }
+  }
+  @keyframes pa-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes pa-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+</style>
