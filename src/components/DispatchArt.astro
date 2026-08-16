@@ -1,0 +1,66 @@
+---
+interface Props {
+  size?: number;
+}
+const { size = 340 } = Astro.props;
+---
+<div class="dispatch-art" style={`width:${size}px`} aria-hidden="true">
+  <svg viewBox="0 0 260 220" xmlns="http://www.w3.org/2000/svg">
+    <!-- sombra de imprenta -->
+    <rect x="18" y="22" width="224" height="176" rx="10" fill="var(--ink)" opacity="0.16" />
+    <!-- tablet / diario abierto -->
+    <g class="da-tablet">
+      <rect x="10" y="10" width="224" height="176" rx="10" fill="var(--paper-raised)" stroke="var(--ink)" stroke-width="4" />
+      <!-- bisagra central -->
+      <line x1="122" y1="10" x2="122" y2="186" stroke="var(--rule)" stroke-width="2" />
+      <!-- página izquierda: mini-masthead -->
+      <rect x="24" y="26" width="86" height="146" rx="4" fill="var(--paper)" stroke="var(--rule)" stroke-width="1.5" />
+      <circle cx="52" cy="44" r="6" fill="var(--comic-red)" />
+      <rect x="66" y="40" width="34" height="8" rx="2" fill="var(--ink)" />
+      <line x1="24" y1="60" x2="110" y2="60" stroke="var(--ink-faint)" stroke-width="1.5" stroke-dasharray="3 4" />
+      <rect x="30" y="72" width="70" height="7" rx="2" fill="var(--ink)" opacity="0.85" />
+      <rect x="30" y="84" width="52" height="7" rx="2" fill="var(--ink)" opacity="0.6" />
+      <rect x="30" y="100" width="66" height="26" rx="3" fill="var(--paper-raised)" stroke="var(--rule)" stroke-width="1.5" />
+      <rect x="36" y="112" width="28" height="6" rx="2" fill="var(--core)" />
+      <rect x="30" y="134" width="58" height="5" rx="2" fill="var(--ink-faint)" />
+      <rect x="30" y="143" width="44" height="5" rx="2" fill="var(--ink-faint)" />
+      <!-- página derecha: regla + titular -->
+      <rect x="150" y="26" width="86" height="146" rx="4" fill="var(--paper)" stroke="var(--rule)" stroke-width="1.5" />
+      <rect x="158" y="36" width="56" height="30" rx="3" fill="var(--core)" opacity="0.12" />
+      <rect x="158" y="42" width="44" height="6" rx="2" fill="var(--core)" />
+      <rect x="158" y="52" width="30" height="6" rx="2" fill="var(--core)" />
+      <line x1="150" y1="76" x2="236" y2="76" stroke="var(--ink-faint)" stroke-width="1.5" stroke-dasharray="3 4" />
+      <rect x="158" y="88" width="66" height="7" rx="2" fill="var(--ink)" opacity="0.85" />
+      <rect x="158" y="100" width="48" height="7" rx="2" fill="var(--ink)" opacity="0.6" />
+      <rect x="158" y="112" width="58" height="5" rx="2" fill="var(--ink-faint)" />
+      <rect x="158" y="121" width="50" height="5" rx="2" fill="var(--ink-faint)" />
+      <rect x="158" y="130" width="54" height="5" rx="2" fill="var(--ink-faint)" />
+      <!-- botón CTA en página derecha -->
+      <rect x="158" y="146" width="52" height="16" rx="8" fill="var(--comic-red)" />
+    </g>
+  </svg>
+</div>
+
+<style>
+  .dispatch-art {
+    max-width: 100%;
+    aspect-ratio: 260 / 220;
+  }
+  .dispatch-art svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .da-tablet {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .da-tablet { animation: da-wobble 3.4s ease-in-out infinite; }
+    .dispatch-art { animation: da-float 5.5s ease-in-out infinite; }
+  }
+  @keyframes da-wobble {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-2deg); }
+  }
+  @keyframes da-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+</style>
