@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Sidebar from '../../components/Sidebar.astro';
+import PilarArt from '../../components/PilarArt.astro';
 import { getCollection } from 'astro:content';
 
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
@@ -24,6 +25,7 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
       <div class="post-grid">
         {posts.map((post) => (
           <a href={`/blog/${post.id}`} class="post-card panel" data-reveal>
+            <div class="post-art"><PilarArt pilar={post.data.pilar} size={96} /></div>
             <span class="tag" data-pilar={post.data.pilar}>{pilarLabel[post.data.pilar]}</span>
             <h2 class="post-title">{post.data.title}</h2>
             <p class="post-desc">{post.data.description}</p>
@@ -44,6 +46,7 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
   .mag-grid { display: grid; grid-template-columns: 1fr 300px; gap: 48px; align-items: start; margin-bottom: 70px; }
   .post-grid { display: grid; gap: 18px; }
   .post-card { display: block; padding: 22px; }
+  .post-art { margin: 0 0 14px; display: flex; }
   .post-title { font-size: 1.15rem; margin: 12px 0 8px; font-weight: 500; transition: color 0.15s ease; }
   .post-card:hover .post-title { color: var(--core); }
   .post-desc { color: var(--ink-dim); font-size: 0.95rem; margin: 0 0 14px; line-height: 1.55; }
