@@ -1,7 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
 import Wordmark from '../components/Wordmark.astro';
-import HeroArt from '../components/HeroArt.astro';
+import DispatchArt from '../components/DispatchArt.astro';
+import PilarArt from '../components/PilarArt.astro';
 import Sidebar from '../components/Sidebar.astro';
 import { getCollection } from 'astro:content';
 
@@ -59,17 +60,18 @@ const nav = [
         <span class="hl-line" style="width:52%">más <span class="hl-accent">iapo</span>.</span>
         <span class="hl-line" style="width:44%">directo.</span>
       </h1>
+      <p class="hero-deck">Tips, prompts y skills de IA aplicada, probados en negocios reales. Desde Chile.</p>
       <div class="hero-art">
-        <HeroArt size={300} />
+        <DispatchArt size={340} />
       </div>
     </section>
 
     <section class="editorial">
       <h3 class="ed-h3">IA aplicada, sin traducciones genéricas.</h3>
       <div class="ed-grid">
-        <p><span class="ed-lead">Automatización real.</span> Herramientas que hacemos correr en tu negocio y las explicamos paso a paso, con código y casos.</p>
-        <p><span class="ed-lead">Salud primero.</span> IA aplicada a clínicas y consultorios: menos carga administrativa, sin inventos.</p>
-        <p><span class="ed-lead">Probado antes de recomendar.</span> Cada skill y repo que publicamos pasó por pruebas reales antes de llegar a esta hoja.</p>
+        <p><span class="ed-lead">Automatización real.</span> Herramientas que corremos en negocios reales — no demos. Cada workflow se explica paso a paso, con código, capturas y casos.</p>
+        <p><span class="ed-lead">Salud primero.</span> IA aplicada a clínicas y consultorios: menos carga administrativa, más tiempo para pacientes. Sin inventos, sin promesas de otro planeta.</p>
+        <p><span class="ed-lead">Probado antes de recomendar.</span> Cada skill, prompt y repo que publicamos pasó por pruebas reales antes de llegar a esta hoja.</p>
       </div>
       <div class="hero-actions">
         <a class="btn" href="#suscribir">Suscribirme</a>
@@ -92,6 +94,7 @@ const nav = [
               <span class="tag" data-pilar={featured.data.pilar}>{pilarLabel[featured.data.pilar]}</span>
               <span class="eyebrow">{dateFmt(featured.data.pubDate)}</span>
             </div>
+            <div class="featured-art"><PilarArt pilar={featured.data.pilar} size={110} /></div>
             <h3 class="featured-title">{featured.data.title}</h3>
             <p class="featured-desc">{featured.data.description}</p>
             <span class="featured-cta mono">Leer artículo →</span>
@@ -102,6 +105,7 @@ const nav = [
           <div class="more-list">
             {rest.map((post) => (
               <a href={`/blog/${post.id}`} class="post-row" data-reveal>
+                <span class="post-row-art"><PilarArt pilar={post.data.pilar} size={40} /></span>
                 <span class="tag" data-pilar={post.data.pilar}>{pilarLabel[post.data.pilar]}</span>
                 <span class="post-row-title">{post.data.title}</span>
                 <span class="eyebrow">{dateFmt(post.data.pubDate)}</span>
@@ -212,11 +216,18 @@ const nav = [
     pointer-events: none;
   }
 
+  .hero-deck {
+    max-width: 52ch;
+    margin: 18px 0 0;
+    color: var(--ink-dim);
+    font-size: 1.05rem;
+    line-height: 1.55;
+  }
+
   .editorial { padding: 26px 0 10px; }
   .ed-h3 { font-size: clamp(1.35rem, 3vw, 1.75rem); font-weight: 600; margin: 0 0 18px; }
   .ed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 32px; }
   .ed-grid p { margin: 0; color: var(--ink-dim); font-size: 0.97rem; line-height: 1.6; }
-  .ed-grid p:last-child { grid-column: 1 / -1; }
   .ed-lead {
     color: var(--ink); font-weight: 600;
     text-decoration: underline; text-underline-offset: 3px;
@@ -255,6 +266,7 @@ const nav = [
 
   .featured { display: block; padding: 26px; margin-bottom: 28px; }
   .featured-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .featured-art { margin: 0 0 16px; }
   .featured-title { font-size: 1.5rem; margin: 0 0 12px; line-height: 1.25; }
   .featured-desc { color: var(--ink-dim); font-size: 1rem; line-height: 1.6; margin: 0 0 18px; }
   .featured-cta { font-size: 12.5px; font-weight: 700; color: var(--core); }
@@ -269,6 +281,7 @@ const nav = [
   }
   .post-row:hover { text-decoration: none; padding-left: 6px; }
   .post-row:hover .post-row-title { color: var(--core); }
+  .post-row-art { flex-shrink: 0; display: flex; align-items: center; }
   .post-row-title { flex: 1; font-size: 1rem; font-weight: 500; transition: color 0.15s ease; }
   .empty { color: var(--ink-dim); padding: 20px 0; }
 
