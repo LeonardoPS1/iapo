@@ -1,8 +1,8 @@
 /* ===== Fonts =====
-   Fraunces (high weight, tight optical size) for the nameplate and all
-   editorial headlines — a classic high-contrast newspaper serif, closer
-   to a real masthead than a poster-sans. Inter: body. Space Mono: data/labels/dates. */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+   Playfair Display (high contrast, editorial) for the nameplate and all
+   display headlines — a classic newspaper masthead serif. Inter: body.
+   JetBrains Mono: data/labels/dates. */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
 
 :root {
   /* ===== Color tokens — "diario de IA" concept =====
@@ -26,10 +26,10 @@
   --automatizacion: var(--comic-red);
   --ia-general: #7454d1;
 
-  --font-nameplate: 'Fraunces', 'Iowan Old Style', serif;
-  --font-display: 'Fraunces', 'Iowan Old Style', serif;
+  --font-nameplate: 'Playfair Display', 'Iowan Old Style', serif;
+  --font-display: 'Playfair Display', 'Iowan Old Style', serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'Space Mono', ui-monospace, 'SFMono-Regular', monospace;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
 
   --radius: 3px;
   --shell: 1240px;
