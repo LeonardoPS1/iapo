@@ -1,6 +1,7 @@
 ---
 import Base from './Base.astro';
 import Sidebar from '../components/Sidebar.astro';
+import PilarArt from '../components/PilarArt.astro';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -29,6 +30,7 @@ const dateFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long'
           <span class="tag" data-pilar={pilar}>{pilarLabel}</span>
           <span class="eyebrow">{dateFmt}</span>
         </div>
+        <div class="post-art"><PilarArt pilar={pilar} size={140} /></div>
         <h1>{title}</h1>
         <p class="deck">{description}</p>
         <hr class="tear-line post-divider" />
@@ -45,6 +47,7 @@ const dateFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long'
   .mag-grid { display: grid; grid-template-columns: 1fr 300px; gap: 48px; align-items: start; margin-bottom: 60px; }
   .post { padding: 44px 0 0; }
   .post-meta { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
+  .post-art { margin: 0 0 18px; display: flex; }
   h1 { font-size: clamp(1.9rem, 4.5vw, 2.5rem); margin: 0 0 14px; max-width: 22ch; }
   .deck { color: var(--ink-dim); font-size: 1.1rem; margin: 0; max-width: 56ch; }
   .post-divider { margin: 32px 0; }
