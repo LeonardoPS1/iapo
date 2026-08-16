@@ -6,9 +6,10 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description?: string;
+  variant?: 'default' | 'sheet';
 }
 
-const { title, description = 'Tips, prompts, skills y repos de IA aplicada, desde Chile.' } = Astro.props;
+const { title, description = 'Tips, prompts, skills y repos de IA aplicada, desde Chile.', variant = 'default' } = Astro.props;
 ---
 <!doctype html>
 <html lang="es">
@@ -24,9 +25,9 @@ const { title, description = 'Tips, prompts, skills y repos de IA aplicada, desd
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
   </head>
-  <body>
-    <Header />
-    <main class="wrap">
+  <body data-variant={variant}>
+    {variant !== 'sheet' && <Header />}
+    <main class={variant === 'sheet' ? 'sheet-stage' : 'wrap'}>
       <slot />
     </main>
     <Footer />

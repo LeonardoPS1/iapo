@@ -209,3 +209,18 @@ a.panel:hover { text-decoration: none; }
   background-size: 10px 10px;
   opacity: 0.06;
 }
+
+/* ===== Sheet variant — index como "edición impresa" ===== */
+body[data-variant="sheet"] {
+  background: var(--ink);
+}
+.sheet-stage {
+  width: 100%;
+  padding: 0;
+}
+body[data-variant="sheet"] .footer {
+  border-top-color: rgba(237, 238, 231, 0.2);
+  margin-top: 0;
+  padding-top: 40px;
+}
+body[data-variant="sheet"] .footer .credit { color: var(--ink-faint); }
