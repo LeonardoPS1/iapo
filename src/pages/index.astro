@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import Wordmark from '../components/Wordmark.astro';
+import HeroArt from '../components/HeroArt.astro';
 import Sidebar from '../components/Sidebar.astro';
 import { getCollection } from 'astro:content';
 
@@ -14,95 +15,219 @@ const pilarLabel: Record<string, string> = {
   'ia-general': 'IA general',
 };
 const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+
+const nav = [
+  { href: '/blog', label: 'Blog' },
+  { href: '/prompts', label: 'Prompts' },
+  { href: '/repos', label: 'Repos' },
+  { href: '/casos', label: 'Casos' },
+  { href: '/sobre', label: 'Sobre' },
+];
 ---
-<Base title="Inicio">
-  <section class="hero">
-    <div class="hero-text">
+<Base title="Inicio" variant="sheet">
+
+  <div class="loader" data-loader aria-hidden="true">
+    <Wordmark size={40} />
+    <span class="loader-kicker mono">IMPRIMIENDO EDICIÓN N°1…</span>
+  </div>
+
+  <article class="sheet" data-sheet>
+
+    <header class="sheet-masthead">
+      <div class="mast-row">
+        <div class="mast-date mono">
+          <span class="mast-day">AGO</span>
+          <span class="mast-year">2026</span>
+        </div>
+        <a href="/" class="mast-nameplate" aria-label="iapo.cl — inicio">
+          <Wordmark size={56} />
+        </a>
+        <div class="mast-edition mono">
+          <span class="mast-no">N°1</span>
+          <span class="mast-loc">VIÑA DEL MAR</span>
+        </div>
+      </div>
+      <div class="mast-rule" aria-hidden="true"></div>
+      <nav class="mast-nav" aria-label="Principal">
+        {nav.map((item) => <a href={item.href}>{item.label}</a>)}
+      </nav>
+    </header>
+
+    <section class="hero">
       <h1 class="hero-h1">
-        Menos hype,<br />más <Wordmark size={44} />
+        <span class="hl-line" style="width:62%">Menos hype,</span>
+        <span class="hl-line" style="width:52%">más <span class="hl-accent">iapo</span>.</span>
+        <span class="hl-line" style="width:44%">directo.</span>
       </h1>
-      <p class="lede">
-        Automatización, IA aplicada a salud y las herramientas que probamos antes de
-        recomendarlas. Directo, sin traducciones genéricas del inglés.
-      </p>
+      <div class="hero-art">
+        <HeroArt size={300} />
+      </div>
+    </section>
+
+    <section class="editorial">
+      <h3 class="ed-h3">IA aplicada, sin traducciones genéricas.</h3>
+      <div class="ed-grid">
+        <p><span class="ed-lead">Automatización real.</span> Herramientas que hacemos correr en tu negocio y las explicamos paso a paso, con código y casos.</p>
+        <p><span class="ed-lead">Salud primero.</span> IA aplicada a clínicas y consultorios: menos carga administrativa, sin inventos.</p>
+        <p><span class="ed-lead">Probado antes de recomendar.</span> Cada skill y repo que publicamos pasó por pruebas reales antes de llegar a esta hoja.</p>
+      </div>
       <div class="hero-actions">
         <a class="btn" href="#suscribir">Suscribirme</a>
         <a class="btn btn-ghost" href="/blog">Ver todo el blog →</a>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <hr class="tear-line" />
+    <hr class="sheet-rule" aria-hidden="true" />
 
-  <div class="mag-grid">
-    <main class="mag-main">
-      <div class="section-head" data-reveal>
-        <span class="eyebrow">// Portada</span>
-        <h2>Última transmisión</h2>
-      </div>
-
-      {featured && (
-        <a href={`/blog/${featured.id}`} class="featured panel" data-reveal>
-          <div class="featured-meta">
-            <span class="tag" data-pilar={featured.data.pilar}>{pilarLabel[featured.data.pilar]}</span>
-            <span class="eyebrow">{dateFmt(featured.data.pubDate)}</span>
-          </div>
-          <h3 class="featured-title">{featured.data.title}</h3>
-          <p class="featured-desc">{featured.data.description}</p>
-          <span class="featured-cta mono">Leer artículo →</span>
-        </a>
-      )}
-
-      {rest.length > 0 && (
-        <div class="more-list">
-          {rest.map((post) => (
-            <a href={`/blog/${post.id}`} class="post-row" data-reveal>
-              <span class="tag" data-pilar={post.data.pilar}>{pilarLabel[post.data.pilar]}</span>
-              <span class="post-row-title">{post.data.title}</span>
-              <span class="eyebrow">{dateFmt(post.data.pubDate)}</span>
-            </a>
-          ))}
+    <div class="mag-grid">
+      <section class="mag-main">
+        <div class="section-head" data-reveal>
+          <span class="eyebrow">// Portada</span>
+          <h2>Última transmisión</h2>
         </div>
-      )}
 
-      {posts.length === 0 && <p class="empty">Todavía no hay publicaciones. Vuelve pronto.</p>}
-    </main>
+        {featured && (
+          <a href={`/blog/${featured.id}`} class="featured panel" data-reveal>
+            <div class="featured-meta">
+              <span class="tag" data-pilar={featured.data.pilar}>{pilarLabel[featured.data.pilar]}</span>
+              <span class="eyebrow">{dateFmt(featured.data.pubDate)}</span>
+            </div>
+            <h3 class="featured-title">{featured.data.title}</h3>
+            <p class="featured-desc">{featured.data.description}</p>
+            <span class="featured-cta mono">Leer artículo →</span>
+          </a>
+        )}
 
-    <Sidebar posts={posts} />
-  </div>
+        {rest.length > 0 && (
+          <div class="more-list">
+            {rest.map((post) => (
+              <a href={`/blog/${post.id}`} class="post-row" data-reveal>
+                <span class="tag" data-pilar={post.data.pilar}>{pilarLabel[post.data.pilar]}</span>
+                <span class="post-row-title">{post.data.title}</span>
+                <span class="eyebrow">{dateFmt(post.data.pubDate)}</span>
+              </a>
+            ))}
+          </div>
+        )}
 
-  <hr class="tear-line" />
+        {posts.length === 0 && <p class="empty">Todavía no hay publicaciones. Vuelve pronto.</p>}
+      </section>
 
-  <section id="suscribir" class="subscribe panel" data-reveal>
-    <div class="subscribe-inner">
-      <span class="eyebrow">// Frecuencia semanal</span>
-      <h2>No te pierdas la próxima señal</h2>
-      <p class="lede">Un correo a la semana: 3 tips, 1 repo curado, 1 caso de uso real.</p>
-      <form class="subscribe-form" action="https://newsletter.iapo.cl/subscription/form" method="post">
-        <input type="email" name="email" placeholder="tu@correo.cl" required aria-label="Correo electrónico" />
-        <button type="submit">Suscribirme</button>
-      </form>
+      <Sidebar posts={posts} />
     </div>
-  </section>
+
+    <hr class="sheet-rule" aria-hidden="true" />
+
+    <section id="suscribir" class="subscribe panel" data-reveal>
+      <div class="subscribe-inner">
+        <span class="eyebrow">// Frecuencia semanal</span>
+        <h2>No te pierdas la próxima señal</h2>
+        <p class="lede">Un correo a la semana: 3 tips, 1 repo curado, 1 caso de uso real.</p>
+        <form class="subscribe-form" action="https://newsletter.iapo.cl/subscription/form" method="post">
+          <input type="email" name="email" placeholder="tu@correo.cl" required aria-label="Correo electrónico" />
+          <button type="submit">Suscribirme</button>
+        </form>
+      </div>
+    </section>
+
+  </article>
 </Base>
 
 <style>
-  .hero { padding: 56px 0 44px; text-align: center; }
-  .hero-text { max-width: 640px; margin: 0 auto; }
-  .hero-h1 {
-    font-family: var(--font-display);
-    font-size: clamp(2.3rem, 5.2vw, 3.6rem);
-    font-weight: 500;
-    line-height: 1.35;
-    margin: 0 0 20px;
+  .loader {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+    background: var(--ink); color: var(--paper);
+    opacity: 1; visibility: visible;
+    transition: opacity 0.7s ease, visibility 0.7s ease;
   }
-  .lede { color: var(--ink-dim); font-size: 1.1rem; max-width: 52ch; margin: 0; }
-  .hero .lede { margin: 0 auto; }
-  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 28px; justify-content: center; }
+  .loader.is-gone { opacity: 0; visibility: hidden; }
+  .loader-kicker {
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .sheet {
+    position: relative;
+    background: var(--paper);
+    color: var(--ink);
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 44px 56px 52px;
+    border-radius: 2px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: scale(0.97);
+    transform-origin: center;
+    transition: opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1), transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .sheet.is-revealed { opacity: 1; transform: scale(1); }
+
+  .mast-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+  .mast-nameplate { text-align: center; text-decoration: none; }
+  .mast-nameplate:hover { text-decoration: none; }
+  .mast-date, .mast-edition { display: flex; flex-direction: column; gap: 2px; }
+  .mast-date { align-items: flex-start; }
+  .mast-edition { align-items: flex-end; }
+  .mast-day { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; }
+  .mast-year { font-size: 11px; color: var(--ink-faint); letter-spacing: 0.2em; }
+  .mast-no { font-size: 11px; color: var(--comic-red); font-weight: 700; letter-spacing: 0.14em; }
+  .mast-loc { font-size: 11px; color: var(--ink-faint); letter-spacing: 0.1em; }
+  .mast-rule {
+    height: 2px; margin: 18px 0 0;
+    background-image: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 7px);
+  }
+  .mast-nav {
+    display: flex; justify-content: center; gap: 26px; padding: 12px 0 4px;
+    font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+  }
+  .mast-nav a { color: var(--ink-dim); letter-spacing: 0.04em; text-decoration: none; position: relative; }
+  .mast-nav a::after {
+    content: ''; position: absolute; left: 0; bottom: -3px;
+    width: 0; height: 1.5px; background: var(--core);
+    transition: width 0.2s ease;
+  }
+  .mast-nav a:hover { color: var(--ink); text-decoration: none; }
+  .mast-nav a:hover::after { width: 100%; }
+
+  .hero { position: relative; padding: 40px 0 8px; }
+  .hero-h1 { font-family: var(--font-display); font-weight: 600; line-height: 1.04; letter-spacing: -0.015em; margin: 0; }
+  .hl-line { display: block; max-width: 100%; }
+  .hl-line:nth-child(1) { font-size: clamp(2.5rem, 6.6vw, 4.1rem); }
+  .hl-line:nth-child(2) { font-size: clamp(2.3rem, 6vw, 3.8rem); }
+  .hl-line:nth-child(3) { font-size: clamp(1.9rem, 4.8vw, 3.1rem); color: var(--ink-dim); }
+  .hl-accent { color: var(--comic-red); display: inline-block; transform: rotate(-3deg); }
+
+  .hl-line {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .hl-line.is-in { opacity: 1; transform: translateY(0); }
+
+  .hero-art {
+    position: relative; z-index: 10;
+    margin-top: -58px; margin-right: -8px;
+    display: flex; justify-content: flex-end;
+    pointer-events: none;
+  }
+
+  .editorial { padding: 26px 0 10px; }
+  .ed-h3 { font-size: clamp(1.35rem, 3vw, 1.75rem); font-weight: 600; margin: 0 0 18px; }
+  .ed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 32px; }
+  .ed-grid p { margin: 0; color: var(--ink-dim); font-size: 0.97rem; line-height: 1.6; }
+  .ed-grid p:last-child { grid-column: 1 / -1; }
+  .ed-lead {
+    color: var(--ink); font-weight: 600;
+    text-decoration: underline; text-underline-offset: 3px;
+    text-decoration-color: var(--core); text-decoration-thickness: 2px;
+  }
+
+  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 28px; }
 
   .btn {
     font-family: var(--font-mono);
-    font-size: 13.5px;
+    font-size: 13px;
     letter-spacing: 0.02em;
     padding: 12px 22px;
     border-radius: 999px;
@@ -114,21 +239,16 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
     transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.2s ease, filter 0.15s ease;
   }
   .btn:hover { text-decoration: none; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(14, 138, 118, 0.25); filter: brightness(1.05); }
-  .btn-ghost {
-    background: transparent;
-    border: 1px solid var(--rule-strong);
-    color: var(--ink);
-  }
+  .btn-ghost { background: transparent; border: 1px solid var(--rule-strong); color: var(--ink); }
   .btn-ghost:hover { box-shadow: none; border-color: var(--ink); background: var(--paper-raised); }
 
-  .tear-line { margin: 44px 0; }
-
-  .mag-grid {
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 48px;
-    align-items: start;
+  .sheet-rule {
+    border: none; height: 2px; margin: 40px 0;
+    background-image: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 7px);
+    opacity: 0.3;
   }
+
+  .mag-grid { display: grid; grid-template-columns: 1fr 280px; gap: 40px; align-items: start; }
 
   .section-head { margin-bottom: 22px; }
   .section-head h2 { font-size: 1.4rem; margin-top: 6px; }
@@ -141,9 +261,7 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
 
   .more-list { display: flex; flex-direction: column; }
   .post-row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
+    display: flex; align-items: center; gap: 14px;
     padding: 16px 4px;
     border-bottom: 1px solid var(--rule);
     color: var(--ink);
@@ -154,13 +272,12 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
   .post-row-title { flex: 1; font-size: 1rem; font-weight: 500; transition: color 0.15s ease; }
   .empty { color: var(--ink-dim); padding: 20px 0; }
 
-  .subscribe { padding: 0; margin: 0 0 60px; }
+  .subscribe { padding: 0; margin: 0; }
   .subscribe-inner { padding: 36px 32px; }
   .subscribe h2 { font-size: 1.5rem; margin: 10px 0 10px; }
   .subscribe-form { display: flex; gap: 10px; margin-top: 22px; max-width: 440px; flex-wrap: wrap; }
   .subscribe-form input {
-    flex: 1;
-    min-width: 200px;
+    flex: 1; min-width: 200px;
     background: var(--paper);
     border: 1px solid var(--rule);
     border-radius: 999px;
@@ -169,19 +286,41 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
   }
   .subscribe-form input:focus { outline: 2px solid var(--core); outline-offset: 1px; }
   .subscribe-form button {
-    font-family: var(--font-mono);
-    font-weight: 700;
-    background: var(--core);
-    color: var(--paper-raised);
-    border: none;
-    border-radius: 999px;
-    padding: 11px 22px;
-    cursor: pointer;
+    font-family: var(--font-mono); font-weight: 700;
+    background: var(--core); color: var(--paper-raised);
+    border: none; border-radius: 999px;
+    padding: 11px 22px; cursor: pointer;
     transition: filter 0.15s ease, transform 0.2s ease;
   }
   .subscribe-form button:hover { filter: brightness(1.08); transform: translateY(-1px); }
 
-  @media (max-width: 880px) {
+  @media (max-width: 860px) {
+    .sheet { padding: 32px 28px 40px; }
+    .mast-nav { gap: 16px; flex-wrap: wrap; }
+    .hero-art { margin-top: -30px; }
     .mag-grid { grid-template-columns: 1fr; }
   }
 </style>
+
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const loader = document.querySelector('[data-loader]');
+  const sheet = document.querySelector('[data-sheet]');
+  const lines = document.querySelectorAll('.hl-line');
+
+  function revealSheet() {
+    if (loader) loader.classList.add('is-gone');
+    if (sheet) sheet.classList.add('is-revealed');
+    lines.forEach((line, i) => {
+      setTimeout(() => line.classList.add('is-in'), 150 + i * 150);
+    });
+  }
+
+  if (reduceMotion) {
+    if (loader) loader.remove();
+    if (sheet) sheet.classList.add('is-revealed');
+    lines.forEach((line) => line.classList.add('is-in'));
+  } else {
+    setTimeout(revealSheet, 600);
+  }
+</script>
