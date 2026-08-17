@@ -1,0 +1,59 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Políticas de privacidad" description="Cómo manejamos tus datos en iapo.cl">
+  <section class="page-head" data-reveal>
+    <span class="eyebrow">// Legal</span>
+    <h1>Políticas de privacidad</h1>
+  </section>
+  <hr class="tear-line divider" />
+  <div class="prose" data-reveal>
+    <p class="intro-lead">
+      En iapo.cl, un proyecto de Aicore Agency, tratamos tus datos de forma simple y transparente, de
+      acuerdo con la Ley 19.628 de Protección de la Vida Privada de Chile.
+    </p>
+    <h2>Qué datos recopilamos</h2>
+    <p>
+      Este sitio es estático y no utiliza cookies de seguimiento ni servicios de analítica. Solo
+      recopilamos el dato que tú nos entregas voluntariamente: tu <strong>correo electrónico</strong>
+      al suscribirte al boletín o al contactarnos.
+    </p>
+    <h2>Cómo usamos tus datos</h2>
+    <p>
+      El correo que registres se usa exclusivamente para enviarte el boletín de iapo.cl o para
+      responder tu consulta. No vendemos, cedemos ni compartimos tus datos con terceros con fines
+      comerciales.
+    </p>
+    <h2>Newsletter</h2>
+    <p>
+      El formulario de suscripción se procesa a través de un servicio externo de envío de correo
+      operado en
+      <a href="https://newsletter.iapo.cl" target="_blank" rel="noopener">newsletter.iapo.cl</a>.
+      Al suscribirte, el manejo de tu correo queda sujeto también a las políticas de ese servicio.
+    </p>
+    <h2>Tus derechos</h2>
+    <p>
+      De acuerdo con la Ley 19.628, puedes solicitar en cualquier momento el <strong>acceso</strong>,
+      <strong>rectificación</strong> o <strong>cancelación</strong> de tus datos personales. Para
+      ejercer estos derechos o darte de baja del boletín, escríbenos a
+      <a href="mailto:iapo@aicorebots.com">iapo@aicorebots.com</a>.
+    </p>
+    <h2>Seguridad</h2>
+    <p>
+      Este sitio se sirve exclusivamente por HTTPS y no almacena datos personales en servidores
+      propios; el único dato que recibimos es el correo que tú nos envías.
+    </p>
+    <p class="meta-update">Última actualización: agosto de 2026</p>
+  </div>
+</Base>
+
+<style>
+  .page-head { padding: 40px 0 10px; }
+  .page-head h1 { font-size: clamp(1.9rem, 4vw, 2.3rem); margin: 10px 0 14px; }
+  .divider { margin: 28px 0; }
+  .prose { max-width: 60ch; margin: 0 0 80px; color: var(--ink); }
+  .prose p { margin: 1.3em 0; line-height: 1.7; }
+  .prose h2 { font-family: var(--font-display); font-size: 1.35rem; margin: 2em 0 0.6em; }
+  .intro-lead { font-size: 1.2rem; line-height: 1.65; }
+  .meta-update { font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); }
+</style>

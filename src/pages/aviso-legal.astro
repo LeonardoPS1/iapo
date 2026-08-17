@@ -1,0 +1,59 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Aviso legal" description="Aviso legal del sitio iapo.cl">
+  <section class="page-head" data-reveal>
+    <span class="eyebrow">// Legal</span>
+    <h1>Aviso legal</h1>
+  </section>
+  <hr class="tear-line divider" />
+  <div class="prose" data-reveal>
+    <p class="intro-lead">
+      Este sitio web (iapo.cl) es un proyecto editorial de Aicore Agency, agencia de automatización
+      con IA con base en Viña del Mar, Chile.
+    </p>
+    <h2>Titular del sitio</h2>
+    <p>
+      <strong>Aicore Agency</strong><br />
+      Viña del Mar, Región de Valparaíso, Chile.<br />
+      Contacto: <a href="mailto:iapo@aicorebots.com">iapo@aicorebots.com</a>
+    </p>
+    <h2>Contenido</h2>
+    <p>
+      El contenido publicado en iapo.cl —artículos, prompts, reseñas de herramientas y repositorios—
+      tiene fines informativos y educativos. Hacemos nuestro mejor esfuerzo por mantenerlo
+      actualizado y preciso, pero el contenido se entrega sin garantías de exactitud, integridad u
+      oportunidad. Úsalo bajo tu propio criterio y verifica la información crítica antes de actuar.
+    </p>
+    <h2>Propiedad intelectual</h2>
+    <p>
+      Los textos, diseños y código de este sitio son propiedad de Aicore Agency, salvo que se indique
+      lo contrario. Se permite citar o compartir fragmentos con atribución a iapo.cl. El contenido de
+      terceros (herramientas, repositorios, marcas) pertenece a sus respectivos dueños.
+    </p>
+    <h2>Enlaces externos</h2>
+    <p>
+      Este sitio enlaza a servicios y sitios de terceros, como el boletín
+      (<a href="https://newsletter.iapo.cl">newsletter.iapo.cl</a>), herramientas y repositorios.
+      Aicore Agency no controla ni se hace responsable por el contenido, políticas o disponibilidad de
+      esos sitios externos.
+    </p>
+    <h2>Ley aplicable</h2>
+    <p>
+      Este aviso se rige por la legislación de la República de Chile. Cualquier controversia será
+      sometida a los tribunales competentes de la ciudad de Valparaíso.
+    </p>
+    <p class="meta-update">Última actualización: agosto de 2026</p>
+  </div>
+</Base>
+
+<style>
+  .page-head { padding: 40px 0 10px; }
+  .page-head h1 { font-size: clamp(1.9rem, 4vw, 2.3rem); margin: 10px 0 14px; }
+  .divider { margin: 28px 0; }
+  .prose { max-width: 60ch; margin: 0 0 80px; color: var(--ink); }
+  .prose p { margin: 1.3em 0; line-height: 1.7; }
+  .prose h2 { font-family: var(--font-display); font-size: 1.35rem; margin: 2em 0 0.6em; }
+  .intro-lead { font-size: 1.2rem; line-height: 1.65; }
+  .meta-update { font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); }
+</style>

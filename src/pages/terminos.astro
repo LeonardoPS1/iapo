@@ -1,0 +1,67 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Términos de uso" description="Términos de uso del sitio iapo.cl">
+  <section class="page-head" data-reveal>
+    <span class="eyebrow">// Legal</span>
+    <h1>Términos de uso</h1>
+  </section>
+  <hr class="tear-line divider" />
+  <div class="prose" data-reveal>
+    <p class="intro-lead">
+      Al acceder y usar este sitio, un proyecto de Aicore Agency, aceptas los términos que se
+      describen a continuación.
+    </p>
+    <h2>Uso permitido</h2>
+    <p>
+      Puedes leer, citar y compartir el contenido de iapo.cl con atribución. Está prohibido copiar,
+      redistribuir o explotar comercialmente el contenido del sitio sin autorización previa por
+      escrito de Aicore Agency.
+    </p>
+    <h2>Contenido de IA y fines informativos</h2>
+    <p>
+      Los artículos, prompts y reseñas publicados tienen fines informativos y educativos. No
+      constituyen asesoría profesional, médica, legal ni financiera. El contenido generado o
+      asistido por IA debe verificarse antes de usarlo en decisiones reales.
+    </p>
+    <h2>Enlaces y servicios de terceros</h2>
+    <p>
+      El sitio puede enlazar a servicios de terceros (como el boletín de
+      <a href="https://newsletter.iapo.cl" target="_blank" rel="noopener">newsletter.iapo.cl</a>,
+      herramientas y repositorios). Aicore Agency no es responsable por el contenido, disponibilidad
+      ni términos de esos sitios.
+    </p>
+    <h2>Responsabilidad</h2>
+    <p>
+      El sitio se entrega tal cual, sin garantías de ningún tipo. En la medida máxima permitida por
+      la ley, Aicore Agency no será responsable por daños directos o indirectos derivados del uso de
+      este sitio o de la información publicada en él.
+    </p>
+    <h2>Modificaciones</h2>
+    <p>
+      Podemos actualizar estos términos en cualquier momento. Los cambios regirán desde su
+      publicación en esta página.
+    </p>
+    <h2>Ley aplicable</h2>
+    <p>
+      Estos términos se rigen por la legislación de la República de Chile. Cualquier controversia
+      será sometida a los tribunales competentes de la ciudad de Valparaíso.
+    </p>
+    <p>
+      Si tienes dudas sobre estos términos, escríbenos a
+      <a href="mailto:iapo@aicorebots.com">iapo@aicorebots.com</a>.
+    </p>
+    <p class="meta-update">Última actualización: agosto de 2026</p>
+  </div>
+</Base>
+
+<style>
+  .page-head { padding: 40px 0 10px; }
+  .page-head h1 { font-size: clamp(1.9rem, 4vw, 2.3rem); margin: 10px 0 14px; }
+  .divider { margin: 28px 0; }
+  .prose { max-width: 60ch; margin: 0 0 80px; color: var(--ink); }
+  .prose p { margin: 1.3em 0; line-height: 1.7; }
+  .prose h2 { font-family: var(--font-display); font-size: 1.35rem; margin: 2em 0 0.6em; }
+  .intro-lead { font-size: 1.2rem; line-height: 1.65; }
+  .meta-update { font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); }
+</style>
