@@ -27,12 +27,6 @@ const list = posts.filter((p) => p.id !== currentId).slice(0, 5);
       </li>
     ))}
   </ol>
-
-  <div class="sidebar-box coupon">
-    <p class="mono sidebar-box-eyebrow">// Frecuencia semanal</p>
-    <p class="sidebar-box-text">3 tips, 1 repo, 1 caso real. Cada semana.</p>
-    <iframe class="sidebar-embed" src="https://db52c710.sibforms.com/v2/serve/MUIFAKic_WyWOrVE9GUip8G9Zf9qyNoxJhhvNUkXecG5PT0knZjrfYkCXXjhZfrS0BFhekQQOd1S7ZwbvzVBX2H_46ZjDWVex0ww638t5ImFAeSuY7x5lUEK5lzfxqyHpy8COFmWpQFlW5ZY_vBmhrcc8bX0uvuWUZFEbJSLmZUzccR6Ds00U209QSAz0ACrXcdpXGpMg1tPi2MPlQ==" width="540" height="305" frameborder="0" scrolling="auto" allowfullscreen title="Formulario de suscripción al newsletter"></iframe>
-  </div>
 </aside>
 
 <style>
@@ -58,15 +52,4 @@ const list = posts.filter((p) => p.id !== currentId).slice(0, 5);
   .sidebar-body { display: flex; flex-direction: column; gap: 5px; }
   .sidebar-title { font-size: 0.92rem; line-height: 1.35; font-weight: 500; transition: color 0.15s ease; }
   .sidebar-date { font-size: 10.5px; color: var(--ink-faint); letter-spacing: 0.04em; }
-
-  .sidebar-box { padding: 20px; }
-  .sidebar-box-eyebrow { font-size: 11px; letter-spacing: 0.1em; color: var(--ink-faint); margin: 0 0 8px; text-transform: uppercase; }
-  .sidebar-box-text { font-size: 0.92rem; color: var(--ink-dim); margin: 0 0 14px; line-height: 1.5; }
-  .sidebar-embed {
-    display: block;
-    width: 100%;
-    height: 305px;
-    margin-top: 14px;
-    border: none;
-  }
 </style>
