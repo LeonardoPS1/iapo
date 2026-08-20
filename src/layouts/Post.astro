@@ -20,8 +20,40 @@ const pilarLabel = {
 }[pilar];
 
 const dateFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }).format(pubDate);
+const dateShort = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+
+const postUrl = new URL(Astro.url.pathname, Astro.site).href;
+
+const blogPosting = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  '@id': `${postUrl}#article`,
+  headline: title,
+  description,
+  image: 'https://iapo.cl/og.png',
+  author: { '@type': 'Organization', name: 'Aicore Agency', url: 'https://aicorebots.com' },
+  publisher: { '@type': 'Organization', '@id': 'https://iapo.cl/#organization' },
+  datePublished: pubDate.toISOString(),
+  dateModified: pubDate.toISOString(),
+  mainEntityOfPage: postUrl,
+  inLanguage: 'es-CL',
+};
+
+const related = (() => {
+  const samePilar = allPosts.filter((p) => p.id !== currentId && p.data.pilar === pilar);
+  const others = allPosts.filter((p) => p.id !== currentId && p.data.pilar !== pilar);
+  return [...samePilar, ...others].slice(0, 3);
+})();
 ---
-<Base title={title} description={description}>
+<Base
+  title={title}
+  description={description}
+  type="article"
+  publishedTime={pubDate.toISOString()}
+  modifiedTime={pubDate.toISOString()}
+  author="Aicore Agency"
+  structuredData={[blogPosting]}
+>
   <div class="mag-grid">
     <main class="mag-main">
       <article class="post">
@@ -38,6 +70,21 @@ const dateFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long'
           <slot />
         </div>
       </article>
+
+      {related.length > 0 && (
+        <section class="related" data-reveal>
+          <h2 class="related-title">Artículos relacionados</h2>
+          <div class="related-grid">
+            {related.map((post) => (
+              <a href={`/blog/${post.id}`} class="related-card panel">
+                <span class="tag" data-pilar={post.data.pilar}>{pilarLabel[post.data.pilar]}</span>
+                <span class="related-post-title">{post.data.title}</span>
+                <span class="eyebrow related-date">{dateShort(post.data.pubDate)}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
     </main>
     {allPosts.length > 0 && <Sidebar posts={allPosts} currentId={currentId} />}
   </div>
@@ -63,6 +110,15 @@ const dateFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long'
     color: var(--ink-dim);
     font-style: italic;
   }
+
+  .related { margin: 8px 0 0; }
+  .related-title { font-size: 1.2rem; margin: 0 0 18px; }
+  .related-grid { display: grid; gap: 16px; }
+  .related-card { display: flex; flex-direction: column; gap: 10px; padding: 20px 22px; color: var(--ink); text-decoration: none; }
+  .related-card:hover { text-decoration: none; }
+  .related-post-title { font-size: 1.02rem; line-height: 1.35; font-weight: 500; transition: color 0.15s ease; }
+  .related-card:hover .related-post-title { color: var(--core); }
+  .related-date { font-size: 10.5px; }
 
   @media (max-width: 880px) {
     .mag-grid { grid-template-columns: 1fr; }

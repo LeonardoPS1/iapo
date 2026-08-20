@@ -1,8 +1,8 @@
 /* ===== Fonts =====
    Playfair Display (high contrast, editorial) for the nameplate and all
    display headlines — a classic newspaper masthead serif. Inter: body.
-   JetBrains Mono: data/labels/dates. */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+   JetBrains Mono: data/labels/dates.
+   (Las fuentes se cargan vía <link> en BaseHead para evitar render-blocking.) */
 
 :root {
   /* ===== Color tokens — "diario de IA" concept =====

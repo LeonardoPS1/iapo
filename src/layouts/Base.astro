@@ -1,29 +1,62 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import BaseHead from '../components/BaseHead.astro';
 import '../styles/global.css';
 
 interface Props {
   title: string;
   description?: string;
   variant?: 'default' | 'sheet';
+  type?: 'website' | 'article';
+  image?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  author?: string;
+  structuredData?: object | object[];
+  noindex?: boolean;
 }
 
-const { title, description = 'Tips, prompts, skills y repos de IA aplicada, desde Chile.', variant = 'default' } = Astro.props;
+const {
+  title,
+  description = 'Tips, prompts, skills y repos de IA aplicada, desde Chile.',
+  variant = 'default',
+  type = 'website',
+  image,
+  publishedTime,
+  modifiedTime,
+  author,
+  structuredData = [],
+  noindex,
+} = Astro.props;
+
+const organization = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': 'https://iapo.cl/#organization',
+  name: 'iapo.cl',
+  url: 'https://iapo.cl/',
+  logo: 'https://iapo.cl/favicon.svg',
+  description: 'Diario impreso de IA aplicada — tips, prompts, skills y repos desde Chile.',
+  sameAs: ['https://aicorebots.com', 'https://med.aicorebots.com'],
+};
+
+const allData = [organization, ...(Array.isArray(structuredData) ? structuredData : [structuredData])];
 ---
 <!doctype html>
-<html lang="es">
+<html lang="es-CL">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>{title} · iapo.cl</title>
-    <meta name="description" content={description} />
-    <meta property="og:title" content={`${title} · iapo.cl`} />
-    <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <BaseHead
+      title={title}
+      description={description}
+      type={type}
+      image={image}
+      publishedTime={publishedTime}
+      modifiedTime={modifiedTime}
+      author={author}
+      structuredData={allData}
+      noindex={noindex}
+    />
   </head>
   <body data-variant={variant}>
     {variant !== 'sheet' && <Header />}
