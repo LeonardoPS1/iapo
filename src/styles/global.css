@@ -8,18 +8,19 @@
   /* ===== Color tokens — "diario de IA" concept =====
      Cool-toned newsprint paper (not the cream+terracotta AI default),
      near-black ink, Aicore teal as brand chrome, comic-red as the one
-     spot color for playful stamps/accents. */
+     spot color for playful stamps/accents.
+     Adjusted for WCAG AA 4.5:1 contrast on both paper (#edeee7) and dark (#15171c) backgrounds. */
   --paper: #edeee7;
   --paper-raised: #ffffff;
   --ink: #15171c;
-  --ink-dim: #52565f;
-  --ink-faint: #8a8e96;
+  --ink-dim: #606369;
+  --ink-faint: #606369;
   --rule: #d5d6cd;
   --rule-strong: var(--ink);
 
-  --core: #0e8a76;
+  --core: #0a7260;
   --core-bright: #12ab92;
-  --comic-red: #e6432a;
+  --comic-red: #c4301a;
   --comic-red-dim: #f7d9d1;
 
   --salud: #2f8f5b;
@@ -223,7 +224,12 @@ body[data-variant="sheet"] .footer {
   margin-top: 0;
   padding-top: 40px;
 }
-body[data-variant="sheet"] .footer .credit { color: var(--ink-faint); }
+body[data-variant="sheet"] .footer .coords { color: #9ca0a6; }
+body[data-variant="sheet"] .footer .credit { color: #9ca0a6; }
+body[data-variant="sheet"] .footer .credit a { color: var(--core-bright); text-decoration: underline; text-underline-offset: 2px; }
+body[data-variant="sheet"] .footer .footer-legal a { color: #9ca0a6; }
+body[data-variant="sheet"] .footer .footer-legal a:hover { color: var(--paper); text-decoration: underline; }
+body[data-variant="sheet"] .footer .legal-sep { color: #9ca0a6; }
 
 /* ===== Breadcrumbs ===== */
 .breadcrumbs { padding: 16px 0 8px; font-size: 13px; color: var(--ink-dim); }
