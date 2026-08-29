@@ -8,11 +8,16 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "postbuild": "node scripts/update-sitemap-lastmod.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
     "astro": "^7.2.2"
+  },
+  "devDependencies": {
+    "gray-matter": "^4.0.3",
+    "xmldom": "^0.6.0"
   }
 }
