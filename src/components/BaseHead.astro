@@ -87,6 +87,9 @@ const data = Array.isArray(structuredData) ? structuredData : [structuredData];
 {type === 'article' && pilar && (
   <meta property="article:section" content={pilar} />
 )}
+{type === 'article' && tags && tags.length > 0 && (
+  <meta name="keywords" content={tags.join(', ')} />
+)}
 
 {author && <meta name="author" content={author} />}
 
