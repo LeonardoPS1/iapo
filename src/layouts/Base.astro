@@ -41,7 +41,20 @@ const organization = {
   sameAs: ['https://aicorebots.com', 'https://med.aicorebots.com'],
 };
 
-const allData = [organization, ...(Array.isArray(structuredData) ? structuredData : [structuredData])];
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': 'https://iapo.cl/#website',
+  url: 'https://iapo.cl/',
+  name: 'iapo.cl',
+  description: 'Diario impreso de IA aplicada — tips, prompts, skills y repos desde Chile.',
+  publisher: { '@id': 'https://iapo.cl/#organization' },
+  inLanguage: 'es-CL',
+};
+
+const allData = variant === 'sheet'
+  ? [organization, websiteSchema, ...(Array.isArray(structuredData) ? structuredData : [structuredData])]
+  : [organization, ...(Array.isArray(structuredData) ? structuredData : [structuredData])];
 ---
 <!doctype html>
 <html lang="es-CL">
