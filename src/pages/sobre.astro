@@ -1,7 +1,22 @@
 ---
 import Base from '../layouts/Base.astro';
+
+const aboutPage = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  '@id': 'https://iapo.cl/sobre#about',
+  name: 'Sobre — iapo.cl',
+  description: 'Aicore Agency, contacto, metodología.',
+  url: 'https://iapo.cl/sobre',
+  mainEntity: {
+    '@type': 'Organization',
+    '@id': 'https://iapo.cl/#organization',
+    name: 'Aicore Agency',
+    url: 'https://aicorebots.com',
+  },
+};
 ---
-<Base title="Sobre" description="Quién está detrás de iapo.cl">
+<Base title="Sobre" description="Quién está detrás de iapo.cl" structuredData={[aboutPage]}>
   <section class="page-head" data-reveal>
     <span class="eyebrow">// Bitácora</span>
     <h1>Por qué existe iapo.cl</h1>

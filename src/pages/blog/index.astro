@@ -12,8 +12,26 @@ const pilarLabel: Record<string, string> = {
   'ia-general': 'IA general',
 };
 const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+
+const collectionPage = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  '@id': 'https://iapo.cl/blog#collection',
+  name: 'Blog — iapo.cl',
+  description: 'Artículos técnicos sobre automatización, salud y IA general.',
+  url: 'https://iapo.cl/blog',
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: posts.map((post, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: `https://iapo.cl/blog/${post.id}`,
+      name: post.data.title,
+    })),
+  },
+};
 ---
-<Base title="Blog" description="Tips y artículos de IA aplicada, automatización y salud digital.">
+<Base title="Blog" description="Tips y artículos de IA aplicada, automatización y salud digital." structuredData={[collectionPage]}>
   <section class="page-head" data-reveal>
     <span class="eyebrow">// Archivo</span>
     <h1>Todas las publicaciones</h1>

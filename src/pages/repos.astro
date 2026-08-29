@@ -28,8 +28,26 @@ const repos = [
     url: 'https://github.com/Dokploy/dokploy',
   },
 ];
+
+const collectionPage = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  '@id': 'https://iapo.cl/repos#collection',
+  name: 'Repos — iapo.cl',
+  description: 'Herramientas open source evaluadas con uso real.',
+  url: 'https://iapo.cl/repos',
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: repos.map((repo, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: repo.url,
+      name: repo.nombre,
+    })),
+  },
+};
 ---
-<Base title="Repos" description="Repositorios open source que probamos antes de recomendarlos.">
+<Base title="Repos" description="Herramientas open source que probamos antes de recomendarlos." structuredData={[collectionPage]}>
   <section class="page-head" data-reveal>
     <span class="eyebrow">// Curaduría de código</span>
     <h1>Repos</h1>

@@ -1,7 +1,16 @@
 ---
 import Base from '../layouts/Base.astro';
+
+const collectionPage = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  '@id': 'https://iapo.cl/casos#collection',
+  name: 'Casos — iapo.cl',
+  description: 'Casos reales de clínicas que automatizaron captación y gestión de pacientes.',
+  url: 'https://iapo.cl/casos',
+};
 ---
-<Base title="Casos" description="Casos reales de clínicas que automatizaron captación y gestión de pacientes.">
+<Base title="Casos" description="Casos reales de clínicas que automatizaron captación y gestión de pacientes." structuredData={[collectionPage]}>
   <section class="page-head" data-reveal>
     <span class="eyebrow">// Casos de estudio</span>
     <h1>Resultados reales, no promesas</h1>

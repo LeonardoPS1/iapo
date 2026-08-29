@@ -35,8 +35,26 @@ Responde siempre en español de Chile, en un máximo de 2 líneas por mensaje.`,
 ];
 
 const pilarLabel: Record<string, string> = { salud: 'IA en salud', automatizacion: 'Automatización', 'ia-general': 'IA general' };
+
+const collectionPage = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  '@id': 'https://iapo.cl/prompts#collection',
+  name: 'Prompts — iapo.cl',
+  description: 'Prompts probados en producción para clínicas y automatización con IA.',
+  url: 'https://iapo.cl/prompts',
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: prompts.map((prompt, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: `https://iapo.cl/prompts#${prompt.titulo.toLowerCase().replace(/\s+/g, '-')}`,
+      name: prompt.titulo,
+    })),
+  },
+};
 ---
-<Base title="Prompts" description="Prompts probados en producción para clínicas y automatización con IA.">
+<Base title="Prompts" description="Prompts probados en producción para clínicas y automatización con IA." structuredData={[collectionPage]}>
   <section class="page-head" data-reveal>
     <span class="eyebrow">// Recorta y usa</span>
     <h1>Prompts</h1>
