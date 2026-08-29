@@ -105,22 +105,25 @@ const allData = variant === 'sheet'
   </head>
   <body data-variant={variant}>
     {variant !== 'sheet' && <Header />}
-    {!variant === 'sheet' && (
-      <nav class="breadcrumbs" aria-label="Navegación" data-breadcrumbs>
-        <ol>
-          {generateBreadcrumbs(Astro.url.pathname).itemListElement.map((item, index) => (
-            <li>
-              {index < generateBreadcrumbs(Astro.url.pathname).itemListElement.length - 1 ? (
-                <a href={item.item}>{item.name}</a>
-              ) : (
-                <span aria-current="page">{item.name}</span>
-              )}
-              {index < generateBreadcrumbs(Astro.url.pathname).itemListElement.length - 1 && <span class="sep" aria-hidden="true">/</span>}
-            </li>
-          ))}
-        </ol>
-      </nav>
-    )}
+    {variant !== 'sheet' && (() => {
+      const breadcrumbs = generateBreadcrumbs(Astro.url.pathname).itemListElement;
+      return (
+        <nav class="breadcrumbs" aria-label="Navegación" data-breadcrumbs>
+          <ol>
+            {breadcrumbs.map((item, index) => (
+              <li>
+                {index < breadcrumbs.length - 1 ? (
+                  <a href={item.item}>{item.name}</a>
+                ) : (
+                  <span aria-current="page">{item.name}</span>
+                )}
+                {index < breadcrumbs.length - 1 && <span class="sep" aria-hidden="true">/</span>}
+              </li>
+            ))}
+          </ol>
+        </nav>
+      );
+    })()}
     <main class={variant === 'sheet' ? 'sheet-stage' : 'wrap'}>
       <slot />
     </main>
