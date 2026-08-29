@@ -27,9 +27,14 @@ Responde siempre en español de Chile, en un máximo de 2 líneas por mensaje.`,
     pilar: 'salud',
     texto: `Actúa como asistente de redacción para un profesional de salud. Te entregaré el resultado de un examen de laboratorio con sus valores y rangos de referencia. Reescríbelo en español simple, sin jerga médica, para que un paciente sin formación clínica lo entienda. No emitas diagnósticos ni recomendaciones de tratamiento — solo explica qué mide cada valor y si está dentro o fuera del rango de referencia entregado. Si un valor está fuera de rango, indica que debe conversarlo con su médico tratante.`,
   },
+  {
+    titulo: 'Resumen de hilo largo en decisiones y pendientes',
+    pilar: 'ia-general',
+    texto: `Te voy a pegar un hilo largo de WhatsApp o Slack. Resúmelo en dos listas separadas: "Decisiones tomadas" y "Pendientes sin resolver". No incluyas nada que no esté explícitamente dicho en el hilo. Si un punto quedó ambiguo o sin cerrar, ponlo en pendientes, no lo des por decidido. Máximo 5 líneas por lista.`,
+  },
 ];
 
-const pilarLabel: Record<string, string> = { salud: 'IA en salud', automatizacion: 'Automatización' };
+const pilarLabel: Record<string, string> = { salud: 'IA en salud', automatizacion: 'Automatización', 'ia-general': 'IA general' };
 ---
 <Base title="Prompts" description="Prompts probados en producción para clínicas y automatización con IA.">
   <section class="page-head" data-reveal>
