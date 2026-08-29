@@ -57,6 +57,10 @@ const related = (() => {
   const others = allPosts.filter((p) => p.id !== currentId && p.data.pilar !== pilar);
   return [...samePilar, ...others].slice(0, 3);
 })();
+
+const currentIndex = allPosts.findIndex((p) => p.id === currentId);
+const prevPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
 ---
 <Base
   title={title}
@@ -100,6 +104,23 @@ const related = (() => {
           </div>
         </section>
       )}
+
+      {(prevPost || nextPost) && (
+        <nav class="post-nav" data-reveal>
+          {prevPost && (
+            <a href={`/blog/${prevPost.id}`} class="post-nav-link prev">
+              <span class="post-nav-label">← Anterior</span>
+              <span class="post-nav-title">{prevPost.data.title}</span>
+            </a>
+          )}
+          {nextPost && (
+            <a href={`/blog/${nextPost.id}`} class="post-nav-link next">
+              <span class="post-nav-label">Siguiente →</span>
+              <span class="post-nav-title">{nextPost.data.title}</span>
+            </a>
+          )}
+        </nav>
+      )}
     </main>
     {allPosts.length > 0 && <Sidebar posts={allPosts} currentId={currentId} />}
   </div>
@@ -134,6 +155,15 @@ const related = (() => {
   .related-post-title { font-size: 1.02rem; line-height: 1.35; font-weight: 500; transition: color 0.15s ease; }
   .related-card:hover .related-post-title { color: var(--core); }
   .related-date { font-size: 10.5px; }
+
+  .post-nav { display: flex; gap: 24px; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--rule); }
+  .post-nav-link { flex: 1; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--ink); padding: 16px; background: var(--paper-raised); border-radius: 2px; transition: transform 0.2s, box-shadow 0.2s; }
+  .post-nav-link:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); text-decoration: none; }
+  .post-nav-link.prev { border-left: 3px solid var(--core); }
+  .post-nav-link.next { border-right: 3px solid var(--core); text-align: right; }
+  .post-nav-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--core); font-family: var(--font-mono); }
+  .post-nav-title { font-size: 1rem; font-weight: 500; line-height: 1.4; color: var(--ink); }
+  @media (max-width: 640px) { .post-nav { flex-direction: column; } .post-nav-link.next { text-align: left; } }
 
   @media (max-width: 880px) {
     .mag-grid { grid-template-columns: 1fr; }
