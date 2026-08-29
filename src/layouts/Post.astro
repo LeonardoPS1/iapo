@@ -8,11 +8,12 @@ interface Props {
   description: string;
   pubDate: Date;
   pilar: 'salud' | 'automatizacion' | 'ia-general';
+  tags?: string[];
   allPosts?: CollectionEntry<'blog'>[];
   currentId?: string;
 }
 
-const { title, description, pubDate, pilar, allPosts = [], currentId } = Astro.props;
+const { title, description, pubDate, pilar, tags = [], allPosts = [], currentId } = Astro.props;
 const pilarLabel = {
   salud: 'IA en salud',
   automatizacion: 'Automatización',
@@ -31,12 +32,24 @@ const blogPosting = {
   headline: title,
   description,
   image: 'https://iapo.cl/og.png',
-  author: { '@type': 'Organization', name: 'Aicore Agency', url: 'https://aicorebots.com' },
+  author: { 
+    '@type': 'Person', 
+    name: 'Aicore Agency', 
+    url: 'https://aicorebots.com',
+    sameAs: ['https://aicorebots.com', 'https://med.aicorebots.com'],
+  },
   publisher: { '@type': 'Organization', '@id': 'https://iapo.cl/#organization' },
   datePublished: pubDate.toISOString(),
   dateModified: pubDate.toISOString(),
   mainEntityOfPage: postUrl,
   inLanguage: 'es-CL',
+  articleSection: pilar,
+  keywords: tags?.join(', ') || '',
+  speakable: {
+    '@type': 'SpeakableSpecification',
+    cssSelector: ['.post-head h1', '.deck', '.content > p:first-of-type'],
+  },
+  hasPart: [],
 };
 
 const related = (() => {
