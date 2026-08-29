@@ -1,0 +1,28 @@
+# iapo.cl — Diario impreso de IA aplicada
+
+> Tips, prompts, skills y repos de IA aplicada, desde Chile.
+
+## Sitio principal
+- [Inicio](https://iapo.cl/) — Portada estilo diario impreso con última transmisión, editorial y newsletter
+- [Blog](https://iapo.cl/blog) — Artículos técnicos sobre automatización, salud y IA general
+- [Prompts](https://iapo.cl/prompts) — Prompts probados en producción para clínicas y automatización
+- [Repos](https://iapo.cl/repos) — Herramientas open source evaluadas con uso real
+- [Casos](https://iapo.cl/casos) — Casos de estudio reales de implementación
+- [Sobre](https://iapo.cl/sobre) — Aicore Agency, contacto, metodología
+
+## Artículos destacados
+- [n8n + Ollama: flujo de calificación de leads](https://iapo.cl/blog/n8n-ollama-flujo-calificacion-leads) — Arquitectura de 4 pasos, por qué modelo local, manejo de errores
+- [WhatsApp para clínicas: Meta vs Evolution API](https://iapo.cl/blog/whatsapp-clinicas-meta-vs-evolution) — Comparativa técnica con código
+- [Repos de la semana #1](https://iapo.cl/blog/repos-de-la-semana-1) — Curaduría de herramientas open source
+
+## Recursos técnicos
+- [Prompts de calificación de leads](https://iapo.cl/prompts#calificacion-leads-whatsapp) — WhatsApp receptionist para clínicas
+- [Resumen ficha clínica](https://iapo.cl/prompts#resumen-ficha-clinica) — Para profesionales de salud
+- [Recordatorio cita con reprogramación](https://iapo.cl/prompts#recordatorio-cita) — Automatización WhatsApp
+- [Explicación resultados examen](https://iapo.cl/prompts#explicacion-resultados-examen) — Lenguaje simple para pacientes
+- [Resumen hilo largo decisiones/pendientes](https://iapo.cl/prompts#resumen-hilo-largo) — IA general
+
+## Contacto
+- Email: iapo@aicorebots.com
+- Web: https://aicorebots.com
+- Newsletter: https://iapo.cl/#suscribir (Brevo)
