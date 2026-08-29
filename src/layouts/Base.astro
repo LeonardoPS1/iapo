@@ -30,6 +30,31 @@ const {
   noindex,
 } = Astro.props;
 
+function generateBreadcrumbs(pathname) {
+  const segments = pathname.split('/').filter(Boolean);
+  const items = [
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://iapo.cl/' },
+  ];
+  
+  let currentPath = '';
+  segments.forEach((segment, index) => {
+    currentPath += `/${segment}`;
+    const name = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
+    items.push({
+      '@type': 'ListItem',
+      position: index + 2,
+      name,
+      item: `https://iapo.cl${currentPath}`,
+    });
+  });
+  
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items,
+  };
+}
+
 const organization = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
@@ -52,9 +77,10 @@ const websiteSchema = {
   inLanguage: 'es-CL',
 };
 
+const breadcrumbSchema = generateBreadcrumbs(Astro.url.pathname);
 const allData = variant === 'sheet'
-  ? [organization, websiteSchema, ...(Array.isArray(structuredData) ? structuredData : [structuredData])]
-  : [organization, ...(Array.isArray(structuredData) ? structuredData : [structuredData])];
+  ? [organization, websiteSchema, breadcrumbSchema, ...(Array.isArray(structuredData) ? structuredData : [structuredData])]
+  : [organization, breadcrumbSchema, ...(Array.isArray(structuredData) ? structuredData : [structuredData])];
 ---
 <!doctype html>
 <html lang="es-CL">
