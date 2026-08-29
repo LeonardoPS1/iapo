@@ -10,6 +10,8 @@ interface Props {
   author?: string;
   structuredData?: object | object[];
   noindex?: boolean;
+  tags?: string[];
+  pilar?: string;
 }
 
 const {
@@ -23,6 +25,8 @@ const {
   author,
   structuredData = [],
   noindex = false,
+  tags,
+  pilar,
 } = Astro.props;
 
 const SITE = 'https://iapo.cl';
@@ -72,6 +76,16 @@ const data = Array.isArray(structuredData) ? structuredData : [structuredData];
     <meta property="article:published_time" content={publishedTime} />
     <meta property="article:modified_time" content={modifiedTime ?? publishedTime} />
   </>
+)}
+
+{type === 'article' && author && (
+  <meta property="article:author" content={author} />
+)}
+{type === 'article' && tags && tags.length > 0 && (
+  <meta property="article:tag" content={tags.join(', ')} />
+)}
+{type === 'article' && pilar && (
+  <meta property="article:section" content={pilar} />
 )}
 
 {author && <meta name="author" content={author} />}
