@@ -224,3 +224,12 @@ body[data-variant="sheet"] .footer {
   padding-top: 40px;
 }
 body[data-variant="sheet"] .footer .credit { color: var(--ink-faint); }
+
+/* ===== Breadcrumbs ===== */
+.breadcrumbs { padding: 16px 0 8px; font-size: 13px; color: var(--ink-dim); }
+.breadcrumbs ol { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.breadcrumbs li { display: flex; align-items: center; gap: 4px; }
+.breadcrumbs a { color: var(--ink-dim); text-decoration: none; transition: color 0.15s; }
+.breadcrumbs a:hover { color: var(--core); }
+.breadcrumbs span[aria-current="page"] { color: var(--ink); font-weight: 500; }
+.breadcrumbs .sep { color: var(--ink-faint); }
