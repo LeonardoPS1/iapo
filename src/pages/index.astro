@@ -342,11 +342,40 @@ const nav = [
     });
   }
 
+  // Actualizar masthead dinámicamente en cliente (fecha actual + edición desde 1ra pub)
+  function updateMasthead() {
+    const now = new Date();
+    const firstPub = new Date('2026-08-14');
+    const diffMs = now.getTime() - firstPub.getTime();
+    const editionNum = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000)) + 1;
+    const month = now.toLocaleDateString('es-CL', { month: 'long' }).toUpperCase();
+    const year = now.getFullYear().toString();
+
+    const mastDay = document.querySelector('.mast-day');
+    const mastYear = document.querySelector('.mast-year');
+    const mastNo = document.querySelector('.mast-no');
+    const loaderKicker = document.querySelector('.loader-kicker');
+    const heroKicker = document.querySelector('.hero-kicker');
+
+    if (mastDay) mastDay.textContent = month;
+    if (mastYear) mastYear.textContent = year;
+    if (mastNo) mastNo.textContent = `N°${editionNum}`;
+    if (loaderKicker) loaderKicker.textContent = `IMPRIMIENDO EDICIÓN N°${editionNum}…`;
+    if (heroKicker) heroKicker.textContent = `// Edición N°${editionNum} · IA aplicada`;
+  }
+
   if (reduceMotion) {
     if (loader) loader.remove();
     if (sheet) sheet.classList.add('is-revealed');
     lines.forEach((line) => line.classList.add('is-in'));
   } else {
     setTimeout(revealSheet, 600);
+  }
+
+  // Ejecutar al cargar (después de que el DOM esté listo)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateMasthead);
+  } else {
+    updateMasthead();
   }
 </script>
