@@ -15,6 +15,12 @@ const pilarLabel: Record<string, string> = {
 };
 const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
 
+// Fecha actual para el masthead (edición dinámica)
+const now = new Date();
+const mastDay = now.toLocaleDateString('es-CL', { month: 'short' }).toUpperCase();
+const mastYear = now.getFullYear().toString();
+const mastEditionNum = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+
 const nav = [
   { href: '/blog', label: 'Blog' },
   { href: '/prompts', label: 'Prompts' },
@@ -27,7 +33,7 @@ const nav = [
 
   <div class="loader" data-loader aria-hidden="true">
     <Wordmark size={40} />
-    <span class="loader-kicker mono">IMPRIMIENDO EDICIÓN N°1…</span>
+    <span class="loader-kicker mono">IMPRIMIENDO EDICIÓN N°{mastEditionNum}…</span>
   </div>
 
   <article class="sheet" data-sheet>
@@ -35,14 +41,14 @@ const nav = [
     <header class="sheet-masthead">
       <div class="mast-row">
         <div class="mast-date mono">
-          <span class="mast-day">AGO</span>
-          <span class="mast-year">2026</span>
+          <span class="mast-day">{mastDay}</span>
+          <span class="mast-year">{mastYear}</span>
         </div>
         <a href="/" class="mast-nameplate" aria-label="iapo.cl — inicio">
           <Wordmark size={56} />
         </a>
         <div class="mast-edition mono">
-          <span class="mast-no">N°1</span>
+          <span class="mast-no">N°{mastEditionNum}</span>
           <span class="mast-loc">VIÑA DEL MAR</span>
         </div>
       </div>
@@ -53,7 +59,7 @@ const nav = [
     </header>
 
     <section class="hero">
-      <span class="hero-kicker mono">// Edición N°1 · IA aplicada</span>
+      <span class="hero-kicker mono">// Edición N°{mastEditionNum} · IA aplicada</span>
       <h1 class="hero-h1">
         <span class="hl-line" style="width:64%">Menos hype, más <span class="hl-ia">ia</span><span class="hl-po">po</span>.</span>
         <span class="hl-line" style="width:56%">IA aplicada a lo que haces todos los días.</span>
