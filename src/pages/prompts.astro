@@ -32,6 +32,11 @@ Responde siempre en español de Chile, en un máximo de 2 líneas por mensaje.`,
     pilar: 'ia-general',
     texto: `Te voy a pegar un hilo largo de WhatsApp o Slack. Resúmelo en dos listas separadas: "Decisiones tomadas" y "Pendientes sin resolver". No incluyas nada que no esté explícitamente dicho en el hilo. Si un punto quedó ambiguo o sin cerrar, ponlo en pendientes, no lo des por decidido. Máximo 5 líneas por lista.`,
   },
+  {
+    titulo: 'Revisión rápida de un PR antes de aprobar',
+    pilar: 'ia-general',
+    texto: `Actúa como revisor de código senior. Te voy a pegar un diff de un pull request. Señala solo: (1) riesgos de seguridad evidentes, (2) cambios que podrían romper funcionalidad existente, (3) código que contradice el resto del archivo en estilo o convención. No comentes sobre preferencias de estilo menores (nombres de variables, formato) a menos que rompan una convención ya establecida en el archivo. Sé breve: máximo una línea por hallazgo.`,
+  },
 ];
 
 const pilarLabel: Record<string, string> = { salud: 'IA en salud', automatizacion: 'Automatización', 'ia-general': 'IA general' };
