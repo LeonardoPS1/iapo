@@ -17,9 +17,13 @@ const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', 
 
 // Fecha actual para el masthead (edición dinámica)
 const now = new Date();
-const mastDay = now.toLocaleDateString('es-CL', { month: 'short' }).toUpperCase();
+const mastDay = now.toLocaleDateString('es-CL', { month: 'long' }).toUpperCase();
 const mastYear = now.getFullYear().toString();
-const mastEditionNum = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+
+// Primera publicación: 2026-08-14
+const firstPub = new Date('2026-08-14');
+const diffMs = now.getTime() - firstPub.getTime();
+const mastEditionNum = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000)) + 1;
 
 const nav = [
   { href: '/blog', label: 'Blog' },
