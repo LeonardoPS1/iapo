@@ -678,15 +678,18 @@ const nav = [
     }
 
     // ——— Fase 2: el titular se entinta con el scroll ———
-    if (sheet && lines.length && typeof scroll === 'function') {
+    // Target: .hero (no la sheet completa). Así p llega a su fin cuando el
+    // titular recorre la parte alta del viewport y se ve nítido al leerlo.
+    const hero = document.querySelector('.hero') || sheet;
+    if (hero && lines.length && typeof scroll === 'function') {
       stopTint = scroll((p) => {
         const c = mix(INK_FAINT, INK, p);
-        const blur = 4 * (1 - p);
+        const blur = 2 * (1 - p);
         lines.forEach((line) => {
           line.style.color = `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
           line.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : 'none';
         });
-      }, { target: sheet, offset: ['start start', 'end 0.3'] });
+      }, { target: hero, offset: ['start 1.2', 'start 0.25'] });
     }
   }
 
