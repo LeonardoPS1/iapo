@@ -49,7 +49,7 @@ const nav = [
           <span class="mast-day">{mastDay}</span>
           <span class="mast-year">{mastYear}</span>
         </div>
-        <a href="/" class="mast-nameplate" aria-label="iapo.cl — inicio">
+        <a href="/" class="mast-nameplate" aria-label="iapo.cl — inicio" transition:name="masthead-wordmark">
           <Wordmark size={56} />
         </a>
         <div class="mast-edition mono">
@@ -497,59 +497,63 @@ const nav = [
 </style>
 
 <script>
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const loader = document.querySelector('[data-loader]');
-  const sheet = document.querySelector('[data-sheet]');
-  const lines = document.querySelectorAll('.hl-line');
+  // Con ClientRouter los scripts bundled corren una sola vez; todo el
+  // arranque de la home vive en `astro:page-load` para re-ejecutarse
+  // en cada navegación (fuente: docs.astro.build/en/guides/view-transitions/).
+  function initIndex() {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const loader = document.querySelector('[data-loader]');
+    const sheet = document.querySelector('[data-sheet]');
+    const lines = document.querySelectorAll('.hl-line');
 
-  function revealSheet() {
-    if (loader) loader.classList.add('is-gone');
-    if (sheet) sheet.classList.add('is-revealed');
-    lines.forEach((line, i) => {
-      setTimeout(() => line.classList.add('is-in'), 200 + i * 120);
-    });
-  }
+    function revealSheet() {
+      if (loader) loader.classList.add('is-gone');
+      if (sheet) sheet.classList.add('is-revealed');
+      lines.forEach((line, i) => {
+        setTimeout(() => line.classList.add('is-in'), 200 + i * 120);
+      });
+    }
 
-  // Actualizar masthead dinámicamente en cliente (fecha actual + edición desde 1ra pub)
-  function updateMasthead() {
-    const now = new Date();
-    const firstPub = new Date('2026-08-14');
-    const diffMs = now.getTime() - firstPub.getTime();
-    const editionNum = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000)) + 1;
-    const month = now.toLocaleDateString('es-CL', { month: 'long' }).toUpperCase();
-    const year = now.getFullYear().toString();
+    // Actualizar masthead dinámicamente en cliente (fecha actual + edición desde 1ra pub)
+    function updateMasthead() {
+      const now = new Date();
+      const firstPub = new Date('2026-08-14');
+      const diffMs = now.getTime() - firstPub.getTime();
+      const editionNum = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000)) + 1;
+      const month = now.toLocaleDateString('es-CL', { month: 'long' }).toUpperCase();
+      const year = now.getFullYear().toString();
 
-    const mastDay = document.querySelector('.mast-day');
-    const mastYear = document.querySelector('.mast-year');
-    const mastNo = document.querySelector('.mast-no');
-    const loaderKicker = document.querySelector('.loader-kicker');
-    const heroKicker = document.querySelector('.hero-kicker');
+      const mastDay = document.querySelector('.mast-day');
+      const mastYear = document.querySelector('.mast-year');
+      const mastNo = document.querySelector('.mast-no');
+      const loaderKicker = document.querySelector('.loader-kicker');
+      const heroKicker = document.querySelector('.hero-kicker');
 
-    if (mastDay) mastDay.textContent = month;
-    if (mastYear) mastYear.textContent = year;
-    if (mastNo) mastNo.textContent = `N°${editionNum}`;
-    if (loaderKicker) loaderKicker.textContent = `IMPRIMIENDO EDICIÓN N°${editionNum}…`;
-    if (heroKicker) heroKicker.textContent = `// Edición N°${editionNum} · IA aplicada`;
-  }
+      if (mastDay) mastDay.textContent = month;
+      if (mastYear) mastYear.textContent = year;
+      if (mastNo) mastNo.textContent = `N°${editionNum}`;
+      if (loaderKicker) loaderKicker.textContent = `IMPRIMIENDO EDICIÓN N°${editionNum}…`;
+      if (heroKicker) heroKicker.textContent = `// Edición N°${editionNum} · IA aplicada`;
+    }
 
-  if (reduceMotion) {
-    if (loader) loader.remove();
-    if (sheet) sheet.classList.add('is-revealed');
-    lines.forEach((line) => line.classList.add('is-in'));
-    // Force reveal all staggered elements
-    document.querySelectorAll('.mast-date, .mast-nameplate, .mast-edition, .mast-nav, .hero-kicker, .ed-item, .featured, .post-row, .subscribe, .hero-art').forEach(el => {
-      el.style.transitionDuration = '0ms';
-      el.style.opacity = '1';
-      el.style.transform = 'none';
-    });
-  } else {
-    setTimeout(revealSheet, 400);
-  }
-
-  // Ejecutar al cargar (después de que el DOM esté listo)
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', updateMasthead);
-  } else {
     updateMasthead();
+
+    if (reduceMotion) {
+      if (loader) loader.remove();
+      if (sheet) sheet.classList.add('is-revealed');
+      lines.forEach((line) => line.classList.add('is-in'));
+      // Force reveal all staggered elements
+      document.querySelectorAll('.mast-date, .mast-nameplate, .mast-edition, .mast-nav, .hero-kicker, .ed-item, .featured, .post-row, .subscribe, .hero-art').forEach(el => {
+        el.style.transitionDuration = '0ms';
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      });
+    } else {
+      setTimeout(revealSheet, 400);
+    }
   }
+
+  // astro:page-load dispara en la primera carga Y tras cada navegación SPA
+  initIndex();
+  document.addEventListener('astro:page-load', initIndex);
 </script>

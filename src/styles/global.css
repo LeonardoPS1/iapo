@@ -250,3 +250,129 @@ body[data-variant="sheet"] .footer .legal-sep { color: #9ca0a6; }
 .breadcrumbs a:hover { color: var(--core); }
 .breadcrumbs span[aria-current="page"] { color: var(--ink); font-weight: 500; }
 .breadcrumbs .sep { color: var(--ink-faint); }
+
+/* ============================================================
+   «La imprenta viva» — utilities compartidas de animación
+   Core app: la hoja de papel sale por arriba de la rotativa
+   (paper-out) y la nueva entra desde abajo (paper-in).
+   Los keyframes se referencian desde `transition:animate` de
+   Astro ClientRouter (fuente: docs.astro.build/en/guides/view-transitions/).
+   ============================================================ */
+
+@keyframes paper-out {
+  from { opacity: 1; transform: translateY(0) rotateX(0deg) scale(1); }
+  to   { opacity: 0.15; transform: translateY(-5.5%) rotateX(3.5deg) scale(1.015); }
+}
+@keyframes paper-in {
+  from { opacity: 0; transform: translateY(6% ) rotateX(-3deg) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) rotateX(0deg) scale(1); }
+}
+/* mancha de tinta breve + hoja entrante (aplicado al group(root)) */
+@keyframes paper-swipe {
+  from { opacity: 0.5; transform: scaleY(0.98) translateY(-1.5%); }
+  to   { opacity: 1;   transform: scaleY(1)    translateY(0); }
+}
+@keyframes paper-rise {
+  from { opacity: 0; transform: translateY(0.6%) scale(0.998); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+/* ===== Ticker de "última hora" — marquee infinito ===== */
+.ticker {
+  overflow: hidden;
+  border-block: 1px solid var(--rule);
+  background: var(--paper-raised);
+}
+.ticker-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding-block: 7px;
+  animation: ticker-scroll 46s linear infinite;
+  will-change: transform;
+}
+.ticker:hover .ticker-track,
+.ticker:focus-within .ticker-track {
+  animation-play-state: paused;
+}
+.ticker-item {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding-right: 14px;
+}
+.ticker-item::before {
+  content: "///";
+  color: var(--core);
+  font-weight: 700;
+}
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ===== Entrada "print-in" — el texto se estampa sobre el papel
+   (leve desenfoque + asentamiento vertical, como tinta fresca) ===== */
+[data-print-in] {
+  opacity: 0;
+  filter: blur(5px);
+  transform: translateY(8px) scaleY(1.06);
+  transition:
+    opacity 0.55s var(--ease-out),
+    filter 0.55s var(--ease-out),
+    transform 0.55s var(--ease-taste);
+}
+[data-print-in].is-visible {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0) scaleY(1);
+}
+
+/* ===== Sello de goma por sección — escala grande, rota y se posa ===== */
+[data-stamp] {
+  opacity: 0;
+  transform: scale(2.35) rotate(-10deg);
+  transition:
+    opacity 0.4s ease,
+    transform 0.65s var(--ease-drawer);
+  transform-origin: left center;
+}
+[data-stamp].is-visible {
+  opacity: 1;
+  transform: scale(1) rotate(-6deg);
+}
+
+/* ===== Contador de edición — flip de dígitos mono ===== */
+.flip-digit {
+  display: inline-block;
+  perspective: 160px;
+  font-variant-numeric: tabular-nums;
+}
+.flip-digit > span {
+  display: inline-block;
+}
+.flip-digit.is-flip > span {
+  animation: digit-flip 0.5s var(--ease-in-out);
+}
+@keyframes digit-flip {
+  0%   { transform: rotateX(0deg);   opacity: 1; }
+  45%  { transform: rotateX(92deg);  opacity: 0.25; }
+  55%  { transform: rotateX(-92deg); opacity: 0.25; }
+  100% { transform: rotateX(0deg);   opacity: 1; }
+}
+
+/* respeto total por prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track { animation: none; }
+  [data-print-in], [data-stamp] { opacity: 1; transform: none; filter: none; transition: none; }
+  .flip-digit.is-flip > span { animation: none; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

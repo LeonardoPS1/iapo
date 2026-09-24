@@ -1,0 +1,75 @@
+---
+/**
+ * InkCursor — cursor de tinta del "diario impreso".
+ * Dot teal (punto de tinta) + trail retardado que lo persigue.
+ * Solo se activa con un puntero preciso y sin prefers-reduced-motion.
+ * No es un elemento interactivo (pointer-events: none).
+ */
+---
+<div class="ink-cursor" aria-hidden="true" data-ink-cursor></div>
+<div class="ink-cursor-trail" aria-hidden="true" data-ink-trail></div>
+
+<style>
+  .ink-cursor,
+  .ink-cursor-trail {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 7px;
+    height: 7px;
+    margin: -3.5px 0 0 -3.5px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 2147483646;
+    transform: translate3d(var(--cursor-x, -100px), var(--cursor-y, -100px), 0);
+  }
+  .ink-cursor {
+    background: var(--core-bright);
+    mix-blend-mode: multiply;
+    transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .ink-cursor-trail {
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 1.5px solid var(--core);
+    opacity: 0.28;
+    transition: transform 0.42s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.42s ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ink-cursor, .ink-cursor-trail { display: none; }
+  }
+  @media (hover: none) {
+    .ink-cursor, .ink-cursor-trail { display: none; }
+  }
+</style>
+
+<script>
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (fine) {
+    const dot = document.querySelector('[data-ink-cursor]');
+    const trail = document.querySelector('[data-ink-trail]');
+    if (!dot || !trail) {
+      dot?.remove();
+      trail?.remove();
+    } else {
+      let raf = 0;
+      const setPos = (e) => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          document.documentElement.style.setProperty('--cursor-x', `${e.clientX}px`);
+          document.documentElement.style.setProperty('--cursor-y', `${e.clientY}px`);
+          trail.classList.add('is-on');
+        });
+      };
+      window.addEventListener('pointermove', setPos, { passive: true });
+      document.addEventListener('mouseleave', () => {
+        document.documentElement.style.setProperty('--cursor-x', '-100px');
+        document.documentElement.style.setProperty('--cursor-y', '-100px');
+        trail.classList.remove('is-on');
+      });
+    }
+  } else if (document.documentElement.dataset.debug) {
+    // sin puntero fino: no hay nada que animar
+  }
+</script>

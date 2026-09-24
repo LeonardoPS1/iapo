@@ -1,7 +1,9 @@
 ---
+import { ClientRouter } from 'astro:transitions';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import BaseHead from '../components/BaseHead.astro';
+import InkCursor from '../components/InkCursor.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -85,9 +87,29 @@ const breadcrumbSchema = generateBreadcrumbs(Astro.url.pathname);
 const allData = variant === 'sheet'
   ? [organization, websiteSchema, breadcrumbSchema, ...(Array.isArray(structuredData) ? structuredData : [structuredData])]
   : [organization, breadcrumbSchema, ...(Array.isArray(structuredData) ? structuredData : [structuredData])];
+
+// «La imprenta viva» — transición raíz: la hoja vieja sale por arriba
+// (rotativa) y la nueva entra desde abajo. Keyframes en global.css.
+// Forma requerida por Astro 7: { forwards: {old, new}, backwards: {old, new} }.
+const paperOut = {
+  name: 'paper-out',
+  duration: 0.42,
+  easing: 'cubic-bezier(0.77, 0, 0.175, 1)',
+  direction: 'normal',
+};
+const paperIn = {
+  name: 'paper-in',
+  duration: 0.42,
+  easing: 'cubic-bezier(0.23, 1, 0.32, 1)',
+  direction: 'normal',
+};
+const paperTransition = {
+  forwards: { old: paperOut, new: paperIn },
+  backwards: { old: paperOut, new: paperIn },
+};
 ---
 <!doctype html>
-<html lang="es-CL">
+<html lang="es-CL" transition:animate={paperTransition}>
   <head>
     <BaseHead
       title={title}
@@ -104,6 +126,8 @@ const allData = variant === 'sheet'
     />
   </head>
   <body data-variant={variant}>
+    <ClientRouter fallback="swap" />
+    <InkCursor />
     {variant !== 'sheet' && <Header />}
     {variant !== 'sheet' && (() => {
       const breadcrumbs = generateBreadcrumbs(Astro.url.pathname).itemListElement;
@@ -129,26 +153,30 @@ const allData = variant === 'sheet'
     </main>
     <Footer />
     <script>
-      const els = document.querySelectorAll('[data-reveal]');
-      if ('IntersectionObserver' in window && els.length) {
-        const io = new IntersectionObserver(
-          (entries) => {
-            for (const entry of entries) {
-              if (entry.isIntersecting) {
-                entry.target.classList.add('is-visible');
-                io.unobserve(entry.target);
+      function initReveal() {
+        const els = document.querySelectorAll('[data-reveal]');
+        if ('IntersectionObserver' in window && els.length) {
+          const io = new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add('is-visible');
+                  io.unobserve(entry.target);
+                }
               }
-            }
-          },
-          { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
-        );
-        els.forEach((el, i) => {
-          (el as HTMLElement).style.transitionDelay = `${Math.min(i % 6, 5) * 60}ms`;
-          io.observe(el);
-        });
-      } else {
-        els.forEach((el) => el.classList.add('is-visible'));
+            },
+            { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+          );
+          els.forEach((el, i) => {
+            (el as HTMLElement).style.transitionDelay = `${Math.min(i % 6, 5) * 60}ms`;
+            io.observe(el);
+          });
+        } else {
+          els.forEach((el) => el.classList.add('is-visible'));
+        }
       }
+      initReveal();
+      document.addEventListener('astro:page-load', initReveal);
     </script>
   </body>
 </html>
