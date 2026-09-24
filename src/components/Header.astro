@@ -9,13 +9,13 @@ const nav = [
   { href: '/sobre', label: 'Sobre' },
 ];
 
-// Ticker "última hora" — mezcla editorial (ejemplo). Duplicado en track para loop sin costura.
+// Ticker "última hora" — mezcla editorial. Duplicado en track para loop sin costura.
 const tickerItems = [
-  'Edición N°{dynamic} · {Mes AAAA}',
   'Salud IA',
   'Automatización',
   'IA General',
   'Menos hype, más iapo',
+  'N°{n} · IA aplicada a lo que hacés hoy',
 ];
 ---
 <header class="masthead">
@@ -161,6 +161,11 @@ const tickerItems = [
     // Format: EDICIÓN N°{n} · {MES AÑO}
     const text = `EDICIÓN N°${editionNum} · ${monthUpper}`;
     if (el.textContent !== text) el.textContent = text;
+    document.querySelectorAll('.ticker-item').forEach((item) => {
+      if (item.textContent.includes('{n}')) {
+        item.textContent = item.textContent.replace('{n}', editionNum);
+      }
+    });
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', updateUtility, { once: true });
