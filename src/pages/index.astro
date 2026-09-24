@@ -37,8 +37,14 @@ const nav = [
 <Base title="Inicio" variant="sheet">
 
   <div class="loader" data-loader aria-hidden="true">
-    <Wordmark size={40} />
+    <div class="loader-print">
+      <span class="loader-wm" aria-hidden="true">
+        <span class="wm-ia"><span data-pc>i</span><span data-pc>a</span></span><span class="wm-po"><span data-pc>p</span><span data-pc>o</span></span><span class="wm-tld mono"><span data-pc>.</span><span data-pc>c</span><span data-pc>l</span></span>
+      </span>
+      <span class="loader-caret" aria-hidden="true">▎</span>
+    </div>
     <span class="loader-kicker mono">IMPRIMIENDO EDICIÓN N°{mastEditionNum}…</span>
+    <span class="loader-scan" aria-hidden="true"></span>
   </div>
 
   <article class="sheet" data-sheet>
@@ -79,6 +85,7 @@ const nav = [
 
     <section class="editorial">
       <h2 class="eyebrow">// En esta edición</h2>
+      <span class="stamp stamp-edit" data-reveal data-stamp aria-hidden="true">// IMPRESO</span>
       <div class="ed-list">
         <div class="ed-item">
           <span class="ed-num mono">01</span>
@@ -109,6 +116,7 @@ const nav = [
     <div class="mag-grid">
       <section class="mag-main">
         <div class="section-head" data-reveal>
+          <span class="stamp stamp-core" data-reveal data-stamp aria-hidden="true">// PORTADA</span>
           <span class="eyebrow">// Portada</span>
           <h2>Última transmisión</h2>
         </div>
@@ -146,6 +154,7 @@ const nav = [
     <hr class="sheet-rule" aria-hidden="true" />
 
     <section id="suscribir" class="subscribe panel" data-reveal>
+      <span class="stamp stamp-sub" data-reveal data-stamp aria-hidden="true">// TIRAJE</span>
       <div class="subscribe-inner">
         <span class="eyebrow">// Frecuencia semanal</span>
         <h2>No te pierdas la próxima señal</h2>
@@ -178,6 +187,38 @@ const nav = [
   }
   @media (prefers-reduced-motion: reduce) {
     .loader-kicker { animation: none; opacity: 1; }
+  }
+
+  /* ===== Loader: imprenta (impresión carácter a carácter + barrido) ===== */
+  .loader { overflow: hidden; }
+  .loader-print {
+    display: inline-flex; align-items: baseline; gap: 6px;
+    font-family: var(--font-nameplate); font-weight: 700;
+    font-size: 40px; line-height: 1; letter-spacing: -0.01em;
+  }
+  .loader-wm { display: inline-flex; align-items: baseline; }
+  .loader-wm [data-pc] { opacity: 0; }
+  .loader-wm .wm-ia { color: var(--paper); }
+  .loader-wm .wm-po {
+    display: inline-block; color: var(--comic-red);
+    transform: rotate(-6deg); margin-left: 0.03em;
+  }
+  .loader-wm .wm-tld {
+    font-family: var(--font-mono); font-size: 0.34em; font-weight: 400;
+    color: #9ca0a6; align-self: flex-end;
+    margin-left: 0.2em; margin-bottom: 0.05em;
+  }
+  .loader-caret {
+    color: var(--core-bright); font-family: var(--font-mono);
+    font-size: 18px; line-height: 1; opacity: 0;
+  }
+  .loader-scan {
+    position: absolute; left: 0; top: 0; width: 100%; height: 26vh;
+    border-top: 2px solid var(--core-bright);
+    background: linear-gradient(rgba(10, 114, 96, 0.5), rgba(10, 114, 96, 0));
+    opacity: 0.3;
+    transform: translateY(-120%);
+    pointer-events: none;
   }
 
   /* ===== Sheet ===== */
@@ -470,9 +511,31 @@ const nav = [
     border: none;
   }
 
+  /* ===== Sellos de goma — base visual (scale/rotate los da [data-stamp] global) ===== */
+  .editorial, .section-head, .subscribe { position: relative; }
+  .stamp {
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--comic-red);
+    border: 1.5px dashed var(--comic-red);
+    border-radius: 3px;
+    padding: 5px 8px 4px;
+    background: var(--paper);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    z-index: 2;
+  }
+  .stamp-edit { top: -15px; right: -6px; }
+  .stamp-core { top: -12px; right: 0; color: var(--core); border-color: var(--core); }
+  .stamp-sub { bottom: 14px; right: 22px; }
+
   /* ===== Reduced motion ===== */
   @media (prefers-reduced-motion: reduce) {
     .loader-kicker { animation: none; opacity: 1; }
+    .loader-scan, .loader-caret { display: none; }
     .sheet,
     .mast-date, .mast-nameplate, .mast-edition, .mast-nav,
     .hero-kicker,
@@ -497,14 +560,33 @@ const nav = [
 </style>
 
 <script>
+  import { animate, stagger, scroll } from 'motion';
+
   // Con ClientRouter los scripts bundled corren una sola vez; todo el
   // arranque de la home vive en `astro:page-load` para re-ejecutarse
   // en cada navegación (fuente: docs.astro.build/en/guides/view-transitions/).
+
+  // Estado compartido entre re-ejecuciones (SPA): anulamos animaciones previas.
+  let runId = 0;
+  let activeCtrls = [];
+  let stopTint = null;
+
+  // Primer entintado: #606369 (ink-faint) → #15171c (ink)
+  const INK_FAINT = [96, 99, 105];
+  const INK = [21, 23, 28];
+  const mix = (a, b, p) => [0, 1, 2].map((i) => Math.round(a[i] + (b[i] - a[i]) * p));
+
   function initIndex() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const loader = document.querySelector('[data-loader]');
     const sheet = document.querySelector('[data-sheet]');
     const lines = document.querySelectorAll('.hl-line');
+
+    // ——— limpiar animaciones de una navegación SPA previa ———
+    const id = ++runId;
+    activeCtrls.forEach((ctrl) => { try { ctrl.stop(); } catch { /* ya terminó */ } });
+    activeCtrls = [];
+    if (stopTint) { stopTint(); stopTint = null; }
 
     function revealSheet() {
       if (loader) loader.classList.add('is-gone');
@@ -548,8 +630,63 @@ const nav = [
         el.style.opacity = '1';
         el.style.transform = 'none';
       });
+      return;
+    }
+
+    // ——— Fase 1: secuencia de imprenta ———
+    const pc = Array.from(document.querySelectorAll('.loader-wm [data-pc]'));
+    const caret = document.querySelector('.loader-caret');
+    const scan = document.querySelector('.loader-scan');
+
+    if (pc.length && loader) {
+      // Caret parpadea mientras imprime
+      if (caret) {
+        const blink = animate(caret, { opacity: [0, 1, 1, 0] }, { duration: 0.6, repeat: Infinity, ease: 'easeInOut' });
+        activeCtrls.push(blink);
+      }
+
+      // El wordmark se imprime carácter a carácter
+      const print = animate(pc, { opacity: 1 }, {
+        delay: stagger(0.05, { startDelay: 0.15, from: 0 }),
+        duration: 0.2,
+        ease: 'easeOut',
+      });
+      activeCtrls.push(print);
+
+      print.finished.then(() => {
+        if (id !== runId) return;
+        if (caret) {
+          const out = animate(caret, { opacity: 0 }, { duration: 0.2, ease: 'easeOut' });
+          activeCtrls.push(out);
+        }
+        if (scan) {
+          // Barrido de la rotativa: una pasada de arriba a abajo
+          const roller = animate(
+            scan,
+            { transform: ['translateY(-120%)', 'translateY(118vh)'] },
+            { duration: 0.75, ease: [0.16, 1, 0.3, 1] }
+          );
+          activeCtrls.push(roller);
+          return roller.finished;
+        }
+      }).then(() => {
+        if (id !== runId) return;
+        revealSheet();
+      });
     } else {
-      setTimeout(revealSheet, 400);
+      revealSheet();
+    }
+
+    // ——— Fase 2: el titular se entinta con el scroll ———
+    if (sheet && lines.length && typeof scroll === 'function') {
+      stopTint = scroll((p) => {
+        const c = mix(INK_FAINT, INK, p);
+        const blur = 4 * (1 - p);
+        lines.forEach((line) => {
+          line.style.color = `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+          line.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : 'none';
+        });
+      }, { target: sheet, offset: ['start start', 'end 0.3'] });
     }
   }
 

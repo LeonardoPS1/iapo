@@ -43,8 +43,8 @@ const collectionPage = {
         {posts.map((post) => (
           <a href={`/blog/${post.id}`} class="post-card panel" data-reveal>
             <span class="tag" data-pilar={post.data.pilar}>{pilarLabel[post.data.pilar]}</span>
-            <h2 class="post-title">{post.data.title}</h2>
-            <p class="post-desc">{post.data.description}</p>
+            <h2 class="post-title" transition:name={`post-title-${post.id}`}>{post.data.title}</h2>
+            <p class="post-desc" data-print-in>{post.data.description}</p>
             <span class="eyebrow post-date">{dateFmt(post.data.pubDate)}</span>
           </a>
         ))}
