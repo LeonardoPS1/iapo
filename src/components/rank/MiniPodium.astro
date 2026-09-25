@@ -13,12 +13,12 @@ interface Props {
 const { items } = Astro.props;
 const top3 = items.slice(0, 3);
 const max = items[0]?.metricNumber || 1;
-const pct = (n: number) => Math.max(8, Math.round((n / max) * 100));
+const pct = (n: number) => Math.max(6, Math.round((n / max) * 100));
 ---
 
 <ul class="mini-list">
   {top3.map((item) => (
-    <li class="mini-row" style={`--bar:${pct(item.metricNumber)}%`}>
+    <li class="mini-row" data-rank={item.rank} style={`--bar:${pct(item.metricNumber)}%`}>
       <span class="mini-rank mono">{String(item.rank).padStart(2, '0')}</span>
       <div class="mini-body">
         <span class="mini-name">{item.name}</span>
@@ -30,14 +30,34 @@ const pct = (n: number) => Math.max(8, Math.round((n / max) * 100));
 </ul>
 
 <style>
-  .mini-list { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+  .mini-list { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 10px; }
   .mini-row {
     display: grid;
-    grid-template-columns: 26px 1fr auto;
+    grid-template-columns: 30px 1fr auto;
     gap: 10px;
     align-items: center;
   }
-  .mini-rank { color: var(--core); font-size: 0.9rem; font-weight: 700; }
+  .mini-rank {
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--ink-dim);
+    background: var(--paper-raised);
+    border: 2px solid var(--rule);
+  }
+  .mini-row[data-rank="1"] .mini-rank {
+    background: var(--core);
+    border-color: var(--core);
+    color: var(--paper-raised);
+    box-shadow: 0 3px 8px color-mix(in srgb, var(--core) 35%, transparent);
+  }
+  .mini-row[data-rank="2"] .mini-rank { border-color: var(--core); color: var(--core); }
+  .mini-row[data-rank="3"] .mini-rank { border-color: var(--comic-red); color: var(--comic-red); }
+
   .mini-body { min-width: 0; }
   .mini-name {
     display: block;
@@ -45,12 +65,13 @@ const pct = (n: number) => Math.max(8, Math.round((n / max) * 100));
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 0.9rem;
+    font-weight: 600;
     color: var(--ink);
-    margin-bottom: 4px;
+    margin-bottom: 5px;
   }
   .mini-track {
     display: block;
-    height: 3px;
+    height: 4px;
     background: var(--rule);
     border-radius: 999px;
     overflow: hidden;
@@ -61,11 +82,13 @@ const pct = (n: number) => Math.max(8, Math.round((n / max) * 100));
     width: var(--bar);
     background: linear-gradient(90deg, var(--core), var(--core-bright));
     border-radius: 999px;
-    transition: width 1s var(--ease-out);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--core) 40%, transparent);
   }
   .mini-metric {
-    color: var(--ink-dim);
-    font-size: 0.8rem;
+    color: var(--ink);
+    font-size: 0.82rem;
+    font-weight: 700;
     white-space: nowrap;
   }
+  .mini-row[data-rank="1"] .mini-metric { color: var(--core); }
 </style>

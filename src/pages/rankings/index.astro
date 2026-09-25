@@ -41,7 +41,7 @@ const collectionPage = {
       <a href={`/rankings/${rank.id}`} class="rank-card panel" data-reveal>
         <header class="rank-card-top">
           <span class="tag">Ranking</span>
-          <span class="eyebrow rank-canvas">Edición Nº{rank.data.edition}</span>
+          <span class="rank-badge mono">Nº {rank.data.edition}</span>
         </header>
         <h2 class="rank-title" transition:name={`rank-title-${rank.id}`}>{rank.data.title}</h2>
         <MiniPodium items={topRepo(rank)} />
@@ -61,18 +61,42 @@ const collectionPage = {
   .page-lede { color: var(--ink-dim); font-size: 1.05rem; margin: 12px 0 0; max-width: 56ch; }
 
   .rank-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; margin-bottom: 70px; align-items: start; }
-  .rank-card { display: block; padding: 22px; }
+  .rank-card {
+    display: block; padding: 24px;
+    border-top: 3px solid var(--core);
+    transition: transform var(--dur-slow) var(--ease-out), box-shadow var(--dur-slow) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .rank-card:hover { border-top-color: var(--comic-red); box-shadow: 0 18px 36px color-mix(in srgb, var(--core) 12%, transparent); }
+  }
 
   .rank-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .rank-canvas { color: var(--ink-faint); }
-  .rank-title { font-size: 1.15rem; margin: 12px 0 0; font-weight: 500; transition: color 0.15s ease; }
+  .rank-badge {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--core);
+    background: color-mix(in srgb, var(--core) 8%, var(--paper-raised));
+    border: 1px solid color-mix(in srgb, var(--core) 25%, transparent);
+    border-radius: 999px;
+    padding: 4px 10px;
+  }
+  .rank-title {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    line-height: 1.22;
+    margin: 14px 0 0;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    transition: color 0.15s ease;
+  }
   .rank-card:hover .rank-title { color: var(--core); }
 
   .rank-card-foot {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--rule);
+    margin-top: 18px; padding-top: 12px; border-top: 1px dashed var(--rule);
   }
   .rank-date { font-size: 10.5px; }
-  .rank-count { color: var(--core); font-size: 11px; }
+  .rank-count { color: var(--core); font-size: 11px; font-weight: 700; }
   .empty { color: var(--ink-dim); padding: 20px 0; }
 </style>

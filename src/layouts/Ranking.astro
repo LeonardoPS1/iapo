@@ -47,6 +47,18 @@ const landingUrl = new URL(Astro.url.pathname, Astro.site).href;
 
 const totals = lists.map((l) => l.items.length).join(' · ');
 
+const KIND_COLOR = {
+  repos: 'var(--core)',
+  skills: 'var(--comic-red)',
+  mcp: 'var(--ia-general)',
+} as const;
+
+const navShort = {
+  repos: 'Repos',
+  skills: 'Skills',
+  mcp: 'MCP',
+} as const;
+
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
@@ -83,26 +95,43 @@ const articleSchema = {
   structuredData={[articleSchema]}
 >
   <article class="rank">
-    <div class="rank-meta">
-      <span class="eyebrow rack-tag">// RANKING SEMANAL — EDICIÓN Nº{edition}</span>
-      <span class="eyebrow">{dateFmt}</span>
-    </div>
-    <div class="rank-head" data-print-in data-reveal>
+    <header class="rank-head" data-print-in data-reveal>
+      <div class="rank-meta">
+        <span class="rank-edition mono"><span class="ed-dot" aria-hidden="true"></span>EDICIÓN Nº{edition}</span>
+        <span class="eyebrow rank-date">{dateFmt}</span>
+      </div>
       <h1>{title}</h1>
       <span class="stamp" data-reveal data-stamp aria-hidden="true">// TENDENCIAS</span>
       <p class="rack">{description}</p>
-    </div>
+    </header>
+
+    <nav class="rank-nav" data-reveal aria-label="Secciones del ranking">
+      {lists.map((list) => (
+        <a class="rank-nav-item mono" href={`#${list.kind}`} style={`--kind:${KIND_COLOR[list.kind]}`}>
+          <span class="nav-dot" aria-hidden="true"></span>{navShort[list.kind]}
+        </a>
+      ))}
+      <a class="rank-nav-item mono rank-nav-method" href="#metodo">Metodología</a>
+    </nav>
 
     <div class="score-summary panel" data-reveal>
-      <span class="score-summary-total mono"><strong>{totals}</strong> puestos en esta edición</span>
-      <span class="score-summary-date mono">Snapshot: {snapshotFmt}</span>
+      <div class="score-summary-cell">
+        <span class="score-summary-n mono">{totals}</span>
+        <span class="score-summary-label mono">puestos entre los tres mercados</span>
+      </div>
+      <div class="score-summary-cell score-summary-snap">
+        <span class="score-summary-date mono">SNAPSHOT</span>
+        <span class="score-summary-label mono">{snapshotFmt}</span>
+      </div>
     </div>
 
-    {lists.map((list) => <SectionScore kind={list.kind} label={list.label} window={list.window} source={list.source} items={list.items} />)}
+    {lists.map((list) => (
+      <SectionScore kind={list.kind} label={list.label} window={list.window} source={list.source} items={list.items} />
+    ))}
 
     <hr class="tear-line rank-divider" />
 
-    <details class="method" data-reveal>
+    <details class="method" id="metodo" data-reveal>
       <summary class="method-summary">
         <span class="eyebrow">// Fuentes y metodología</span>
         <span class="method-chev mono" aria-hidden="true">+</span>
@@ -126,41 +155,155 @@ const articleSchema = {
 </Base>
 
 <style>
-  .rank { padding: 44px 0 0; }
-  .rank-meta { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
-  .rack-tag { color: var(--core); font-weight: 700; }
-  .rank-head { position: relative; margin-bottom: 14px; }
-  .rank-head h1 { font-size: clamp(1.9rem, 4.5vw, 2.5rem); margin: 0 0 14px; max-width: 24ch; }
-  .rack { color: var(--ink-dim); font-size: 1.1rem; margin: 0; max-width: 56ch; }
+  .rank { padding: 40px 0 0; }
+
+  /* ===== Hero del ranking ===== */
+  .rank-head { position: relative; margin-bottom: 24px; }
+  .rank-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .rank-edition {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--core);
+    background: color-mix(in srgb, var(--core) 9%, var(--paper-raised));
+    border: 1px solid color-mix(in srgb, var(--core) 28%, transparent);
+    border-radius: 999px;
+    padding: 5px 12px;
+  }
+  .ed-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--core);
+    animation: live-pulse 2s var(--ease-in-out) infinite;
+  }
+  @keyframes live-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.8); }
+  }
+  .rank-date { color: var(--ink-faint); }
+
+  .rank-head h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin: 0 0 6px;
+    max-width: 22ch;
+  }
+  .rack {
+    color: var(--ink-dim);
+    font-size: 1.15rem;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 62ch;
+  }
   .stamp {
     position: absolute;
-    top: 0;
+    top: -6px;
     right: 0;
     font-family: var(--font-mono);
-    font-size: 9px; font-weight: 700;
+    font-size: 10px; font-weight: 700;
     letter-spacing: 0.16em; text-transform: uppercase;
     color: var(--comic-red);
     border: 1.5px dashed var(--comic-red);
-    border-radius: 3px;
-    padding: 5px 8px 4px;
+    border-radius: 4px;
+    padding: 6px 10px 5px;
     background: var(--paper);
     white-space: nowrap;
     pointer-events: none;
     user-select: none;
     z-index: 2;
+    transform: rotate(-2deg);
   }
 
+  /* ===== Nav sticky por secciones ===== */
+  .rank-nav {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    padding: 12px 4px;
+    margin-bottom: 24px;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1.5px solid var(--rule);
+    scroll-margin-top: 0;
+  }
+  .rank-nav-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+    padding-bottom: 2px;
+    border-bottom: 2px solid transparent;
+    transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  }
+  .nav-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--kind);
+  }
+  .rank-nav-item:hover { color: var(--ink); border-bottom-color: var(--kind); text-decoration: none; }
+  .rank-nav-item:focus-visible { outline: 2px solid var(--core); outline-offset: 2px; border-radius: 2px; }
+  .rank-nav-method { border-bottom-color: var(--ink-faint); }
+  .rank-nav-method:hover { border-bottom-color: var(--ink); }
+
+  /* ===== Resumen 5·5·5 ===== */
   .score-summary {
-    display: flex; align-items: baseline; gap: 20px; flex-wrap: wrap;
-    padding: 14px 20px; margin: 8px 0 6px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px 24px;
+    align-items: center;
+    padding: 18px 22px;
+    margin-bottom: 30px;
+    background:
+      radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--core) 10%, transparent) 0 120px, transparent 121px),
+      var(--paper-raised);
   }
-  .score-summary-total { font-size: 0.95rem; }
-  .score-summary-total strong { color: var(--core); }
-  .score-summary-date { color: var(--ink-dim); font-size: 11.5px; margin-left: auto; }
+  .score-summary-cell { display: flex; flex-direction: column; gap: 3px; }
+  .score-summary-n {
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--core);
+  }
+  .score-summary-snap { text-align: right; }
+  .score-summary-date {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: var(--comic-red);
+  }
+  .score-summary-label {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+  }
 
-  .rank-divider { margin: 44px 0 10px; }
+  .rank-divider { margin: 46px 0 10px; }
 
-  .method { margin-top: 20px; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper-raised); padding: 0; }
+  /* ===== Método ===== */
+  .method {
+    margin-top: 20px;
+    border: 1px dashed var(--ink-faint);
+    border-radius: 8px;
+    background: var(--paper-raised);
+    padding: 0;
+  }
   .method-summary {
     display: flex; align-items: center; gap: 12px;
     padding: 16px 20px;
@@ -183,4 +326,20 @@ const articleSchema = {
   .method-sources li::before { content: '→'; font-family: var(--font-mono); color: var(--ia-general); margin-right: 8px; }
   .method-sources a { color: var(--core); }
   .method-cta { color: var(--ink-dim); font-size: 1rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ed-dot { animation: none; }
+    .stamp { transform: none; }
+    .rank-nav { backdrop-filter: none; background: var(--paper); }
+  }
+
+  @media (max-width: 620px) {
+    .rank { padding-top: 24px; }
+    .rank-head h1 { font-size: 1.9rem; max-width: 20ch; }
+    .stamp { top: -8px; }
+    .score-summary { grid-template-columns: 1fr; }
+    .score-summary-snap { text-align: left; }
+    .rank-nav { gap: 14px; overflow-x: auto; scrollbar-width: none; }
+    .rank-nav::-webkit-scrollbar { display: none; }
+  }
 </style>
