@@ -13,4 +13,20 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { blog };
+const rankings = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/rankings' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    pubDate: z.coerce.date(),
+    snapshotDate: z.coerce.date(),
+    period: z.object({
+      repos: z.string(),
+      skills: z.string(),
+      mcp: z.string(),
+    }),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { blog, rankings };

@@ -1,0 +1,58 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const allRankings = await getCollection('rankings', ({ data }) => !data.draft);
+const rankings = allRankings.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+
+const collectionPage = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  '@id': 'https://iapo.cl/rankings#collection',
+  name: 'Rankings — iapo.cl',
+  description: 'Ranking semanal de repos de GitHub, agent skills y MCP servers.',
+  url: 'https://iapo.cl/rankings',
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: rankings.map((rank, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: `https://iapo.cl/rankings/${rank.id}`,
+      name: rank.data.title,
+    })),
+  },
+};
+---
+<Base title="Rankings" description="Ranking semanal de repos de GitHub, agent skills y MCP servers." structuredData={[collectionPage]}>
+  <section class="page-head" data-reveal>
+    <span class="eyebrow">// Tendencias</span>
+    <h1>Rankings semanales</h1>
+  </section>
+
+  <main class="rank-grid">
+    {rankings.map((rank) => (
+      <a href={`/rankings/${rank.id}`} class="rank-card panel" data-reveal>
+        <span class="tag">Ranking</span>
+        <h2 class="rank-title" transition:name={`rank-title-${rank.id}`}>{rank.data.title}</h2>
+        <p class="rank-desc" data-print-in>{rank.data.description}</p>
+        <span class="eyebrow rank-date">{dateFmt(rank.data.pubDate)}</span>
+      </a>
+    ))}
+    {rankings.length === 0 && <p class="empty">Todavía no hay rankings. Vuelve pronto.</p>}
+  </main>
+</Base>
+
+<style>
+  .page-head { padding: 40px 0 30px; }
+  .page-head h1 { font-size: clamp(1.9rem, 4vw, 2.3rem); margin: 10px 0 0; }
+
+  .rank-grid { display: grid; gap: 18px; margin-bottom: 70px; }
+  .rank-card { display: block; padding: 22px; }
+  .rank-title { font-size: 1.15rem; margin: 12px 0 8px; font-weight: 500; transition: color 0.15s ease; }
+  .rank-card:hover .rank-title { color: var(--core); }
+  .rank-desc { color: var(--ink-dim); font-size: 0.95rem; margin: 0 0 14px; line-height: 1.55; }
+  .rank-date { font-size: 10.5px; }
+  .empty { color: var(--ink-dim); padding: 20px 0; }
+</style>

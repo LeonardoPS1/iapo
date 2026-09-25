@@ -1,0 +1,24 @@
+---
+import { getCollection, render } from 'astro:content';
+import Ranking from '../../layouts/Ranking.astro';
+
+export async function getStaticPaths() {
+  const rankings = await getCollection('rankings', ({ data }) => !data.draft);
+  return rankings.map((entry) => ({
+    params: { id: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+<Ranking
+  title={entry.data.title}
+  description={entry.data.description}
+  pubDate={entry.data.pubDate}
+  snapshotDate={entry.data.snapshotDate}
+  period={entry.data.period}
+>
+  <Content />
+</Ranking>
