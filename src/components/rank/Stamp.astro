@@ -1,0 +1,36 @@
+---
+interface Props {
+  kind: 'repos' | 'skills' | 'mcp';
+}
+
+const { kind } = Astro.props;
+
+const KINDS = {
+  repos: { label: '// REPOS', color: 'var(--core)' },
+  skills: { label: '// SKILLS', color: 'var(--comic-red)' },
+  mcp: { label: '// MCP', color: 'var(--ia-general)' },
+} as const;
+
+const k = KINDS[kind];
+---
+
+<span class="rank-stamp" data-reveal data-stamp style={`--stamp-color:${k.color}`} aria-hidden="true">{k.label}</span>
+
+<style>
+  .rank-stamp {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--stamp-color);
+    border: 1.5px dashed var(--stamp-color);
+    border-radius: 3px;
+    padding: 5px 9px 4px;
+    background: var(--paper-raised);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+  }
+</style>

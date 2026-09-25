@@ -1,11 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getCollection } from 'astro:content';
+import MiniPodium from '../../components/rank/MiniPodium.astro';
 
 const allRankings = await getCollection('rankings', ({ data }) => !data.draft);
 const rankings = allRankings.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
-const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+
+const topRepo = (r: { data: { lists: { items: { rank: number; name: string; metricNumber: number; metricDisplay: string }[] }[] } }) =>
+  r.data.lists[0]?.items ?? [];
 
 const collectionPage = {
   '@context': 'https://schema.org',
@@ -29,15 +33,22 @@ const collectionPage = {
   <section class="page-head" data-reveal>
     <span class="eyebrow">// Tendencias</span>
     <h1>Rankings semanales</h1>
+    <p class="page-lede">Lo más acompañado en GitHub, lo más instalado en skills.sh y lo más usado en mcp.so — cada semana.</p>
   </section>
 
   <main class="rank-grid">
     {rankings.map((rank) => (
       <a href={`/rankings/${rank.id}`} class="rank-card panel" data-reveal>
-        <span class="tag">Ranking</span>
+        <header class="rank-card-top">
+          <span class="tag">Ranking</span>
+          <span class="eyebrow rank-canvas">Edición Nº{rank.data.edition}</span>
+        </header>
         <h2 class="rank-title" transition:name={`rank-title-${rank.id}`}>{rank.data.title}</h2>
-        <p class="rank-desc" data-print-in>{rank.data.description}</p>
-        <span class="eyebrow rank-date">{dateFmt(rank.data.pubDate)}</span>
+        <MiniPodium items={topRepo(rank)} />
+        <footer class="rank-card-foot">
+          <span class="eyebrow rank-date">{dateFmt(rank.data.pubDate)}</span>
+          <span class="rank-count mono">{rank.data.lists.map((l) => l.items.length).join('·')} puestos</span>
+        </footer>
       </a>
     ))}
     {rankings.length === 0 && <p class="empty">Todavía no hay rankings. Vuelve pronto.</p>}
@@ -47,12 +58,21 @@ const collectionPage = {
 <style>
   .page-head { padding: 40px 0 30px; }
   .page-head h1 { font-size: clamp(1.9rem, 4vw, 2.3rem); margin: 10px 0 0; }
+  .page-lede { color: var(--ink-dim); font-size: 1.05rem; margin: 12px 0 0; max-width: 56ch; }
 
-  .rank-grid { display: grid; gap: 18px; margin-bottom: 70px; }
+  .rank-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; margin-bottom: 70px; align-items: start; }
   .rank-card { display: block; padding: 22px; }
-  .rank-title { font-size: 1.15rem; margin: 12px 0 8px; font-weight: 500; transition: color 0.15s ease; }
+
+  .rank-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .rank-canvas { color: var(--ink-faint); }
+  .rank-title { font-size: 1.15rem; margin: 12px 0 0; font-weight: 500; transition: color 0.15s ease; }
   .rank-card:hover .rank-title { color: var(--core); }
-  .rank-desc { color: var(--ink-dim); font-size: 0.95rem; margin: 0 0 14px; line-height: 1.55; }
+
+  .rank-card-foot {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--rule);
+  }
   .rank-date { font-size: 10.5px; }
+  .rank-count { color: var(--core); font-size: 11px; }
   .empty { color: var(--ink-dim); padding: 20px 0; }
 </style>

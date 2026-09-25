@@ -33,33 +33,70 @@ Usamos SIEMPRE el dato real de hoy, no valores viejos:
 - Etiquetar SIEMPRE la ventana real de cada métrica (repos = estrellas ganadas en la semana; skills = instalaciones últimas 24 h — NO es delta semanal; mcp.so = su propia unidad «this week»).
 - Si varios ítems de skills provienen del mismo repo origen, decirlo explícitamente.
 
-## 3. Redactar el Markdown
-Estructura fija en `src/content/rankings/ranking-YYYY-MM-DD.md`:
+## 3. Redactar el frontmatter tipado (YAML)
+Estructura fija en `src/content/rankings/ranking-YYYY-MM-DD.md`. El sitio renderiza el ranking desde estos datos (NO hay cuerpo markdown: el layout Ranking.astro dibuja podios, barras y métricas vía `lists` y `method`):
 
-```md
+```yaml
 ---
 title: "Ranking semanal #N: repos, agent skills y MCP servers (DIA MES AÑO)"
 description: "Los 5 repos más acompañados en GitHub, las 5 agent skills con más tracción en skills.sh y los 5 MCP servers en alza en mcp.so."
 pubDate: YYYY-MM-DD
 snapshotDate: YYYY-MM-DD
-period:
-  repos: "GitHub Trending, semana del …"
-  skills: "skills.sh Trending (últimas 24 h), al …"
-  mcp: "mcp.so Trending this week, al …"
+edition: N
 draft: false
----
+lists:
+  - kind: repos          # kind ∈ repos | skills | mcp
+    label: "Repos de GitHub"
+    window: "GitHub Trending · semana del … al …"
+    source: "https://github.com/trending?since=weekly"
+    items:
+      - rank: 1
+        name: "owner/repo"
+        url: "https://github.com/owner/repo"
+        metricNumber: 11234          # número puro (para barras relativas y contadores)
+        metricDisplay: "+11.234★ semana"   # texto que ve el lector; usar Intl es-CL (punto de miles, sin decimales)
+        language: "JavaScript"       # solo kind repos
+        origin: "owner/repo"         # solo kind skills (repo origen del skill)
+        description: "1 línea de contexto, tono iapo.cl («menos hype, más iapo»)."
+        why: "1 línea de «Por qué importa:»."
+  - kind: skills          # label "Agent skills (skills.sh)", window "skills.sh Trending · últimas 24 h, al …", source https://www.skills.sh/trending
+    items:
+      - rank: 1
+        name: "ai-image-generation"
+        url: "https://www.skills.sh/{owner}/{repo}/{skill}"
+        metricNumber: 38144
+        metricDisplay: "38.144 / 24 h"
+        origin: "101-skills/superpowers"
+        description: "..."
+        why: "..."
+  - kind: mcp             # label "MCP servers", window "mcp.so «Trending this week» · al …", source https://mcp.so/
+    items:
+      - rank: 1
+        name: "Medplum"
+        url: "https://mcp.so/servers/<slug>"   # href EXACTO extraído del HTML de mcp.so
+        metricNumber: 2500
+        metricDisplay: "2.500 usos / semana"
+        description: "..."
+        why: "..."
+method:
+  windows:
+    - "Repos: GitHub Trending (?since=weekly) — estrellas ganadas en la semana, al …"
+    - "Agent skills: skills.sh Trending — instalaciones últimas 24 h (NO delta semanal). Si el repo origen se repite, decirlo aquí."
+    - "MCP servers: mcp.so sección «Trending this week» — conteos de su propia unidad, al …"
+  warnings:
+    - "Agregadores con métrica acumulada o tras auth (Smithery useCount, Glama) — leer la métrica con su ventana."
+    - "Skills maliciosos existen (ToxicSkills): verificar antes de recomendar."
+  sources:
+    - label: "Nombre del blog"
+      url: "https://…"
 ```
 
-El `#N` de la edición se calcula desde la primera edición (2026-09-25 = #1): `floor(diff / 7d) + 1`. Si el archivo anterior tenía número, continuar la secuencia.
-
-Cuerpo:
-- Intro corta con links internos (mantener el tono de iapo.cl: «menos hype, más iapo»).
-- **Sección 1 «Repos con más tracción esta semana (GitHub Trending)»**: 5 ítems. C/u: `### N. [owner/repo](url)` + métrica en línea (+N estrellas esta semana · lenguaje) + 1 párrafo de descripción + «**Por qué importa:**» de 1 línea.
-- **Sección 2 «Agent skills con más tracción en skills.sh»**: 5 ítems con `### N. [skill](url)` + instalaciones 24 h + descripción + «Por qué importa». Incluir la nota honesta de metodología (trending = 24 h, y si el repo origen se repite).
-- **Sección 3 «MCP servers en alza (mcp.so, esta semana)»**: 5 ítems con href exacto, conteo y «Por qué importa».
-- **Sección final «Fuentes y metodología»**: lista cada fuente con su URL y ventana; advertencia sobre agregadores cuyo métrica es acumulada (Smithery `useCount`, Glama detrás de auth); mínimo 2 fuentes cualitativas actuales de blogs relevantes (buscar en web si no las conocés); enlaces internos a `/blog`, `/repos`, `/blog/repos-de-la-semana-1`.
-- Cierre con CTA a `/#suscribir`.
-- Anchors descriptivos (no «click aquí»); `rel="noopener noreferrer"` cuando haya `target="_blank"`.
+Reglas de redacción:
+- `#N` de edición = `floor(diff / 7d) + 1` desde 2026-09-25 = #1. Continuar la secuencia instaurando `edition` del archivo anterior.
+- `metricNumber` SIEMPRE número puro real de la fuente (barras de tracción y contadores animados dependen de él). `metricDisplay` es el texto formateado (debe contener el número localizado con el mismo valor).
+- 5 ítems por `list`, ordenados por la métrica de la fuente. `rank` = 1..5.
+- Mantener reglas de veracidad duras de la sección 2: NO inventar números ni URLs; si una lista no tiene 5 datos reales, omitir con nota.
+- Intro de contexto (`description`) con tono iapo.cl; CTA `/#suscribir` va en el frontmatter via `method.sources`/`method.warnings` no hace falta — el layout ya lo dibuja al final.
 
 ## 4. Validar
 1. `npm run build` → debe terminar con exit 0.

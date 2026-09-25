@@ -1,0 +1,141 @@
+---
+import Stamp from './Stamp.astro';
+import CountMetric from './CountMetric.astro';
+
+interface Item {
+  rank: number;
+  name: string;
+  url: string;
+  metricNumber: number;
+  metricDisplay: string;
+  language?: string;
+  origin?: string;
+  description: string;
+  why: string;
+}
+
+interface Props {
+  kind: 'repos' | 'skills' | 'mcp';
+  label: string;
+  window: string;
+  source: string;
+  items: Item[];
+}
+
+const { kind, label, window, source, items } = Astro.props;
+
+const max = items[0]?.metricNumber || 1;
+const pct = (n: number) => Math.max(8, Math.round((n / max) * 100));
+const pos = String(items[0]?.rank ?? 1).padStart(2, '0');
+---
+
+<section class="score" data-reveal>
+  <header class="score-head">
+    <span class="eyebrow score-kicker">// {label}</span>
+    <span class="score-window mono">{window}</span>
+    <a class="score-source mono" href={source} rel="noopener">Fuente ↗</a>
+    <div class="score-stamps"><Stamp kind={kind} /></div>
+  </header>
+
+  {
+    items.slice(1).length > 0 && (
+      <ol class="score-list">
+        {items.map((item) => (
+          <li class="score-row panel" data-reveal style={`--bar:${pct(item.metricNumber)}%`}>
+            <span class="score-rank mono">{String(item.rank).padStart(2, '0')}</span>
+            <div class="score-body">
+              <a class="score-name" href={item.url}>{item.name}</a>
+              <div class="score-meta mono">
+                {item.language && <span class="score-lang">{item.language}</span>}
+                {item.origin && <span class="score-origin">@{item.origin}</span>}
+                <span class="score-metric"><CountMetric number={item.metricNumber} display={item.metricDisplay} /></span>
+              </div>
+              <span class="score-bar" aria-hidden="true"><span class="score-bar-fill"></span></span>
+              <p class="score-desc">{item.description}</p>
+              {item.why && <p class="score-why"><strong>Por qué importa:</strong> {item.why}</p>}
+            </div>
+          </li>
+        ))}
+      </ol>
+    )
+  }
+</section>
+
+<style>
+  .score { position: relative; padding: 34px 0 6px; }
+
+  .score-head {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding-right: 120px; /* espacio para el sello */
+  }
+  .score-kicker { color: var(--core); font-weight: 700; }
+  .score-window { color: var(--ink-dim); font-size: 11.5px; }
+  .score-source { color: var(--ink-faint); font-size: 11px; margin-left: auto; }
+  .score-source:hover { color: var(--core); }
+  .score-stamps { position: absolute; top: -6px; right: 0; }
+
+  .score-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+
+  .score-row {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 16px;
+    align-items: start;
+    padding: 18px 20px;
+  }
+  .score-rank {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--core);
+    font-weight: 700;
+    line-height: 1;
+    padding-top: 4px;
+  }
+  .score-name { font-family: var(--font-display); font-size: 1.15rem; color: var(--ink); font-weight: 500; }
+  a.score-name:hover { color: var(--core); }
+
+  .score-meta {
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    color: var(--ink-dim); font-size: 12px; margin: 6px 0 10px;
+  }
+  .score-lang,
+  .score-origin {
+    color: var(--core);
+    background: transparent;
+  }
+  .score-metric { margin-left: auto; font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; color: var(--ink); }
+
+  .score-bar {
+    display: block;
+    height: 5px;
+    width: 100%;
+    max-width: 380px;
+    background: var(--rule);
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 0 0 12px;
+  }
+  .score-bar-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--core), var(--core-bright));
+    border-radius: 999px;
+    transition: width 1s var(--ease-out);
+  }
+  .score-row.is-visible .score-bar-fill { width: var(--bar); }
+
+  .score-desc { color: var(--ink-dim); font-size: 0.95rem; line-height: 1.6; margin: 0 0 4px; }
+  .score-why { color: var(--ink-dim); font-size: 0.95rem; line-height: 1.6; margin: 0; font-style: italic; }
+  .score-why strong { color: var(--comic-red); font-style: normal; font-weight: 700; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .score-bar-fill { width: var(--bar) !important; transition: none; }
+  }
+</style>

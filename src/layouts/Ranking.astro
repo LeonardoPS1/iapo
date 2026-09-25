@@ -1,24 +1,51 @@
 ---
 import Base from './Base.astro';
+import SectionScore from '../components/rank/SectionScore.astro';
+
+interface RankItem {
+  rank: number;
+  name: string;
+  url: string;
+  metricNumber: number;
+  metricDisplay: string;
+  language?: string;
+  origin?: string;
+  description: string;
+  why: string;
+}
+
+interface List {
+  kind: 'repos' | 'skills' | 'mcp';
+  label: string;
+  window: string;
+  source: string;
+  items: RankItem[];
+}
+
+interface Method {
+  windows: string[];
+  warnings: string[];
+  sources: { label: string; url: string }[];
+}
 
 interface Props {
   title: string;
   description: string;
   pubDate: Date;
   snapshotDate: Date;
-  period: {
-    repos: string;
-    skills: string;
-    mcp: string;
-  };
+  edition: number;
+  lists: List[];
+  method: Method;
 }
 
-const { title, description, pubDate, snapshotDate, period } = Astro.props;
+const { title, description, pubDate, snapshotDate, edition, lists, method } = Astro.props;
 
 const dateFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }).format(pubDate);
 const snapshotFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }).format(snapshotDate);
 
 const landingUrl = new URL(Astro.url.pathname, Astro.site).href;
+
+const totals = lists.map((l) => l.items.length).join(' · ');
 
 const articleSchema = {
   '@context': 'https://schema.org',
@@ -38,11 +65,11 @@ const articleSchema = {
   dateModified: snapshotDate.toISOString(),
   mainEntityOfPage: landingUrl,
   inLanguage: 'es-CL',
-  temporalCoverage: period.repos,
+  temporalCoverage: lists[0]?.window,
   keywords: 'repos github, agent skills, mcp servers, ranking semanal, ia',
   speakable: {
     '@type': 'SpeakableSpecification',
-    cssSelector: ['.rank-head h1', '.rack', '.content > p:first-of-type'],
+    cssSelector: ['.rank-head h1', '.rack', '.score-summary'],
   },
 };
 ---
@@ -57,7 +84,7 @@ const articleSchema = {
 >
   <article class="rank">
     <div class="rank-meta">
-      <span class="eyebrow rack-tag">// RANKING SEMANAL</span>
+      <span class="eyebrow rack-tag">// RANKING SEMANAL — EDICIÓN Nº{edition}</span>
       <span class="eyebrow">{dateFmt}</span>
     </div>
     <div class="rank-head" data-print-in data-reveal>
@@ -65,16 +92,42 @@ const articleSchema = {
       <span class="stamp" data-reveal data-stamp aria-hidden="true">// TENDENCIAS</span>
       <p class="rack">{description}</p>
     </div>
-    <hr class="tear-line rank-divider" />
-    <div class="content prose-col">
-      <slot />
+
+    <div class="score-summary panel" data-reveal>
+      <span class="score-summary-total mono"><strong>{totals}</strong> puestos en esta edición</span>
+      <span class="score-summary-date mono">Snapshot: {snapshotFmt}</span>
     </div>
+
+    {lists.map((list) => <SectionScore kind={list.kind} label={list.label} window={list.window} source={list.source} items={list.items} />)}
+
+    <hr class="tear-line rank-divider" />
+
+    <details class="method" data-reveal>
+      <summary class="method-summary">
+        <span class="eyebrow">// Fuentes y metodología</span>
+        <span class="method-chev mono" aria-hidden="true">+</span>
+      </summary>
+      <div class="method-body prose-col">
+        <ul class="method-windows">
+          {method.windows.map((w) => <li>{w}</li>)}
+        </ul>
+        <ul class="method-warnings">
+          {method.warnings.map((w) => <li>{w}</li>)}
+        </ul>
+        <ul class="method-sources">
+          {method.sources.map((s) => <li><a href={s.url}>{s.label}</a></li>)}
+        </ul>
+        <p class="method-cta">
+          <em>Si te sirvió, <a href="/#suscribir">suscribite al diario</a> para no perderte el próximo ranking.</em>
+        </p>
+      </div>
+    </details>
   </article>
 </Base>
 
 <style>
   .rank { padding: 44px 0 0; }
-  .rank-meta { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
+  .rank-meta { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
   .rack-tag { color: var(--core); font-weight: 700; }
   .rank-head { position: relative; margin-bottom: 14px; }
   .rank-head h1 { font-size: clamp(1.9rem, 4.5vw, 2.5rem); margin: 0 0 14px; max-width: 24ch; }
@@ -96,18 +149,38 @@ const articleSchema = {
     user-select: none;
     z-index: 2;
   }
-  .rank-divider { margin: 32px 0; }
-  .content :global(h2) { margin-top: 2.4em; font-size: 1.4rem; font-weight: 500; }
-  .content :global(h3) { margin-top: 1.9em; font-size: 1.15rem; font-weight: 500; }
-  .content :global(p) { margin: 1.1em 0; }
-  .content :global(ul), .content :global(ol) { padding-left: 1.4em; }
-  .content :global(li) { margin: 0.45em 0; }
-  .content :global(blockquote) {
-    border-left: 3px solid var(--comic-red);
-    margin: 1.6em 0;
-    padding: 0.2em 0 0.2em 1.3em;
-    color: var(--ink-dim);
-    font-style: italic;
+
+  .score-summary {
+    display: flex; align-items: baseline; gap: 20px; flex-wrap: wrap;
+    padding: 14px 20px; margin: 8px 0 6px;
   }
-  .content :global(a) { color: var(--core); }
+  .score-summary-total { font-size: 0.95rem; }
+  .score-summary-total strong { color: var(--core); }
+  .score-summary-date { color: var(--ink-dim); font-size: 11.5px; margin-left: auto; }
+
+  .rank-divider { margin: 44px 0 10px; }
+
+  .method { margin-top: 20px; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper-raised); padding: 0; }
+  .method-summary {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px;
+    cursor: pointer;
+    list-style: none;
+  }
+  .method-summary::-webkit-details-marker { display: none; }
+  .method-chev {
+    margin-left: auto;
+    font-size: 1.2rem;
+    color: var(--core);
+    transition: transform 0.25s var(--ease-out);
+  }
+  .method[open] .method-chev { transform: rotate(45deg); }
+  .method-body { padding: 0 20px 18px; }
+  .method-windows, .method-warnings, .method-sources { margin: 0 0 14px; padding: 0; list-style: none; }
+  .method-windows li, .method-warnings li, .method-sources li { margin: 8px 0; color: var(--ink-dim); line-height: 1.6; }
+  .method-windows li::before { content: '1.'; font-family: var(--font-mono); color: var(--core); margin-right: 8px; }
+  .method-warnings li::before { content: '!'; font-family: var(--font-mono); color: var(--comic-red); margin-right: 8px; font-weight: 700; }
+  .method-sources li::before { content: '→'; font-family: var(--font-mono); color: var(--ia-general); margin-right: 8px; }
+  .method-sources a { color: var(--core); }
+  .method-cta { color: var(--ink-dim); font-size: 1rem; }
 </style>

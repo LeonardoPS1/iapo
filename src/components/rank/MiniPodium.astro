@@ -1,0 +1,71 @@
+---
+interface Item {
+  rank: number;
+  name: string;
+  metricNumber: number;
+  metricDisplay: string;
+}
+
+interface Props {
+  items: Item[];
+}
+
+const { items } = Astro.props;
+const top3 = items.slice(0, 3);
+const max = items[0]?.metricNumber || 1;
+const pct = (n: number) => Math.max(8, Math.round((n / max) * 100));
+---
+
+<ul class="mini-list">
+  {top3.map((item) => (
+    <li class="mini-row" style={`--bar:${pct(item.metricNumber)}%`}>
+      <span class="mini-rank mono">{String(item.rank).padStart(2, '0')}</span>
+      <div class="mini-body">
+        <span class="mini-name">{item.name}</span>
+        <div class="mini-track" aria-hidden="true"><span class="mini-fill"></span></div>
+      </div>
+      <span class="mini-metric mono">{item.metricDisplay}</span>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .mini-list { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+  .mini-row {
+    display: grid;
+    grid-template-columns: 26px 1fr auto;
+    gap: 10px;
+    align-items: center;
+  }
+  .mini-rank { color: var(--core); font-size: 0.9rem; font-weight: 700; }
+  .mini-body { min-width: 0; }
+  .mini-name {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .mini-track {
+    display: block;
+    height: 3px;
+    background: var(--rule);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .mini-fill {
+    display: block;
+    height: 100%;
+    width: var(--bar);
+    background: linear-gradient(90deg, var(--core), var(--core-bright));
+    border-radius: 999px;
+    transition: width 1s var(--ease-out);
+  }
+  .mini-metric {
+    color: var(--ink-dim);
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+</style>

@@ -1,0 +1,91 @@
+---
+interface Props {
+  number: number;
+  display: string;
+}
+
+const { number, display } = Astro.props;
+
+// Separa del display el número localizado (para animarlo aparte) y su contexto/prefix.
+const localized = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(number);
+const idx = display.indexOf(localized);
+const prefix = idx > 0 ? display.slice(0, idx) : '';
+const suffix = idx >= 0 ? display.slice(idx + localized.length) : '';
+---
+
+<span class="cm-count" data-count={number} data-prefix={prefix} data-suffix={suffix}>
+  <span class="cm-prefix">{prefix}</span><span class="cm-val flip-digit">0</span><span class="cm-suffix">{suffix}</span>
+</span>
+
+<style>
+  .cm-count {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.15ch;
+  }
+  .cm-prefix { white-space: pre; }
+  .cm-suffix { white-space: pre; }
+  .cm-val { font-variant-numeric: tabular-nums; }
+</style>
+
+<script>
+  const fmt = (n: number) => new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(n);
+
+  let io: IntersectionObserver | null = null;
+
+  function animCount() {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => {
+      if (el.dataset.done) return;
+      el.dataset.done = '1';
+      const val = el.querySelector<HTMLElement>('.cm-val');
+      if (!val) return;
+      const target = Number(el.dataset.count || '0');
+      if (reduce || target === 0) {
+        val.textContent = fmt(target);
+        return;
+      }
+      // flip de entrada (patrón .flip-digit del sitio)
+      val.classList.add('is-flip');
+      setTimeout(() => val.classList.remove('is-flip'), 550);
+      // conteo con easing (igual patrón de la home)
+      const dur = 900;
+      const start = performance.now();
+      const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+      const tick = (now: number) => {
+        const p = Math.min((now - start) / dur, 1);
+        val.textContent = fmt(Math.round(target * easeOut(p)));
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+  }
+
+  function boot() {
+    if (io) { io.disconnect(); io = null; }
+    const els = Array.from(document.querySelectorAll<HTMLElement>('[data-count]'));
+    if (!els.length) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) {
+      animCount();
+      return;
+    }
+    io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting);
+        if (visible.length) {
+          animCount();
+          io?.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+    els.forEach((el) => io?.observe(el));
+  }
+
+  boot();
+  document.addEventListener('astro:page-load', boot);
+</script>
