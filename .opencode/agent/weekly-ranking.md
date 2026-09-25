@@ -27,6 +27,7 @@ Usamos SIEMPRE el dato real de hoy, no valores viejos:
 - **Repos:** `https://github.com/trending?since=weekly` — anotar las 5 primeras entradas con su `+N estrellas esta semana`, lenguaje y sentido del repo, en el orden de la página.
 - **Agent skills:** `https://www.skills.sh/trending` — anotar top 5 por instalaciones últimas 24 h. Si falla la página, consultar la API interna `https://www.skills.sh/api/skills/trending/0`. Si no hay dato 24 h, reportarlo.
 - **MCP servers:** `https://mcp.so/` sección «Trending this week» — anotar top 5 con su conteo y el href EXACTO de cada server (patrón `https://mcp.so/servers/<slug>`).
+- **MCP servers (contraste):** `https://mcpmarket.com/es` — consultar `/es/daily` (Top MCPs de Hoy, 10 ítems, señales de participación/comunidad) y `/es/leaderboards` (Top 100 por estrellas de GitHub acumuladas). NO es métrica semanal: usarla para citar en `method.sources`/`method.windows` y contrastar el panorama, jamás para reemplazar el ranking principal de mcp.so.
 
 **Reglas de veracidad duras:**
 - NO inventar métricas, conteos, estrellas ni URLs. Si una fuente no da el dato, se omite esa lista con una nota, jamás se rellena con números inventados.
@@ -83,12 +84,15 @@ method:
     - "Repos: GitHub Trending (?since=weekly) — estrellas ganadas en la semana, al …"
     - "Agent skills: skills.sh Trending — instalaciones últimas 24 h (NO delta semanal). Si el repo origen se repite, decirlo aquí."
     - "MCP servers: mcp.so sección «Trending this week» — conteos de su propia unidad, al …"
+    - "MCP servers (contraste): MCP Market (mcpmarket.com) — /es/leaderboards por estrellas acumuladas, /es/daily por señales de participación. No es métrica semanal."
   warnings:
-    - "Agregadores con métrica acumulada o tras auth (Smithery useCount, Glama) — leer la métrica con su ventana."
+    - "Agregadores con métrica acumulada o tras auth (Smithery useCount, Glama, MCP Market leaderboards) — leer la métrica con su ventana."
     - "Skills maliciosos existen (ToxicSkills): verificar antes de recomendar."
   sources:
     - label: "Nombre del blog"
       url: "https://…"
+    - label: "MCP Market — Top 100 Servidores MCP y Top MCPs de Hoy"
+      url: "https://mcpmarket.com/es"
 ```
 
 Reglas de redacción:
