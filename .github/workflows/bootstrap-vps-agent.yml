@@ -1,0 +1,80 @@
+name: bootstrap-vps-agent
+
+# Instala / actualiza el agente semanal de rankings en el VPS.
+# El bootstrap vive en el repo (ops/weekly-ranking/install.sh) y este workflow
+# solo lo ejecuta por SSH. Para cambiar la lógica, editá install.sh y volvé a correr.
+
+on:
+  workflow_dispatch:
+    inputs:
+      cron:
+        description: 'Calendario systemd. Default: domingo 01:00 hora Chile (UTC-3)'
+        required: false
+        default: 'Sun *-*-* 01:00:00 America/Santiago'
+      model:
+        description: 'Modelo provider/model que ejecuta el agente'
+        required: false
+        default: 'opencode/big-pickle'
+      run_now:
+        description: 'Forzar una ejecución inmediata del agente al terminar'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: iapo-bootstrap-vps
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    name: Bootstrap agente en VPS
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H 51.222.207.250 >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Subir el bootstrap al VPS
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ubuntu@51.222.207.250 'rm -rf /tmp/iapo-agent-bootstrap && mkdir -p /tmp/iapo-agent-bootstrap'
+          scp -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new \
+            ops/weekly-ranking/install.sh \
+            ops/weekly-ranking/iapo-ranking.service \
+            ubuntu@51.222.207.250:/tmp/iapo-agent-bootstrap/
+
+      - name: Instalar el timer y el runner
+        env:
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+          IAPO_CRON: ${{ inputs.cron }}
+          IAPO_MODEL: ${{ inputs.model }}
+        run: |
+          printf '%s' "$MODEL_API_KEY" | ssh -i ~/.ssh/id_ed25519 ubuntu@51.222.207.250 \
+            "sudo env IAPO_CRON='$IAPO_CRON' IAPO_MODEL='$IAPO_MODEL' MODEL_API_KEY=\"\$(cat)\" bash /tmp/iapo-agent-bootstrap/install.sh"
+
+      - name: Mostrar estado
+        if: always()
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ubuntu@51.222.207.250 \
+            'systemctl list-timers iapo-ranking.timer --no-pager; echo "---"; systemctl status iapo-ranking.timer --no-pager || true'
+
+      - name: Ejecución de prueba
+        if: inputs.run_now
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ubuntu@51.222.207.250 \
+            'sudo systemctl start iapo-ranking.service; echo "exit=$?"; echo "--- log ---"; sudo tail -n 60 /var/log/iapo-agent/systemd.log || true'
+
+      - name: Limpiar
+        if: always()
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ubuntu@51.222.207.250 \
+            'sudo rm -rf /tmp/iapo-agent-bootstrap' || true

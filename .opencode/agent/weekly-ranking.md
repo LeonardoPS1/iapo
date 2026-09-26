@@ -5,12 +5,30 @@ temperature: 0.1
 permission:
   read: allow
   edit: allow
+  glob: allow
+  grep: allow
+  list: allow
   webfetch: allow
   websearch: allow
+  todowrite: allow
+  # Nada de esto tiene sentido en una corrida headless y cuelga o desvía la tarea
+  task: deny
+  question: deny
+  doom_loop: deny
+  external_directory: deny
   bash:
-    git *: allow
-    "npm *": allow
-    "*": ask
+    # El orden importa: gana la ÚLTIMA regla que matchea, así que el comodín
+    # va PRIMERO y las excepciones después.
+    "*": deny
+    "git status*": allow
+    "git add*": allow
+    "git commit*": allow
+    "git push*": allow
+    "git diff*": allow
+    "git log*": allow
+    "git rev-parse*": allow
+    "npm run build": allow
+    "npm ci": allow
 ---
 
 Eres el agente semanal del ranking de iapo.cl. Fecha tope para snapshot: usar la fecha actual en ejecución.
@@ -118,3 +136,21 @@ Reglas de redacción:
    - Fuentes secundarias usadas
    - Rutas generadas
    - Enlace al ranking en producción (si fue pusheado) o instrucción de push
+
+## 6. Cómo corre (no editable desde acá)
+
+Este agente se ejecuta **headless desde el VPS**, una vez por semana, mediante systemd:
+
+```
+timer domingo 01:00 America/Santiago → iapo-ranking.service → /usr/local/bin/iapo-ranking-run
+   → opencode run --agent weekly-ranking --auto
+```
+
+- El runner hace `git reset --hard origin/main` antes de cada corrida, así que este
+  procedimiento siempre parte de la última versión de `main` en GitHub.
+- El prompt que se le pasa ya declara el push como **autorizado** (ejecución programada).
+- Como corre con `--auto`, todas las herramientas están pre-aprobadas por el frontmatter
+  `permission`. **Por eso el `bash: "*": deny` es intencional**: si agregás un comando nuevo,
+  listalo explícitamente en la sección `allow` del frontmatter; con `*` en `ask` la corrida
+  headless se cuelga esperando input y el ranking nunca se publica.
+- Bootstrap, logs y operación: `ops/weekly-ranking/README.md`.

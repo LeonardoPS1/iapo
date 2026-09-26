@@ -1,0 +1,24 @@
+[Unit]
+Description=Ranking semanal de iapo.cl — agente opencode
+Documentation=https://github.com/LeonardoPS1/iapo
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=iapoagent
+Group=iapoagent
+WorkingDirectory=/opt/iapo-agent/repo
+Environment=HOME=/home/iapoagent
+Environment=PATH=/home/iapoagent/.opencode/bin:/home/iapoagent/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=NODE_REPL_HISTORY=/home/iapoagent/.node_repl_history
+EnvironmentFile=/etc/iapo-agent/secrets.env
+Environment=IAPO_REPO_DIR=/opt/iapo-agent/repo
+Environment=IAPO_LOG_DIR=/var/log/iapo-agent
+Environment=IAPO_LOCK_FILE=/var/lock/iapo-ranking.lock
+ExecStart=/usr/local/bin/iapo-ranking-run
+TimeoutStartSec=40min
+Nice=10
+SyslogIdentifier=iapo-ranking
+StandardOutput=journal
+StandardError=journal
