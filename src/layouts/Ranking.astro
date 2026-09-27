@@ -147,7 +147,7 @@ const articleSchema = {
           {method.sources.map((s) => <li><a href={s.url}>{s.label}</a></li>)}
         </ul>
         <p class="method-cta">
-          <em>Si te sirvió, <a href="/#suscribir">suscribite al diario</a> para no perderte el próximo ranking.</em>
+          <em>Si te sirvió, <a href={`/#suscribir?ref=${Astro.url.pathname}`}>suscribite al diario</a> para no perderte el próximo ranking.</em>
         </p>
       </div>
     </details>

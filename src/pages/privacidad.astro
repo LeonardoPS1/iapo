@@ -14,15 +14,37 @@ import Base from '../layouts/Base.astro';
     </p>
     <h2>Qué datos recopilamos</h2>
     <p>
-      Este sitio es estático y no utiliza cookies de seguimiento ni servicios de analítica. Solo
-      recopilamos el dato que tú nos entregas voluntariamente: tu <strong>correo electrónico</strong>
-      al suscribirte al boletín o al contactarnos.
+      Este sitio <strong>no utiliza cookies de seguimiento</strong> ni te identifica con un
+      identificador persistente. Recopilamos dos clases de datos:
     </p>
+    <ul>
+      <li>
+        <strong>El dato que tú nos entregas voluntariamente</strong>: tu
+        <strong>correo electrónico</strong> al suscribirte al boletín o al contactarnos.
+      </li>
+      <li>
+        <strong>Estadísticas agregadas de navegación</strong>: qué páginas se visitan, desde qué
+        sitio se llega y desde qué país. Son datos agregados y anónimos, sin dirección IP ni
+        identificador personal.
+      </li>
+    </ul>
     <h2>Cómo usamos tus datos</h2>
     <p>
       El correo que registres se usa exclusivamente para enviarte el boletín de iapo.cl o para
-      responder tu consulta. No vendemos, cedemos ni compartimos tus datos con terceros con fines
-      comerciales.
+      responder tu consulta. Las estadísticas de navegación se usan solo para entender qué contenido
+      resulta útil y publicarlo mejor. No vendemos, cedemos ni compartimos tus datos con terceros con
+      fines comerciales.
+    </p>
+    <h2>Analítica</h2>
+    <p>
+      Las estadísticas de navegación se miden con
+      <a href="https://www.cloudflare.com" target="_blank" rel="noopener">Cloudflare</a>, el proveedor
+      que aloja y entrega este sitio. La analítica se procesa en la red de Cloudflare de forma
+      agregada: <strong>no se guarda tu dirección IP</strong>, no se usan cookies y no se crea ningún
+      perfil persistente que te siga entre sitios. Puedes consultar su documentación sobre
+      <a href="https://developers.cloudflare.com/analytics/" target="_blank" rel="noopener"
+        >medición sin cookies</a
+      >.
     </p>
     <h2>Newsletter</h2>
     <p>
@@ -40,10 +62,11 @@ import Base from '../layouts/Base.astro';
     </p>
     <h2>Seguridad</h2>
     <p>
-      Este sitio se sirve exclusivamente por HTTPS y no almacena datos personales en servidores
-      propios; el único dato que recibimos es el correo que tú nos envías.
+      Este sitio se sirve exclusivamente por HTTPS. Los datos de navegación se procesan de forma
+      efímera en la red de Cloudflare y no se persisten. El único dato que almacenamos es el correo
+      que tú nos envías, guardado en Brevo, y al que puedes pedirle su eliminación cuando quieras.
     </p>
-    <p class="meta-update">Última actualización: agosto de 2026</p>
+    <p class="meta-update">Última actualización: septiembre de 2026</p>
   </div>
 </Base>
 
@@ -53,6 +76,9 @@ import Base from '../layouts/Base.astro';
   .divider { margin: 28px 0; }
   .prose { max-width: 60ch; margin: 0 0 80px; color: var(--ink); }
   .prose p { margin: 1.3em 0; line-height: 1.7; }
+  .prose ul { margin: 1.3em 0; padding-left: 1.2em; list-style: disc; }
+  .prose li { margin: 0.7em 0; line-height: 1.7; }
+  .prose li::marker { color: var(--core); }
   .prose h2 { font-family: var(--font-display); font-size: 1.35rem; margin: 2em 0 0.6em; }
   .intro-lead { font-size: 1.2rem; line-height: 1.65; }
   .meta-update { font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); }

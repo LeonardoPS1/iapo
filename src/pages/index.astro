@@ -160,7 +160,7 @@ const nav = [
         <span class="eyebrow">// Frecuencia semanal</span>
         <h2>No te pierdas la próxima señal</h2>
         <p class="lede">3 tips útiles, 1 repo curado, 1 caso real. Cada semana en tu correo.</p>
-        <iframe class="subscribe-embed" src="https://db52c710.sibforms.com/v2/serve/MUIFAKic_WyWOrVE9GUip8G9Zf9qyNoxJhhvNUkXecG5PT0knZjrfYkCXXjhZfrS0BFhekQQOd1S7ZwbvzVBX2H_46ZjDWVex0ww638t5ImFAeSuY7x5lUEK5lzfxqyHpy8COFmWpQFlW5ZY_vBmhrcc8bX0uvuWUZFEbJSLmZUzccR6Ds00U209QSAz0ACrXcdpXGpMg1tPi2MPlQ==" width="540" height="305" frameborder="0" scrolling="auto" allowfullscreen title="Formulario de suscripción al newsletter"></iframe>
+        <iframe class="subscribe-embed" data-subscribe-embed src="https://db52c710.sibforms.com/v2/serve/MUIFAKic_WyWOrVE9GUip8G9Zf9qyNoxJhhvNUkXecG5PT0knZjrfYkCXXjhZfrS0BFhekQQOd1S7ZwbvzVBX2H_46ZjDWVex0ww638t5ImFAeSuY7x5lUEK5lzfxqyHpy8COFmWpQFlW5ZY_vBmhrcc8bX0uvuWUZFEbJSLmZUzccR6Ds00U209QSAz0ACrXcdpXGpMg1tPi2MPlQ==" width="540" height="305" frameborder="0" scrolling="auto" allowfullscreen title="Formulario de suscripción al newsletter"></iframe>
       </div>
     </section>
 
@@ -694,7 +694,38 @@ const nav = [
     }
   }
 
+  // Atribución del boletín: el iframe de Brevo se carga con ?ref= para saber
+  // desde qué página se suscribió la persona. Sin JS el ?ref= se pierde, pero el
+  // formulario igual funciona (el src original ya está en el HTML).
+  function initSubscribeRef() {
+    const frame = document.querySelector('[data-subscribe-embed]');
+    if (!frame || frame.dataset.refApplied) return;
+    frame.dataset.refApplied = '1';
+
+    let ref = new URLSearchParams(window.location.search).get('ref');
+
+    // El CTA de la home es un ancla, no un link con query: si la persona navega
+    // dentro del sitio y llega desde otra página, el referrer nos dice de dónde.
+    if (!ref && document.referrer) {
+      try {
+        const from = new URL(document.referrer);
+        if (from.hostname === location.hostname || from.hostname.endsWith('.iapo.cl')) {
+          ref = from.pathname;
+        }
+      } catch { /* referrer no parseable */ }
+    }
+    if (!ref) ref = 'directo';
+
+    const base = (frame.getAttribute('src') || '').split('?')[0];
+    if (base) frame.setAttribute('src', `${base}?ref=${encodeURIComponent(ref)}`);
+  }
+
   // astro:page-load dispara en la primera carga Y tras cada navegación SPA
-  initIndex();
-  document.addEventListener('astro:page-load', initIndex);
+  function initHome() {
+    initIndex();
+    initSubscribeRef();
+  }
+
+  initHome();
+  document.addEventListener('astro:page-load', initHome);
 </script>
