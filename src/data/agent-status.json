@@ -1,12 +1,12 @@
 {
-  "updatedAt": null,
-  "ok": null,
-  "stage": "nunca ejecutado",
-  "message": "El agente semanal todavía no corrió en el VPS. Esta página se actualiza sola en cada corrida.",
-  "model": null,
-  "agentRc": null,
-  "exitCode": null,
-  "durationSec": null,
-  "logFile": null,
-  "head": null
+  "updatedAt": "2026-09-29T02:04:14Z",
+  "ok": false,
+  "stage": "verificacion",
+  "message": "el build no generó dist/rankings/index.html (el agente no commiteó o el build falló)",
+  "model": "opencode/big-pickle",
+  "agentRc": 1,
+  "exitCode": 1,
+  "durationSec": 16,
+  "logFile": "20260929T020358Z-run.log",
+  "head": "c180208"
 }
