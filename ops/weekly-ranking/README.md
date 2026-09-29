@@ -11,7 +11,8 @@ timer systemd (domingo 01:00 America/Santiago)
              ├─ npm ci (solo si cambió package-lock.json)
              ├─ opencode run --agent weekly-ranking
              └─ verifica dist/rankings/ y reporta commits sin pushear
-                  └─ el agente commitea y pushea → dispara deploy.yml → VPS
+                  └─ escribe src/data/agent-status.json y lo pushea SIEMPRE
+                       └─ el agente commitea y pushea → dispara deploy.yml → VPS
 ```
 
 ## Componentes
@@ -20,8 +21,41 @@ timer systemd (domingo 01:00 America/Santiago)
 |---|---|
 | `install.sh` | Bootstrap idempotente. Crea usuario de servicio, Node 22, opencode CLI, `auth.json`, deploy key SSH, clona el repo, instala el runner y activa el timer. |
 | `run.sh` | Runner semanal. Se copia a `/usr/local/bin/iapo-ranking-run` desde el repo. |
+| `diagnose.sh` | Reporte de diagnóstico del VPS, en markdown. No imprime secretos. |
 | `iapo-ranking.service` | Unidad systemd `Type=oneshot` (el `.timer` se genera en `install.sh` porque la expresión de calendario es parametrizable). |
 | `.github/workflows/bootstrap-vps-agent.yml` | `workflow_dispatch` que corre `install.sh` por SSH usando el secret `VPS_SSH_KEY`. |
+| `.github/workflows/diagnose-vps-agent.yml` | `workflow_dispatch` que corre `diagnose.sh` por SSH y publica el reporte en un issue. |
+
+## Si algo falla: dos canales
+
+El problema clásico de un agente en un servidor es que el fallo no deja rastro accesible. Por eso
+hay dos canales, y conviene usar el primero antes que entrar por SSH.
+
+**1. `/estado`** — página pública del sitio que el runner escribe en cada corrida, exito o fallo.
+`run.sh` publica `src/data/agent-status.json` (commit + push a `main`) desde el `trap` de salida, así
+que nunca queda una corrida sin registrar. La página muestra si la última corrida pasó, cuándo,
+qué modelo corrió, cuánto tardó, el código de salida y el mensaje del error. Si la última corrida
+tiene más de 8 días, muestra un aviso: como el agente corre semanal, ya se perdió una edición.
+
+El deploy es la segunda barrera: si el agente commitea contenido roto, el build de `deploy.yml` falla,
+el deploy queda en rojo y el sitio sigue sirviendo la versión anterior. Un fallo nunca llega como
+página rota.
+
+**2. Workflow `Diagnóstico agente VPS`** — para el detalle que la página no tiene (logs del systemd,
+contenido del último log de corrida, herramientas instaladas, permisos de los secretos). Publica el
+reporte en un issue con la etiqueta `ops`, que se lee sin token porque el repo es público. Útil
+cuando no tenés SSH.
+
+```bash
+# lo que corre el workflow por SSH, si preferís hacerlo a mano
+scp ops/weekly-ranking/diagnose.sh ubuntu@51.222.207.250:/tmp/
+ssh ubuntu@51.222.207.250 'sudo bash /tmp/iapo-diagnose.sh; rm -f /tmp/iapo-diagnose.sh'
+```
+
+El script **nunca** imprime el contenido de `/etc/iapo-agent/secrets.env` ni de `auth.json`: solo
+existencia y permisos. Antes de publicar el issue, el workflow igual enmascara cualquier cosa que
+parezca una clave.
+
 
 ## Bootstrap (una vez)
 
@@ -33,6 +67,10 @@ timer systemd (domingo 01:00 America/Santiago)
 
 Sin write access la key no puede pushear y el ranking no llega a producción — es el paso que
 no se puede automatizar desde el lado del VPS.
+
+`install.sh` es idempotente, así que volver a correr el workflow también sirve para **actualizar**
+el runner en el VPS después de un cambio en `run.sh` (por ejemplo, para agregar el estado). No
+toca el usuario, la key ni los secretos ya instalados.
 
 ## Operación
 

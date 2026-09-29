@@ -153,4 +153,8 @@ timer domingo 01:00 America/Santiago → iapo-ranking.service → /usr/local/bin
   `permission`. **Por eso el `bash: "*": deny` es intencional**: si agregás un comando nuevo,
   listalo explícitamente en la sección `allow` del frontmatter; con `*` en `ask` la corrida
   headless se cuelga esperando input y el ranking nunca se publica.
-- Bootstrap, logs y operación: `ops/weekly-ranking/README.md`.
+- El runner escribe `src/data/agent-status.json` al terminar, exito o fallo, y lo pushea a `main`.
+  `/estado` muestra ese estado, así que **un fallo tuyo queda visible en el sitio sin tocar el VPS**.
+  Por eso `npm run build` no es un paso opcional: si falla, el runner aborta antes de publicar y
+  la corrida queda marcada como `verificacion`, no como exitosa.
+- Bootstrap, logs, diagnóstico y operación: `ops/weekly-ranking/README.md`.

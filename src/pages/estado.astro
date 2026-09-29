@@ -1,0 +1,261 @@
+---
+import Base from '../layouts/Base.astro';
+import status from '../data/agent-status.json';
+
+const TZ = 'America/Santiago';
+const SCHEDULE = 'domingo 01:00 (Chile)';
+// El agente corre una vez por semana: si pasó más de 8 días desde la última
+// corrida, ya se perdió al menos una edición.
+const STALE_HOURS = 8 * 24;
+
+type Status = {
+  updatedAt: string | null;
+  ok: boolean | null;
+  stage: string;
+  message: string;
+  model: string | null;
+  agentRc: number | null;
+  exitCode: number | null;
+  durationSec: number | null;
+  logFile: string | null;
+  head: string | null;
+};
+
+const s = status as Status;
+const ranAt = s.updatedAt ? new Date(s.updatedAt) : null;
+const hoursAgo = ranAt ? (Date.now() - ranAt.getTime()) / 3_600_000 : null;
+const stale = hoursAgo !== null && hoursAgo > STALE_HOURS;
+
+const fmtDate = (d: Date) =>
+  new Intl.DateTimeFormat('es-CL', {
+    dateStyle: 'full',
+    timeStyle: 'short',
+    timeZone: TZ,
+  }).format(d);
+
+const fmtAgo = (h: number) => {
+  if (h < 1) return `hace ${Math.max(1, Math.round(h * 60))} min`;
+  if (h < 48) return `hace ${Math.round(h)} h`;
+  return `hace ${Math.round(h / 24)} días`;
+};
+
+const fmtDuration = (sec: number) =>
+  sec < 90 ? `${sec} s` : `${Math.floor(sec / 60)} min ${sec % 60} s`;
+
+const state = !ranAt ? 'nunca' : s.ok ? 'ok' : 'fail';
+
+const stateCopy = {
+  nunca: { label: 'Sin datos', tone: 'idle' },
+  ok: { label: 'Última corrida OK', tone: 'ok' },
+  fail: { label: 'Última corrida falló', tone: 'fail' },
+}[state]!;
+
+const rows: Array<[string, string]> = [];
+if (s.model) rows.push(['Modelo', s.model]);
+if (s.durationSec !== null) rows.push(['Duración', fmtDuration(s.durationSec)]);
+if (s.agentRc !== null) rows.push(['Código del agente', String(s.agentRc)]);
+if (s.exitCode !== null) rows.push(['Código del runner', String(s.exitCode)]);
+if (s.head) rows.push(['Commit', s.head]);
+if (s.logFile) rows.push(['Log en el VPS', s.logFile]);
+---
+
+<Base
+  title="Estado del agente"
+  description="Última corrida del agente que publica el ranking semanal de iapo.cl"
+  noindex
+>
+  <section class="page-head" data-reveal>
+    <span class="eyebrow">// Estado</span>
+    <h1>Agente del ranking</h1>
+  </section>
+  <hr class="tear-line divider" />
+
+  <div class="status-body" data-reveal>
+    <div class={`stamp stamp-${stateCopy.tone}`}>
+      <span class="stamp-dot" aria-hidden="true"></span>
+      {stateCopy.label}
+    </div>
+
+    <p class="lead">
+      El ranking se arma solo, con un agente de IA que corre <strong>{SCHEDULE}</strong> dentro del
+      servidor y publica la edición sin que nadie tenga que intervenir. Esta página la escribe el
+      propio runner al terminar cada corrida, así que si falla, el fallo queda publicado acá.
+    </p>
+
+    {
+      ranAt ? (
+        <dl class="facts">
+          <div>
+            <dt>Última corrida</dt>
+            <dd>
+              {fmtDate(ranAt)}
+              <span class="muted"> · {fmtAgo(hoursAgo!)}</span>
+            </dd>
+          </div>
+          {rows.map(([k, v]) => (
+            <div>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <p class="lead">
+          Todavía no hay ninguna corrida registrada. En cuanto ocurra la primera, esta página
+          muestra el detalle.
+        </p>
+      )
+    }
+
+    {
+      s.message && (
+        <p class={`verdict verdict-${stateCopy.tone}`}>
+          <strong>{s.ok === false ? 'Qué pasó' : 'Resultado'}:</strong> {s.message}
+        </p>
+      )
+    }
+
+    {
+      stale && (
+        <p class="alert">
+          <strong>Ojo:</strong> la última corrida fue {fmtAgo(hoursAgo!)}. Como el agente corre una
+          vez por semana, ya se perdió al menos una edición. El log completo queda en el servidor,
+          en <code>{s.logFile}</code>.
+        </p>
+      )
+    }
+
+    <p class="foot">
+      Cada corrida deja su log fechado en el servidor. Para ver el detalle de una falla concreta o
+      forzar una ejecución, hay que entrar al VPS por SSH.
+    </p>
+  </div>
+</Base>
+
+<style>
+  .status-body {
+    max-width: 62ch;
+    margin: 0 auto;
+    padding: 0 1.25rem 4rem;
+  }
+
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    transform: rotate(-1.5deg);
+  }
+
+  .stamp-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .stamp-ok {
+    color: var(--core);
+  }
+  .stamp-fail {
+    color: var(--comic-red);
+  }
+  .stamp-idle {
+    color: var(--ink-soft, currentColor);
+    opacity: 0.75;
+  }
+
+  .lead {
+    margin: 1.75rem 0 0;
+    line-height: 1.65;
+  }
+
+  .facts {
+    margin: 2rem 0 0;
+    border-top: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  }
+
+  .facts > div {
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  }
+
+  .facts dt {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  .facts dd {
+    margin: 0;
+    font-size: 0.92rem;
+    text-align: right;
+    word-break: break-word;
+  }
+
+  .muted {
+    opacity: 0.55;
+  }
+
+  .verdict {
+    margin: 1.5rem 0 0;
+    padding: 0.85rem 1rem;
+    border-left: 3px solid currentColor;
+    background: color-mix(in srgb, currentColor 7%, transparent);
+    line-height: 1.6;
+  }
+
+  .verdict-ok {
+    color: var(--core);
+  }
+  .verdict-fail {
+    color: var(--comic-red);
+  }
+  .verdict-idle {
+    color: currentColor;
+  }
+
+  .alert {
+    margin: 1.5rem 0 0;
+    padding: 0.85rem 1rem;
+    border: 1px dashed var(--comic-red);
+    color: var(--comic-red);
+    line-height: 1.6;
+  }
+
+  .foot {
+    margin: 2.5rem 0 0;
+    font-size: 0.85rem;
+    opacity: 0.6;
+    line-height: 1.6;
+  }
+
+  code {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.85em;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .stamp-fail .stamp-dot {
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+  }
+
+  @keyframes pulse {
+    50% {
+      opacity: 0.25;
+    }
+  }
+</style>

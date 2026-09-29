@@ -1,0 +1,91 @@
+name: Diagnóstico agente VPS
+
+# Recolecta el estado del agente semanal dentro del VPS y lo publica en un
+# issue de GitHub. El repo es público, así que el issue es legible sin token
+# desde cualquier lado — importante porque no hay `gh` CLI en la máquina de
+# trabajo y el VPS no es accesible por SSH desde ahí.
+#
+# El script que corre está versionado en ops/weekly-ranking/diagnose.sh y jamás
+# imprime el contenido de secrets.env ni de auth.json.
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_lines:
+        description: 'Máximo de líneas por bloque de log en el reporte'
+        required: false
+        default: '150'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency: iapo-diagnose-vps
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H 51.222.207.250 >> ~/.ssh/known_hosts
+
+      - name: Recolectar diagnóstico
+        run: |
+          scp ops/weekly-ranking/diagnose.sh ubuntu@51.222.207.250:/tmp/iapo-diagnose.sh
+          ssh ubuntu@51.222.207.250 \
+            "sudo DIAG_MAX_LINES='${{ inputs.max_lines }}' bash /tmp/iapo-diagnose.sh; rm -f /tmp/iapo-diagnose.sh" \
+            > report.md 2>&1 || echo "ssh exited $?" >> report.md
+
+      - name: Sanitizar
+        run: |
+          # Cinturón y tirantes: aunque diagnose.sh no imprime secretos, un log
+          # de corrida podría haber ecoado algo. Se enmascara antes de publicar.
+          sed -E -i \
+            -e 's/sk-[A-Za-z0-9_-]{16,}/sk-REDACTED/g' \
+            -e 's/gh[pousr]_[A-Za-z0-9]{16,}/github-REDACTED/g' \
+            -e 's/(MODEL_API_KEY|OPENAI_API_KEY|ANTHROPIC_API_KEY)=.*/\1=REDACTED/g' \
+            -e 's/("key"[[:space:]]*:[[:space:]]*")[^"]*/\1REDACTED/g' \
+            report.md
+          {
+            echo 'Reporte generado por el workflow `Diagnóstico agente VPS`.'
+            echo
+            echo '```'
+            cat report.md
+            echo '```'
+          } > body.md
+
+      - name: Publicar en issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create ops \
+            --color 5319e7 \
+            --description 'Diagnóstico operativo' \
+            --force >/dev/null
+          STAMP="$(date -u +%Y-%m-%d\ %H:%M\ UTC)"
+          NUM="$(gh issue list --label ops --state open --limit 1 \
+            --json number --jq '.[0].number // empty')"
+          if [ -n "$NUM" ]; then
+            gh issue comment "$NUM" --body-file body.md
+            echo "comentario en el issue #$NUM"
+          else
+            gh issue create \
+              --title 'Diagnóstico del agente semanal en el VPS' \
+              --label ops \
+              --body-file body.md
+          fi
+
+      - name: Resumen en el log
+        run: |
+          {
+            echo '--- resumen ---'
+            sed -n '/## Timer/,/^```$/p' report.md | head -n 20
+            sed -n '/## Última ejecución/,/^```$/p' report.md | head -n 20
+          } >> "$GITHUB_STEP_SUMMARY"
