@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-09-29T02:10:44Z",
+  "updatedAt": "2026-09-29T14:53:27Z",
   "ok": false,
   "stage": "verificacion",
   "message": "el build no generó dist/rankings/index.html (el agente no commiteó o el build falló)",
-  "model": "opencode/big-pickle",
+  "model": "alibaba/qwen3.8-max",
   "agentRc": 1,
   "exitCode": 1,
-  "durationSec": 7,
-  "logFile": "20260929T021037Z-run.log",
-  "head": "2ad2649"
+  "durationSec": 6,
+  "logFile": "20260929T145321Z-run.log",
+  "head": "57fac80"
 }
