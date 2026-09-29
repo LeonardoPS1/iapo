@@ -70,7 +70,10 @@ no se puede automatizar desde el lado del VPS.
 
 `install.sh` es idempotente, así que volver a correr el workflow también sirve para **actualizar**
 el runner en el VPS después de un cambio en `run.sh` (por ejemplo, para agregar el estado). No
-toca el usuario, la key ni los secretos ya instalados.
+toca el usuario ni la deploy key. Para **rotar la API key o el modelo**: actualizar el secret
+`MODEL_API_KEY` en GitHub (y/o el input `model` del workflow) y re-correr el bootstrap — con
+`MODEL_API_KEY` presente reescribe `secrets.env` y regenera `auth.json`; sin ese secret conserva
+la configuración previa.
 
 ## Operación
 
@@ -101,7 +104,7 @@ Se cambian en `/etc/iapo-agent/secrets.env` (root:iapoagent, 640) y se aplican c
 | Variable | Default | Qué es |
 |---|---|---|
 | `MODEL_API_KEY` | — | API key del provider `opencode`. |
-| `IAPO_MODEL` | `opencode/big-pickle` | `provider/model` que ejecuta el agente. |
+| `IAPO_MODEL` | `alibaba/qwen3.8-max` | `provider/model` que ejecuta el agente. |
 | `IAPO_REPO_DIR` | `/opt/iapo-agent/repo` | Clone de trabajo. |
 | `IAPO_TIMEOUT_MIN` | `25` | Tope de la corrida del agente. |
 | `IAPO_CRON` | `Sun *-*-* 01:00:00 America/Santiago` | Calendario del timer (hora Chile, UTC-3), aplicado por `install.sh`. |

@@ -14,7 +14,7 @@ on:
       model:
         description: 'Modelo provider/model que ejecuta el agente'
         required: false
-        default: 'opencode/big-pickle'
+        default: 'alibaba/qwen3.8-max'
       run_now:
         description: 'Forzar una ejecución inmediata del agente al terminar'
         type: boolean

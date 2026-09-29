@@ -6,9 +6,10 @@
 #   sudo env MODEL_API_KEY=... bash /tmp/iapo-agent-bootstrap/install.sh
 #
 # Variables por entorno:
-#   MODEL_API_KEY   secret de OpenCode (obligatorio la primera vez)
+#   MODEL_API_KEY   secret de OpenCode (obligatorio la primera vez; si se pasa
+#                   en un re-bootstrap, ROTA la key y regenera auth.json)
 #   IAPO_REPO_DIR   default /opt/iapo-agent/repo
-#   IAPO_MODEL      default opencode/big-pickle
+#   IAPO_MODEL      default alibaba/qwen3.8-max
 #   IAPO_CRON       default "Sun *-*-* 01:00:00 America/Santiago"  (domingo 01:00 hora Chile)
 #   AGENT_USER      default iapoagent
 set -Eeuo pipefail
@@ -16,7 +17,7 @@ set -Eeuo pipefail
 REPO_DIR="${IAPO_REPO_DIR:-/opt/iapo-agent/repo}"
 LOG_DIR="${IAPO_LOG_DIR:-/var/log/iapo-agent}"
 AGENT_USER="${AGENT_USER:-iapoagent}"
-MODEL="${IAPO_MODEL:-opencode/big-pickle}"
+MODEL="${IAPO_MODEL:-alibaba/qwen3.8-max}"
 CRON="${IAPO_CRON:-Sun *-*-* 01:00:00 America/Santiago}"
 SECRETS_DIR="/etc/iapo-agent"
 SECRETS_FILE="$SECRETS_DIR/secrets.env"
@@ -76,10 +77,10 @@ fi
 
 # ---------------------------------------------------------- 3. secrets
 install -d -m 0750 -o root -g "$AGENT_USER" "$SECRETS_DIR"
-if [ -f "$SECRETS_FILE" ]; then
-  log "$SECRETS_FILE ya existe — se conserva la API key previa"
-else
-  [ -n "${MODEL_API_KEY:-}" ] || fail "falta MODEL_API_KEY y no existe $SECRETS_FILE"
+# Rotación: si se pasa MODEL_API_KEY (p.ej. desde el secret de GitHub), se
+# reescriben key + modelo. Sin MODEL_API_KEY se conserva la configuración previa
+# para que un re-bootstrap no borre una key que ya funciona.
+if [ -n "${MODEL_API_KEY:-}" ]; then
   umask 077
   cat >"$SECRETS_FILE" <<EOF
 # Generado por ops/weekly-ranking/install.sh. No commitear.
@@ -87,7 +88,11 @@ MODEL_API_KEY=$MODEL_API_KEY
 IAPO_MODEL=$MODEL
 IAPO_REPO_DIR=$REPO_DIR
 EOF
-  log "escrito $SECRETS_FILE"
+  log "escrito/actualizado $SECRETS_FILE (key + modelo=$MODEL)"
+elif [ -f "$SECRETS_FILE" ]; then
+  log "$SECRETS_FILE ya existe y no se pasó MODEL_API_KEY — se conserva la configuración previa"
+else
+  fail "falta MODEL_API_KEY y no existe $SECRETS_FILE"
 fi
 chown root:"$AGENT_USER" "$SECRETS_FILE"
 chmod 640 "$SECRETS_FILE"
@@ -95,19 +100,21 @@ chmod 640 "$SECRETS_FILE"
 # ------------------------------------------------ 4. auth.json de opencode
 AUTH_DIR="$AGENT_HOME/.local/share/opencode"
 install -d -m 0700 -o "$AGENT_USER" -g "$AGENT_USER" "$AUTH_DIR"
-if [ -f "$AUTH_DIR/auth.json" ]; then
-  log "auth.json ya existe — se conserva"
-else
+# Rotación: regenerar auth.json cuando se pasó una key nueva o cuando todavía no
+# existe. El provider sigue siendo `opencode` (el gateway enruta al modelo).
+if [ -n "${MODEL_API_KEY:-}" ] || [ ! -f "$AUTH_DIR/auth.json" ]; then
   KEY="$(sed -n 's/^MODEL_API_KEY=//p' "$SECRETS_FILE" | head -1)"
   [ -n "$KEY" ] || fail "no se pudo leer MODEL_API_KEY de $SECRETS_FILE"
-  log "generando auth.json (provider opencode) en $AUTH_DIR"
+  log "generando/actualizando auth.json (provider opencode) en $AUTH_DIR"
   as_agent env KEY="$KEY" bash -c '
     umask 077
     mkdir -p "$HOME/.local/share/opencode"
     printf "{\"opencode\":{\"type\":\"api\",\"key\":\"%s\"}}\n" "$KEY" \
       > "$HOME/.local/share/opencode/auth.json"
     chmod 600 "$HOME/.local/share/opencode/auth.json"'
-  log "auth.json creado"
+  log "auth.json listo"
+else
+  log "auth.json ya existe y no se pasó MODEL_API_KEY — se conserva"
 fi
 
 # ------------------------------------ 5. deploy key SSH para push a GitHub
