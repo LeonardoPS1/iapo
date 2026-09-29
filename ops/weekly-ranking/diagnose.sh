@@ -12,6 +12,17 @@ SECRETS_FILE="/etc/iapo-agent/secrets.env"
 TIMER="iapo-ranking.timer"
 SERVICE="iapo-ranking.service"
 MAX_LINES="${DIAG_MAX_LINES:-150}"
+AGENT_USER="${AGENT_USER:-iapoagent}"
+AGENT_HOME="/home/$AGENT_USER"
+AGENT_PATH="$AGENT_HOME/.opencode/bin:$AGENT_HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
+
+# Los chequeos de toolchain y de git se hacen COMO el usuario de servicio, no
+# como root. La primera versión de este script corría todo como root y mentir:
+# reportaba "opencode: AUSENTE" (vive en ~/.opencode/bin, fuera del PATH de
+# root) y cuatro "dubious ownership" de git (el repo es de iapoagent). Dos
+# alarmas falsas tapando la causa real. Verificar en el mismo contexto en el
+# que corre el runner es la única forma de que el reporte diga la verdad.
+as_agent() { runuser -u "$AGENT_USER" -- env HOME="$AGENT_HOME" PATH="$AGENT_PATH" "$@" 2>&1; }
 
 h() { printf '\n## %s\n\n```\n' "$*"; }
 end() { printf '```\n'; }
@@ -41,6 +52,21 @@ journalctl -u "$SERVICE" -n "$MAX_LINES" --no-pager -o short-iso 2>&1
 
 # ------------------------------------------------- 4. logs en disco
 h "Logs en $LOG_DIR"
+# El 2026-09-27 el runner murió en `mkdir -p $LOG_DIR` con "Permission denied"
+# (su padre /var/log es de root) y no dejó ni log ni estado. Por eso se prueba
+# la escritura real como el usuario de servicio y no solo la existencia.
+if [ -d "$LOG_DIR" ]; then
+  echo "directorio: $(stat -c '%a %U:%G' "$LOG_DIR")"
+  if as_agent test -w "$LOG_DIR"; then
+    echo "escritura por $AGENT_USER: OK"
+  else
+    echo "escritura por $AGENT_USER: FALLOSA (causa raíz del fallo del 2026-09-27)"
+    echo "  fix: install -d -m 0750 -o $AGENT_USER -g $AGENT_USER $LOG_DIR"
+  fi
+else
+  echo "directorio: NO EXISTE (el runner no puede crear logs; en /var/log no puede)"
+fi
+echo
 ls -l "$LOG_DIR" 2>&1 | tail -n 15
 LATEST="$(ls -1t "$LOG_DIR"/*-run.log 2>/dev/null | head -n 1 || true)"
 if [ -n "$LATEST" ]; then
@@ -52,10 +78,11 @@ else
 fi
 
 # ------------------------------------------------------- 5. toolchain
-h "Toolchain"
-echo "node:    $(command -v node >/dev/null && node -v || echo AUSENTE)"
-echo "opencode:$(command -v opencode >/dev/null && echo " $(opencode --version 2>&1 | head -n1)" || echo ' AUSENTE')"
-echo "git:     $(git --version 2>&1)"
+h "Toolchain (en el contexto del usuario de servicio $AGENT_USER)"
+echo "node:    $(as_agent node -v || echo AUSENTE)"
+echo "opencode:$(as_agent opencode --version 2>&1 | head -n1 || true)"
+[ -x "$AGENT_HOME/.opencode/bin/opencode" ] || echo "opencode: binario no encontrado en $AGENT_HOME/.opencode/bin"
+echo "git:     $(as_agent git --version || echo AUSENTE)"
 
 # --------------------------------------------------------- 6. config
 h "Configuración (solo variables no secretas)"
@@ -73,14 +100,14 @@ echo "(contenido omitido a propósito)"
 # --------------------------------------------------------- 7. repo
 h "Repo del agente"
 if [ -d "$REPO_DIR/.git" ]; then
-  echo "HEAD: $(git -C "$REPO_DIR" rev-parse --short HEAD 2>&1)"
-  echo "último commit: $(git -C "$REPO_DIR" log -1 --pretty='%s (%cr)' 2>&1)"
-  echo "commits sin pushear: $(git -C "$REPO_DIR" rev-list --count origin/main..HEAD 2>&1)"
+  echo "HEAD: $(as_agent git -C "$REPO_DIR" rev-parse --short HEAD)"
+  echo "último commit: $(as_agent git -C "$REPO_DIR" log -1 --pretty='%s (%cr)')"
+  echo "commits sin pushear: $(as_agent git -C "$REPO_DIR" rev-list --count origin/main..HEAD)"
   echo "últimos 5 commits:"
-  git -C "$REPO_DIR" log -5 --pretty='  %h %cr %s' 2>&1
+  as_agent git -C "$REPO_DIR" log -5 --pretty='  %h %cr %s'
   echo
   echo "cambios sin commitear:"
-  git -C "$REPO_DIR" status --porcelain 2>&1 | head -n 20
+  as_agent git -C "$REPO_DIR" status --porcelain | head -n 20
   echo
   echo "contenido de src/content/rankings:"
   ls -1 "$REPO_DIR/src/content/rankings" 2>&1 | head -n 20

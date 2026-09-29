@@ -14,6 +14,7 @@
 set -Eeuo pipefail
 
 REPO_DIR="${IAPO_REPO_DIR:-/opt/iapo-agent/repo}"
+LOG_DIR="${IAPO_LOG_DIR:-/var/log/iapo-agent}"
 AGENT_USER="${AGENT_USER:-iapoagent}"
 MODEL="${IAPO_MODEL:-opencode/big-pickle}"
 CRON="${IAPO_CRON:-Sun *-*-* 01:00:00 America/Santiago}"
@@ -125,6 +126,12 @@ chmod 600 "$KEY_PATH"
 chmod 644 "$KEY_PATH.pub"
 
 # ---------------------------------------------------------- 6. repo
+# El directorio de logs lo usa el usuario de servicio, no root: sin esto
+# `mkdir -p` del runner falla con "Permission denied" en /var/log y la corrida
+# muere en la línea 19 sin log ni estado (fallo silencioso).
+install -d -m 0750 -o "$AGENT_USER" -g "$AGENT_USER" "$LOG_DIR"
+log "logs en $LOG_DIR ($(stat -c '%a %U:%G' "$LOG_DIR"))"
+
 install -d -m 0755 -o "$AGENT_USER" -g "$AGENT_USER" "$(dirname "$REPO_DIR")"
 if [ -d "$REPO_DIR/.git" ]; then
   log "repo existente — fetch + reset a origin/main"

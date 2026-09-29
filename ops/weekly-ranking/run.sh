@@ -16,7 +16,20 @@ TIMEOUT_MIN="${IAPO_TIMEOUT_MIN:-25}"
 BRANCH="${IAPO_BRANCH:-main}"
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 
-mkdir -p "$LOG_DIR"
+# El directorio de logs no puede ser un prerrequisito de la corrida. El
+# 2026-09-27 el runner murió en el `mkdir` de /var/log con "Permission denied":
+# sin log, sin estado, y por lo tanto indistinguible de "no corrió". Ahora se
+# prueba la escritura y, si falla, se cae a un path del usuario de servicio.
+LOG_FALLBACK_DIR="${IAPO_FALLBACK_LOG_DIR:-${HOME:-/tmp}/.local/state/iapo-agent}"
+LOG_DEGRADED=0
+if ! mkdir -p "$LOG_DIR" 2>/dev/null || ! touch "$LOG_DIR/.write-probe" 2>/dev/null; then
+  printf '[%s] WARN: no se puede escribir en %s; los logs van a %s\n' \
+    "$(date -u +%FT%TZ)" "$LOG_DIR" "$LOG_FALLBACK_DIR" >&2
+  mkdir -p "$LOG_FALLBACK_DIR" 2>/dev/null || LOG_FALLBACK_DIR="$(mktemp -d)"
+  LOG_DIR="$LOG_FALLBACK_DIR"
+  LOG_DEGRADED=1
+fi
+rm -f "$LOG_DIR/.write-probe" 2>/dev/null || true
 RUN_LOG="$LOG_DIR/$(date -u +%Y%m%dT%H%M%SZ)-run.log"
 RUN_LOG_NAME="$(basename "$RUN_LOG")"
 export XDG_DATA_HOME
@@ -27,7 +40,12 @@ STATUS_STAGE="start"
 STATUS_MESSAGE="corrida iniciada"
 STATUS_PUBLISH=1
 
-log() { printf '[%s] %s\n' "$(date -u +%FT%TZ)" "$*" | tee -a "$RUN_LOG"; }
+log() {
+  local line="[$(date -u +%FT%TZ)] $*"
+  # Si el archivo no se puede escribir, el mensaje igual sale por stdout y
+  # queda en el journal: perder el log nunca debe tapar el motivo del fallo.
+  printf '%s\n' "$line" | tee -a "$RUN_LOG" 2>/dev/null || printf '%s\n' "$line"
+}
 fail() { STATUS_STAGE="fatal"; STATUS_MESSAGE="$*"; log "ERROR: $*"; exit 1; }
 
 # Escapa un string para incrustarlo en JSON sin depender de node.
