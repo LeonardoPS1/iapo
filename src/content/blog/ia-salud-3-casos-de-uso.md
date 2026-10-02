@@ -1,7 +1,7 @@
 ---
 title: "IA en salud: 3 casos de uso que ya funcionan en clínicas chilenas"
 description: "Tres patrones de automatización con IA que resuelven problemas reales de gestión de pacientes, sin reemplazar el criterio clínico."
-pubDate: 2026-09-11
+pubDate: 2026-10-02
 pilar: "salud"
 tags: ["salud", "clinicas", "whatsapp", "automatizacion"]
 draft: false

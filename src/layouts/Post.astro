@@ -20,8 +20,8 @@ const pilarLabel = {
   'ia-general': 'IA general',
 }[pilar];
 
-const dateFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }).format(pubDate);
-const dateShort = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+const dateFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(pubDate);
+const dateShort = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(d);
 
 const postUrl = new URL(Astro.url.pathname, Astro.site).href;
 

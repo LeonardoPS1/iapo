@@ -40,8 +40,8 @@ interface Props {
 
 const { title, description, pubDate, snapshotDate, edition, lists, method } = Astro.props;
 
-const dateFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }).format(pubDate);
-const snapshotFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }).format(snapshotDate);
+const dateFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(pubDate);
+const snapshotFmt = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(snapshotDate);
 
 const landingUrl = new URL(Astro.url.pathname, Astro.site).href;
 

@@ -23,7 +23,7 @@ const postsByPilar = allPosts.reduce((acc, post) => {
 }, {});
 
 const currentPilar = allPosts.find((p) => p.id === currentId)?.data.pilar;
-const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(d);
 ---
 <aside class="sidebar" data-reveal>
   <div class="sidebar-head">

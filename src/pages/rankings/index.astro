@@ -6,7 +6,7 @@ import MiniPodium from '../../components/rank/MiniPodium.astro';
 const allRankings = await getCollection('rankings', ({ data }) => !data.draft);
 const rankings = allRankings.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
-const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(d);
 
 const topRepo = (r: { data: { lists: { items: { rank: number; name: string; metricNumber: number; metricDisplay: string }[] }[] } }) =>
   r.data.lists[0]?.items ?? [];

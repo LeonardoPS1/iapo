@@ -22,7 +22,7 @@ const pilarLabel: Record<string, string> = {
   automatizacion: 'Automatización',
   'ia-general': 'IA general',
 };
-const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(d);
 // timeZone UTC explícito: la fecha de un content collection es un día, no un instante.
 const snapshotFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(d);
 
