@@ -2,12 +2,20 @@
 import Base from '../layouts/Base.astro';
 import Wordmark from '../components/Wordmark.astro';
 import Sidebar from '../components/Sidebar.astro';
-import HeroArt from '../components/HeroArt.astro';
 import { getCollection } from 'astro:content';
 
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
 const posts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 const [featured, ...rest] = posts;
+
+// Cifras reales de la edición actual (nada hardcodeado: salen de las colecciones).
+const allRankings = await getCollection('rankings', ({ data }) => !data.draft);
+const latestRanking = allRankings.sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+)[0];
+const toolsCurated = latestRanking
+  ? latestRanking.data.lists.reduce((total, list) => total + list.items.length, 0)
+  : 0;
 
 const pilarLabel: Record<string, string> = {
   salud: 'IA en salud',
@@ -15,6 +23,8 @@ const pilarLabel: Record<string, string> = {
   'ia-general': 'IA general',
 };
 const dateFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+// timeZone UTC explícito: la fecha de un content collection es un día, no un instante.
+const snapshotFmt = (d: Date) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(d);
 
 // Fecha actual para el masthead (edición dinámica)
 const now = new Date();
@@ -81,7 +91,26 @@ const nav = [
         <a class="btn" href="#suscribir">Suscribirme gratis</a>
         <a class="btn btn-ghost" href="/blog">Leer el blog →</a>
       </div>
-      <HeroArt />
+      <div class="press-strip">
+        <div class="press-cell">
+          <span class="press-num">{posts.length}</span>
+          <span class="press-label">Notas</span>
+        </div>
+        <div class="press-cell">
+          <span class="press-num">{allRankings.length}</span>
+          <span class="press-label">Rankings</span>
+        </div>
+        <div class="press-cell">
+          <span class="press-num">{toolsCurated}</span>
+          <span class="press-label">Herramientas</span>
+        </div>
+        {latestRanking && (
+          <div class="press-cell press-cell--date">
+            <span class="press-num">{snapshotFmt(latestRanking.data.pubDate)}</span>
+            <span class="press-label">Último ranking</span>
+          </div>
+        )}
+      </div>
     </section>
 
     <section class="editorial">
@@ -336,9 +365,51 @@ const nav = [
 
   .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 28px; }
 
-  /* ===== HeroArt entrance ===== */
-  .hero-art {
-    margin-top: 32px;
+  /* ===== Press strip — cifras reales de la edición (lenguaje de maqueta) ===== */
+  .press-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 30px;
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 400ms var(--ease-out), transform 400ms var(--ease-out);
+    transition-delay: 480ms;
+  }
+  .sheet.is-revealed .press-strip { opacity: 1; transform: translateY(0); }
+  .press-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 18px 13px;
+    border-right: 1px solid var(--rule);
+  }
+  .press-cell:first-child { padding-left: 0; }
+  .press-cell:last-child { padding-right: 0; border-right: none; }
+  .press-num {
+    font-family: var(--font-mono);
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .press-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  /* La celda de fecha lleva texto, no dígitos: se reduce para no competir
+     ópticamente con las cifras y va en mayúscula, como las reglas del masthead. */
+  .press-cell--date .press-num {
+    font-size: 1rem;
+    text-transform: uppercase;
+    padding-top: 3px;
+    color: var(--comic-red);
   }
 
   /* ===== Editorial ===== */
@@ -545,7 +616,7 @@ const nav = [
     .featured,
     .post-row,
     .subscribe,
-    .hero-art {
+    .press-strip {
       transition-duration: 0ms !important;
       opacity: 1 !important;
       transform: none !important;
@@ -557,6 +628,9 @@ const nav = [
     .mast-nav { gap: 16px; flex-wrap: wrap; }
     .mag-grid { grid-template-columns: 1fr; }
     .mast-nav a { padding: 4px 0; }
+    .press-strip { grid-template-columns: repeat(2, 1fr); }
+    .press-cell:nth-child(2n) { border-right: none; padding-right: 0; }
+    .press-cell:nth-child(n + 3) { border-top: 1px solid var(--rule); }
   }
 </style>
 
@@ -626,7 +700,7 @@ const nav = [
       if (sheet) sheet.classList.add('is-revealed');
       lines.forEach((line) => line.classList.add('is-in'));
       // Force reveal all staggered elements
-      document.querySelectorAll('.mast-date, .mast-nameplate, .mast-edition, .mast-nav, .hero-kicker, .ed-item, .featured, .post-row, .subscribe, .hero-art').forEach(el => {
+      document.querySelectorAll('.mast-date, .mast-nameplate, .mast-edition, .mast-nav, .hero-kicker, .ed-item, .featured, .post-row, .subscribe, .press-strip').forEach(el => {
         el.style.transitionDuration = '0ms';
         el.style.opacity = '1';
         el.style.transform = 'none';
