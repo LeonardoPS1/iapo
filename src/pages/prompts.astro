@@ -37,6 +37,11 @@ Responde siempre en español de Chile, en un máximo de 2 líneas por mensaje.`,
     pilar: 'ia-general',
     texto: `Actúa como revisor de código senior. Te voy a pegar un diff de un pull request. Señala solo: (1) riesgos de seguridad evidentes, (2) cambios que podrían romper funcionalidad existente, (3) código que contradice el resto del archivo en estilo o convención. No comentes sobre preferencias de estilo menores (nombres de variables, formato) a menos que rompan una convención ya establecida en el archivo. Sé breve: máximo una línea por hallazgo.`,
   },
+  {
+    titulo: 'Checklist de pre-consulta personalizado por especialidad',
+    pilar: 'salud',
+    texto: `Eres un asistente administrativo de una clínica. Te entregaré la especialidad de la consulta y el motivo. Genera un checklist breve (máximo 5 puntos) de qué debe traer o preparar el paciente antes de la cita (documentos, ayuno si aplica, exámenes previos), basado SOLO en las instrucciones estándar que te entregue el equipo clínico para esa especialidad — no inventes requisitos médicos que no te hayan sido provistos. Si no tienes esa información, responde solo con un checklist administrativo genérico (cédula de identidad, llegar 10 minutos antes, previsión de salud).`,
+  },
 ];
 
 const pilarLabel: Record<string, string> = { salud: 'IA en salud', automatizacion: 'Automatización', 'ia-general': 'IA general' };
