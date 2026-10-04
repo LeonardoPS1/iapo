@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-29T14:53:27Z",
+  "updatedAt": "2026-10-04T04:03:54Z",
   "ok": false,
   "stage": "verificacion",
   "message": "el build no generó dist/rankings/index.html (el agente no commiteó o el build falló)",
@@ -7,6 +7,6 @@
   "agentRc": 1,
   "exitCode": 1,
   "durationSec": 6,
-  "logFile": "20260929T145321Z-run.log",
-  "head": "57fac80"
+  "logFile": "20261004T040348Z-run.log",
+  "head": "2fbb3a2"
 }
