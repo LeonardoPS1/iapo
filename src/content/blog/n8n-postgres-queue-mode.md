@@ -1,7 +1,7 @@
 ---
 title: "n8n en producción: de SQLite a PostgreSQL con workers"
 description: "Por qué n8n sigue usando SQLite aunque configures Postgres, y qué cambiar para que realmente escale con workers."
-pubDate: 2026-09-18
+pubDate: 2026-10-11
 pilar: "automatizacion"
 tags: ["n8n", "postgresql", "docker", "self-hosted"]
 draft: false
