@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-10-04T04:03:54Z",
+  "updatedAt": "2026-10-11T04:00:40Z",
   "ok": false,
   "stage": "verificacion",
   "message": "el build no generó dist/rankings/index.html (el agente no commiteó o el build falló)",
   "model": "alibaba/qwen3.8-max",
   "agentRc": 1,
   "exitCode": 1,
-  "durationSec": 6,
-  "logFile": "20261004T040348Z-run.log",
-  "head": "2fbb3a2"
+  "durationSec": 5,
+  "logFile": "20261011T040035Z-run.log",
+  "head": "a69b170"
 }
