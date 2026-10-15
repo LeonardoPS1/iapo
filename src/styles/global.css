@@ -49,7 +49,12 @@
 
 * { box-sizing: border-box; }
 
-html { background: var(--paper); }
+/* overflow-x: clip evita el scroll horizontal que provocan los sellos de goma:
+   su estado previo a la revelacion es scale(2.35) con transform-origin left center,
+   asi que el borde derecho del box se estira ~97px fuera del viewport.
+   En el viewport se resuelve como hidden: corta la rueda y el touch, no agrega barra
+   y no rompe position:sticky (verificado en /rankings/<edicion>). */
+html { background: var(--paper); overflow-x: clip; }
 
 body {
   margin: 0;

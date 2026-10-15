@@ -1,84 +1,75 @@
-# nginx/Cloudflare HTTP Headers for iapo.cl SEO
+# HTTP headers for iapo.cl (nginx + Cloudflare)
 
-## Current nginx.conf Configuration
+The site is served by nginx (`nginx:alpine` in the Swarm service `iapo-iapo-srsxbv`) with
+Cloudflare in front. Security headers are applied by nginx, not by Cloudflare.
 
-```nginx
-server {
-    listen 80;
-    server_name _;
-    root /usr/share/nginx/html;
-    index index.html;
+## Files
 
-    location / {
-        try_files $uri $uri/index.html $uri.html =404;
-    }
+| File | Role |
+|------|------|
+| `nginx.conf` | Server block baked into the image (`/etc/nginx/conf.d/default.conf`). |
+| `nginx-security-headers.conf` | Security headers, copied to `/etc/nginx/snippets/security-headers.conf` by the `Dockerfile`. |
 
-    error_page 404 /404.html;
+`nginx.conf` includes the snippet at the `server` level **and** inside every `location` that
+declares its own `add_header`. nginx drops inherited headers in a block as soon as that block
+declares one, so the include has to be repeated — keep that in mind when adding a location.
 
-    location ~* \.(?:css|js|png|jpe?g|webp|avif|svg|ico|woff2?|ttf)$ {
-        expires 7d;
-        add_header Cache-Control "public, immutable";
-        try_files $uri =404;
-    }
+CI validates the config on every push: the `build` job runs
+`docker run --rm -v "$PWD/nginx.conf":/etc/nginx/conf.d/default.conf:ro \
+ -v "$PWD/nginx-security-headers.conf":/etc/nginx/snippets/security-headers.conf:ro nginx:alpine nginx -t`.
 
-    location ~* \.(?:xml|txt)$ {
-        add_header Cache-Control "public, max-age=3600";
-    }
+## Cache headers
 
-    gzip on;
-    gzip_types text/css application/javascript application/json image/svg+xml;
-}
-```
+| Match | Header |
+|-------|--------|
+| `css`, `js`, images, fonts | `Cache-Control: public, max-age=604800, immutable` |
+| `xml`, `txt` (sitemap, robots, llms.txt) | `Cache-Control: public, max-age=3600` |
 
-## Cache Headers (Already Configured)
-- Static assets (images, CSS, JS): `Cache-Control: public, max-age=604800` (7 days)
-- XML/TXT (sitemap, robots): `Cache-Control: public, max-age=3600` (1 hour)
+Use a single `add_header Cache-Control` per block: `expires 7d` together with
+`add_header Cache-Control` emits two `Cache-Control` headers.
 
-## Required Additional Headers
+## Security headers applied
 
-### Security Headers (to add in nginx or Cloudflare)
-```nginx
-# Content Security Policy
-add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://db52c710.sibforms.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://db52c710.sibforms.com; frame-src https://db52c710.sibforms.com;" always;
+| Header | Value |
+|--------|-------|
+| `Content-Security-Policy` | see `nginx-security-headers.conf` |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains; preload` |
+| `X-Frame-Options` | `SAMEORIGIN` |
+| `X-Content-Type-Options` | `nosniff` |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` |
+| `Permissions-Policy` | camera, microphone, geolocation, payment, usb, etc. disabled |
 
-# HSTS (enable after SSL verified)
-add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+Third-party origins the CSP has to allow (each one is used by the page):
 
-# Prevent clickjacking
-add_header X-Frame-Options "SAMEORIGIN" always;
+- `https://giscus.app` — comments on `/extra/<slug>` (`script-src`, `connect-src`, `frame-src`).
+- `https://static.cloudflareinsights.com` (`script-src`) and `https://cloudflareinsights.com`
+  (`connect-src`) — Cloudflare Web Analytics beacon, injected by Cloudflare at the edge, not in the repo.
+- `https://db52c710.sibforms.com` — Brevo newsletter iframe on the home (`frame-src`).
+- `https://fonts.googleapis.com` / `fonts.gstatic.com` — Playfair Display, Inter, JetBrains Mono.
+- `'unsafe-inline'` for `script-src`/`style-src`: Astro emits inline scripts and inline JSON-LD,
+  and component styles are inlined in the head.
 
-# Prevent MIME sniffing
-add_header X-Content-Type-Options "nosniff" always;
+## 404
 
-# Referrer policy
-add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-```
-
-### X-Robots-Tag for Non-HTML Resources
-```nginx
-# For PDFs, images, etc.
-location ~* \.(pdf|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2)$ {
-    add_header X-Robots-Tag "index, follow" always;
-}
-```
-
-### Permissions Policy
-```nginx
-add_header Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()" always;
-```
-
-## Cloudflare Configuration (Alternative)
-If using Cloudflare Workers/Pages, configure in Cloudflare dashboard:
-- Security > WAF > Managed Rules
-- Speed > Optimization > Auto Minify (CSS, JS, HTML)
-- Network > HTTP/3 (QUIC)
-- SSL/TLS > Always Use HTTPS, HSTS
-- Scrape Shield > Email Obfuscation, Server-side Excludes
+`error_page 404 /404.html;` is served by `src/pages/404.astro`, so the file exists in `dist/`.
 
 ## Verification
-Test headers with:
+
 ```bash
-curl -I https://iapo.cl/
-curl -I https://iapo.cl/og.png
-curl -I https://iapo.cl/sitemap-index.xml
+curl -sI https://iapo.cl/ | grep -iE 'content-security|strict-transport|x-frame|x-content-type|referrer-policy'
+curl -sI https://iapo.cl/og.png                      # cache + nosniff
+curl -sI https://iapo.cl/sitemap-index.xml           # cache 1h
+curl -sI https://iapo.cl/this-does-not-exist         # 404 body
 ```
+
+Before this change production returned **none** of the security headers (they were only
+documented here). If any of the greps above come back empty after a deploy, the snippet is
+not reaching the location block that serves that path.
+
+## Cloudflare notes
+
+Cloudflare sits in front of nginx, so the client sees Cloudflare's response. Keep these in mind:
+
+- The Web Analytics beacon is injected at the edge; `cloudflareinsights.com` must stay in the CSP.
+- If a Cloudflare transform rule ever adds headers, verify they do not duplicate the nginx ones.
+- HSTS: Cloudflare SSL/TLS can also send it; set it in one place only.

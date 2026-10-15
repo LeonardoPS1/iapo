@@ -118,34 +118,34 @@ permisos, parámetros, cómo forzar una corrida) está en `ops/weekly-ranking/RE
 ## Comentarios (Giscus)
 
 Los comentarios viven en GitHub Discussions, vía [Giscus](https://giscus.app), y se
-muestran **solo** en `/extra/<slug>`. El componente
-`src/components/GiscusComments.astro` tiene dos constantes sin completar
-(`REEMPLAZAR_REPO_ID` y `REEMPLAZAR_CATEGORY_ID`) y, mientras estén así, muestra el
-aviso "Los comentarios se activan muy pronto." en vez de cargar el iframe.
+muestran **solo** en `/extra/<slug>`. Están configurados y funcionando en
+`src/components/GiscusComments.astro`:
 
-Para activarlos, en el repo `LeonardoPS1/iapo`:
-
-| Paso | Dónde |
+| Constante | Valor |
 |---|---|
-| 1. Habilitar **Discussions** | Settings → General → Features |
-| 2. Crear la categoría `Extra` (tipo **Announcements**) | pestaña Discussions → ⚙️ → New category |
-| 3. Instalar la app de giscus **en este repo** | <https://github.com/apps/giscus> |
-| 4. Pegar los dos IDs en las constantes del componente | `src/components/GiscusComments.astro` (líneas 5 y 7) |
+| `REPO` | `LeonardoPS1/iapo` |
+| `REPO_ID` (`data-repo-id`) | `R_kgDOT4YBlA` |
+| `CATEGORY` | `Announcements` |
+| `CATEGORY_ID` (`data-category-id`) | `DIC_kwDOT4YBlM4DIgQr` |
 
-El `data-repo-id` de este repo es `R_kgDOT4YBlA`. El `data-category-id` (`DIC_kwDO…`)
-se obtiene de <https://giscus.app> —o por GraphQL, `repository { discussionCategories }`—
-una vez que la categoría existe. Cuando las dos constantes están completas,
-`configured` pasa a `true` y el iframe se carga solo: no hace falta ningún cambio de
-build ni variable de entorno.
+Con las cuatro completas, `configured` es `true` y el componente inyecta el iframe; si
+volvieran a los placeholders (`REEMPLAZAR_…`) mostraría el aviso "Los comentarios se
+activan muy pronto." en vez del iframe.
 
-Nada de esto se puede automatizar: habilitar Discussions requiere el permiso
-`administration: write` sobre el repo, y la API de GitHub **no expone** ni mutación
-para crear categorías de Discussion ni forma de instalar una app. Son los tres pasos
-de UI, una sola vez.
+La categoría es **Announcements**, la que giscus recomienda para este uso. Si querés una
+categoría propia (`Extra`), se crea en la UI del repo —pestaña Discussions → ⚙️ → New
+category, tipo Announcements— y después se cambian dos líneas: `CATEGORY` y `CATEGORY_ID`
+(el `DIC_kwDO…` se lee de <https://giscus.app> o por GraphQL con
+`repository { discussionCategories }`). La API de GitHub **no expone** mutación para crear
+categorías de Discussion ni forma de instalar la app: eso es UI, una sola vez.
 
 Con `data-mapping="pathname"` cada nota tiene su propio hilo, y el bot de giscus lo
 crea la primera vez que alguien comenta. El repo tiene que ser público y la app tener
 acceso, si no el iframe carga vacío.
+
+La CSP de nginx tiene que permitir `https://giscus.app` (`script-src`, `connect-src` y
+`frame-src`): está en `nginx-security-headers.conf`.
+
 
 ## Newsletter
 
@@ -165,12 +165,16 @@ el pie del layout de ranking y el cierre de los artículos del blog.
 
 Push a `main` dispara `.github/workflows/deploy.yml`. No hay deploy manual:
 
-1. **Build** — `npm ci` + `npm run build` en GitHub Actions. Si el contenido está
-   roto, el pipeline se corta acá y el sitio sigue sirviendo la versión anterior.
-2. **Push image to GHCR** — publica `ghcr.io/leonardops1/iapo:latest` y `:sha-<sha>`.
-3. **Deploy to VPS (Dokploy)** — por SSH a `ubuntu@51.222.207.250` con el secret
+1. **Build** — `npm ci` + `npm run build`, y `nginx -t` sobre `nginx.conf` +
+   `nginx-security-headers.conf` dentro de un contenedor `nginx:alpine`. Si el contenido
+   o la configuración están rotos, el pipeline se corta acá y el sitio sigue sirviendo la
+   versión anterior.
+2. **Deploy to VPS (Dokploy)** — por SSH a `ubuntu@51.222.207.250` con el secret
    `VPS_SSH_KEY`: `git pull` en `/etc/dokploy/applications/iapo-iapo-srsxbv/code`,
    `docker build` y `docker service update --force iapo-iapo-srsxbv` (Swarm).
+
+El VPS reconstruye la imagen desde el código, así que el job que publicaba en GHCR se
+eliminó: era trabajo duplicado en cada push.
 
 El sitio lo sirve un contenedor `nginx:alpine` (`Dockerfile` + `nginx.conf`: cache de
 7 días para assets, gzip, `try_files` para las rutas sin `.html`), con Cloudflare
@@ -189,6 +193,7 @@ Todo sale del build, sin servicio externo:
 | `scripts/update-sitemap-lastmod.mjs` | corrige el `lastmod` de los posts y del índice |
 | `scripts/generate-llms-full.mjs` | arma `dist/llms-full.txt` (blog + prompts) |
 | `public/robots.txt` | permite explícitamente los crawlers de IA y apunta al sitemap |
+| `src/pages/rss.xml.ts` | feed RSS 2.0 con el blog y las notas Extra (`/rss.xml`) |
 | `public/llms.txt` | índice curado del sitio para asistentes |
 | `src/components/BaseHead.astro` | canonical, Open Graph/Twitter, JSON-LD, preloads |
 
@@ -228,30 +233,31 @@ src/
     casos.astro          casos de estudio (placeholder hasta el primer testimonio)
     sobre.astro          conecta el sitio con Aicore Agency / Aicoremed
     estado.astro         estado del agente semanal (noindex)
+    rss.xml.ts           feed RSS (blog + notas Extra)
+    404.astro            página de error (la sirve el `error_page` de nginx)
     privacidad.astro  terminos.astro  aviso-legal.astro
 ops/weekly-ranking/    runner, timer systemd y bootstrap del agente semanal
 scripts/               postbuild: sitemap lastmod + llms-full.txt
+nginx.conf             configuración de nginx del contenedor
+nginx-security-headers.conf   security headers (snippet que incluye nginx.conf)
 .github/workflows/     deploy.yml + bootstrap/diagnóstico del agente
 docs/                  planes, specs y notas de headers HTTP
 ```
 
 ## Pendientes conocidos
 
-- **Sin feed RSS.** El sitemap y `llms.txt`/`llms-full.txt` ya están; falta
-  `@astrojs/rss` si se quiere feed.
-- **`prompts.astro`, `repos.astro` y `casos.astro` tienen el contenido hardcodeado**
-  (arrays JS o placeholder). Cuando alguna pase de ~15 items, migrarla a content
-  collection con el mismo patrón que `blog`.
-- **`src/content/config.ts` es un resto del esquema viejo**: define solo `blog`, sin
-  `rankings` ni `extra`. Astro lo ignora (la fuente real es `src/content.config.ts`),
-  pero conviene borrarlo para que nadie edite el archivo equivocado.
-- **Los headers de seguridad de `docs/nginx-headers.md` no están aplicados**: no están
-  en `nginx.conf` ni llegan en la respuesta de producción.
-- **`nginx.conf` apunta `error_page 404 /404.html`, pero no existe
-  `src/pages/404.astro`**: la 404 la sirve nginx con su página por defecto.
-- **El job `docker-push` es redundante**: publica la imagen en GHCR y después el VPS la
-  reconstruye desde el código, en vez de pullearla. Queda como artefacto de rollback.
-- **`.atl/` (cache del skill registry) está sin trackear y no figura en `.gitignore`**:
-  o se ignora, o se commitea a propósito, pero no por accidente.
-- **Los sellos de goma** (`.stamp-edit`, `.stamp-core`, `.stamp-sub`) se salen de la
-  hoja en viewports de ~500 px o menos: hay un scroll horizontal chico en la home.
+1. **`prompts.astro`, `repos.astro` y `casos.astro` tienen el contenido hardcodeado**
+   (arrays JS o placeholder). La postergación es deliberada: se migran a content
+   collection cuando pasen de ~15 items. `casos` todavía no tiene ningún caso real: muestra
+   un aviso de "primer caso en camino".
+2. **Verificar que los headers de seguridad lleguen a producción.** Viven en `nginx.conf` +
+   `nginx-security-headers.conf` y CI valida la config, pero hasta el deploy que los
+   introduce Cloudflare no devolvía ninguno (ver `docs/nginx-headers.md`).
+3. **El agente semanal falló el 2026-10-11** (`src/data/agent-status.json` con `ok: false`:
+   "el build no generó dist/rankings/index.html"), así que `/estado` está en rojo. Se
+   diagnostica con el workflow **Diagnóstico agente VPS**
+   (`gh workflow run diagnose-vps-agent.yml`), que publica un issue con la label `ops`.
+4. **La categoría de los comentarios es `Announcements`.** Para tener una categoría propia
+   (`Extra`) hay que crearla en la UI de Discussions y cambiar dos líneas de
+   `GiscusComments.astro`: la API de GitHub no permite crearla.
+

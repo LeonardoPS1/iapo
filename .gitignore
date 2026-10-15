@@ -3,3 +3,4 @@ dist/
 .astro/
 .env
 .opencode/worktree.jsonc
+.atl/
