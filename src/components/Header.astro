@@ -8,6 +8,7 @@ const nav = [
   { href: '/repos', label: 'Repos' },
   { href: '/casos', label: 'Casos' },
   { href: '/sobre', label: 'Sobre' },
+  { href: '/extra', label: 'Extra' },
 ];
 
 // Ticker "última hora" — mezcla editorial. Duplicado en track para loop sin costura.
@@ -32,7 +33,10 @@ const tickerItems = [
   <div class="tear-line nav-divider"></div>
   <nav class="wrap nav">
     {nav.map((item) => (
-      <a href={item.href}>{item.label}</a>
+      <a href={item.href} class={item.href === '/extra' ? 'nav-extra' : undefined}>
+        {item.href === '/extra' && <span class="nav-extra-dot" aria-hidden="true"></span>}
+        {item.label}
+      </a>
     ))}
   </nav>
   <div class="ticker mast-ticker" aria-label="Última hora">
@@ -117,6 +121,24 @@ const tickerItems = [
     transform: scaleX(1);
     opacity: 1;
   }
+
+  /* El nav ya usa ::before y ::after para el subrayado doble: el punto de
+     "Extra" va en un <span> para no pisar ninguna de las dos capas. */
+  .nav a.nav-extra { color: var(--comic-red); }
+  .nav a.nav-extra:hover { color: var(--comic-red); }
+  .nav a.nav-extra .nav-extra-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--comic-red);
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .nav a.nav-extra .nav-extra-dot { animation: nav-extra-blink 1s ease-in-out infinite; }
+  }
+  @keyframes nav-extra-blink { 50% { opacity: 0.25; } }
 
   .mast-ticker {
     background: var(--paper-raised);

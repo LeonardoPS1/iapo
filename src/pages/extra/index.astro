@@ -1,0 +1,59 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const notes = (await getCollection('extra', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+// timeZone UTC: la fecha de un content collection es un día, no un instante.
+const dateFmt = (d: Date) =>
+  new Intl.DateTimeFormat('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(d);
+---
+<Base title="Extra · Último momento" description="Notas de último momento sobre IA, software y tecnología. Aquí sí puedes comentar.">
+  <section class="page-head" data-reveal>
+    <span class="flag mono"><span class="dot" aria-hidden="true"></span>ÚLTIMO MOMENTO</span>
+    <h1>Extra</h1>
+    <p class="lede">Las novedades que no pueden esperar al próximo artículo. Es la única sección donde puedes comentar.</p>
+  </section>
+
+  <div class="note-list">
+    {notes.map((note) => (
+      <a href={`/extra/${note.id}`} class="note panel" data-reveal>
+        <span class="tag-extra mono">EXTRA</span>
+        <h2>{note.data.title}</h2>
+        <p>{note.data.intro}</p>
+        <span class="eyebrow">{dateFmt(note.data.pubDate)}</span>
+      </a>
+    ))}
+    {notes.length === 0 && <p class="empty">Aún no hay notas. Vuelve pronto.</p>}
+  </div>
+</Base>
+
+<style>
+  .page-head { padding: 40px 0 24px; }
+  .page-head h1 { font-size: clamp(2.2rem, 5vw, 3rem); margin: 10px 0 12px; color: var(--comic-red); }
+  .lede { color: var(--ink-dim); max-width: 55ch; margin: 0; }
+  .flag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--comic-red); color: #fff; font-size: 11.5px; font-weight: 700;
+    letter-spacing: 0.16em; padding: 5px 12px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+  @media (prefers-reduced-motion: no-preference) {
+    .dot { animation: blink 1s ease-in-out infinite; }
+  }
+  @keyframes blink { 50% { opacity: 0.25; } }
+
+  .note-list { display: grid; gap: 18px; margin: 10px 0 70px; max-width: 820px; }
+  .note { display: block; padding: 22px; color: var(--ink); text-decoration: none; }
+  .note:hover { text-decoration: none; border-color: var(--comic-red); }
+  .tag-extra { color: var(--comic-red); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; }
+  .note h2 { font-size: 1.35rem; margin: 8px 0 8px; line-height: 1.2; }
+  .note p { color: var(--ink-dim); margin: 0 0 12px; font-size: 0.97rem; }
+  .empty { color: var(--ink-dim); }
+</style>

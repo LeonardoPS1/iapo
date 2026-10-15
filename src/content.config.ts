@@ -13,6 +13,24 @@ const blog = defineCollection({
   }),
 });
 
+// Sección "Extra · Último momento": notas urgentes/novedades.
+// Es la ÚNICA sección del sitio con comentarios.
+const extra = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/extra' }),
+  schema: z.object({
+    title: z.string(), // título completo de la nota (página + SEO)
+    headline: z.string(), // titular corto y grande del diario flotante
+    intro: z.string(), // 1–2 frases para el diario flotante
+    description: z.string(), // meta description
+    pubDate: z.coerce.date(),
+    featured: z.boolean().default(false), // true = candidata al diario flotante de la home
+    sources: z
+      .array(z.object({ label: z.string(), url: z.string().url() }))
+      .default([]),
+    draft: z.boolean().default(false),
+  }),
+});
+
 const rankingItem = z.object({
   rank: z.number(),
   name: z.string(),
@@ -53,4 +71,4 @@ const rankings = defineCollection({
   }),
 });
 
-export const collections = { blog, rankings };
+export const collections = { blog, rankings, extra };

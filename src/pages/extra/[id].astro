@@ -1,0 +1,99 @@
+---
+import Base from '../../layouts/Base.astro';
+import GiscusComments from '../../components/GiscusComments.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('extra', ({ data }) => !data.draft);
+  return notes.map((note) => ({ params: { id: note.id }, props: { note } }));
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+// timeZone UTC: la fecha de un content collection es un día, no un instante.
+const dateFmt = new Intl.DateTimeFormat('es-CL', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+}).format(note.data.pubDate);
+---
+<Base title={note.data.title} description={note.data.description}>
+  <article class="extra-note">
+    <div class="flag mono"><span class="dot" aria-hidden="true"></span>EXTRA · ÚLTIMO MOMENTO</div>
+    <p class="eyebrow date">{dateFmt}</p>
+    <h1>{note.data.title}</h1>
+    <p class="deck">{note.data.intro}</p>
+    <hr class="rule" />
+
+    <div class="content prose-col">
+      <Content />
+    </div>
+
+    {note.data.sources.length > 0 && (
+      <aside class="sources prose-col">
+        <h2>Fuentes y enlaces</h2>
+        <ul>
+          {note.data.sources.map((s) => (
+            <li><a href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a></li>
+          ))}
+        </ul>
+      </aside>
+    )}
+
+    <div class="prose-col">
+      <GiscusComments />
+    </div>
+
+    <p class="back"><a href="/extra">← Todas las notas Extra</a></p>
+  </article>
+</Base>
+
+<style>
+  .extra-note { padding: 40px 0 70px; }
+  .flag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--comic-red); color: #fff; font-size: 11.5px; font-weight: 700;
+    letter-spacing: 0.16em; padding: 5px 12px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+  @media (prefers-reduced-motion: no-preference) {
+    .dot { animation: blink 1s ease-in-out infinite; }
+  }
+  @keyframes blink { 50% { opacity: 0.25; } }
+
+  .date { margin: 16px 0 10px; }
+  h1 { font-size: clamp(2rem, 4.8vw, 2.9rem); line-height: 1.08; max-width: 24ch; margin: 0 0 16px; font-weight: 800; }
+  .deck { color: var(--ink-dim); font-size: 1.15rem; max-width: 60ch; margin: 0; }
+  .rule { border: none; border-top: 2px solid var(--ink); margin: 30px 0; }
+
+  .content :global(h2) { margin-top: 2.2em; font-size: 1.45rem; font-weight: 600; }
+  .content :global(p) { margin: 1.1em 0; }
+  .content :global(ul), .content :global(ol) { padding-left: 1.3em; }
+  .content :global(li) { margin: 0.55em 0; }
+  .content :global(a) { text-underline-offset: 2px; }
+  .content :global(code) { font-family: var(--font-mono); }
+  .content :global(hr) { border: none; border-top: 1px solid var(--rule); margin: 2em 0; }
+
+  .sources { margin-top: 44px; padding: 20px 22px; background: #fff; border: 1px solid var(--rule); border-radius: 8px; }
+  .sources h2 { font-size: 1.15rem; margin: 0 0 10px; }
+  .sources ul { margin: 0; padding-left: 1.2em; font-size: 0.92rem; }
+  .sources li { margin: 0.4em 0; }
+
+  .back { margin-top: 40px; font-family: var(--font-mono); font-size: 13px; }
+</style>
+
+<script>
+  // Los links externos del cuerpo de la nota se abren en una pestaña nueva,
+  // igual que la lista de "Fuentes y enlaces".
+  function initExtraLinks() {
+    document.querySelectorAll<HTMLAnchorElement>('.extra-note .content a[href^="http"]').forEach((a) => {
+      if (a.hostname === window.location.hostname) return;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+    });
+  }
+
+  initExtraLinks();
+  document.addEventListener('astro:page-load', initExtraLinks);
+</script>

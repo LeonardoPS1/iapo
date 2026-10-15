@@ -1,0 +1,44 @@
+---
+// Comentarios con Giscus (GitHub Discussions). Se usa SOLO en las notas de /extra.
+// Cada nota tiene su propio hilo (data-mapping="pathname").
+const REPO = 'LeonardoPS1/iapo';
+const REPO_ID = 'REEMPLAZAR_REPO_ID'; // se obtiene en https://giscus.app
+const CATEGORY = 'Extra'; // categoría de Discussions
+const CATEGORY_ID = 'REEMPLAZAR_CATEGORY_ID'; // se obtiene en https://giscus.app
+
+const configured = !REPO_ID.startsWith('REEMPLAZAR') && !CATEGORY_ID.startsWith('REEMPLAZAR');
+---
+<section class="comments" id="comentarios" aria-label="Comentarios">
+  <span class="eyebrow">// Conversación</span>
+  <h2>Comentarios</h2>
+  {configured ? (
+    <>
+      <p class="hint">Para comentar necesitas una cuenta de GitHub. Sé respetuoso: se moderan los mensajes.</p>
+      <script
+        is:inline
+        src="https://giscus.app/client.js"
+        data-repo={REPO}
+        data-repo-id={REPO_ID}
+        data-category={CATEGORY}
+        data-category-id={CATEGORY_ID}
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="es"
+        crossorigin="anonymous"
+        async
+      ></script>
+    </>
+  ) : (
+    <p class="hint">Los comentarios se activan muy pronto.</p>
+  )}
+</section>
+
+<style>
+  .comments { margin: 56px 0 0; padding-top: 28px; border-top: 2px solid var(--ink); }
+  .comments h2 { font-size: 1.5rem; margin: 8px 0 8px; }
+  .hint { color: var(--ink-dim); font-size: 0.92rem; margin: 0 0 18px; }
+</style>

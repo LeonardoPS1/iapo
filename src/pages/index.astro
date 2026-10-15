@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Wordmark from '../components/Wordmark.astro';
 import Sidebar from '../components/Sidebar.astro';
+import ExtraFlash from '../components/ExtraFlash.astro';
 import { getCollection } from 'astro:content';
 
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
@@ -43,6 +44,7 @@ const nav = [
   { href: '/repos', label: 'Repos' },
   { href: '/casos', label: 'Casos' },
   { href: '/sobre', label: 'Sobre' },
+  { href: '/extra', label: 'Extra' },
 ];
 ---
 <Base title="Inicio" variant="sheet">
@@ -76,7 +78,12 @@ const nav = [
       </div>
       <div class="mast-rule" aria-hidden="true"></div>
       <nav class="mast-nav" aria-label="Principal">
-        {nav.map((item) => <a href={item.href}>{item.label}</a>)}
+        {nav.map((item) => (
+          <a href={item.href} class={item.href === '/extra' ? 'nav-extra' : undefined}>
+            {item.href === '/extra' && <span class="nav-extra-dot" aria-hidden="true"></span>}
+            {item.label}
+          </a>
+        ))}
       </nav>
     </header>
 
@@ -194,6 +201,7 @@ const nav = [
     </section>
 
   </article>
+  <ExtraFlash />
 </Base>
 
 <style>
@@ -323,6 +331,26 @@ const nav = [
     box-shadow: 0 0 0 2px var(--core), 0 0 0 4px var(--paper);
     border-radius: 2px;
   }
+
+  /* "Extra" se destaca en rojo con un punto que late. El punto va en un <span>
+     para no pisar el ::after que dibuja el subrayado del nav. */
+  .mast-nav a.nav-extra { color: var(--comic-red); }
+  @media (hover: hover) and (pointer: fine) {
+    .mast-nav a.nav-extra:hover { color: var(--comic-red); }
+  }
+  .mast-nav a.nav-extra .nav-extra-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--comic-red);
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .mast-nav a.nav-extra .nav-extra-dot { animation: nav-extra-blink 1s ease-in-out infinite; }
+  }
+  @keyframes nav-extra-blink { 50% { opacity: 0.25; } }
 
   /* ===== Hero ===== */
   .hero { position: relative; padding: 40px 0 8px; }

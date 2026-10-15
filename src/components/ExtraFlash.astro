@@ -1,0 +1,262 @@
+---
+// Diario flotante "EXTRA · ÚLTIMO MOMENTO" para la home.
+// Muestra la nota más reciente de la colección `extra` con featured: true.
+import { getCollection } from 'astro:content';
+
+const featured = await getCollection('extra', ({ data }) => !data.draft && data.featured);
+const latest = featured.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())[0];
+// timeZone UTC: la fecha de un content collection es un día, no un instante.
+const dateFmt = latest
+  ? new Intl.DateTimeFormat('es-CL', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(latest.data.pubDate)
+  : '';
+---
+{latest && (
+  <aside class="extra-flash" data-extra-id={latest.id} aria-label="Último momento" hidden>
+    <div class="paper">
+      <button class="extra-close" type="button" aria-label="Cerrar aviso">×</button>
+      <a class="paper-link" href={`/extra/${latest.id}`}>
+        <div class="masthead mono">
+          <span>iapo.cl · EDICIÓN ESPECIAL</span>
+          <span>{dateFmt}</span>
+        </div>
+        <div class="extra-word">¡EXTRA!</div>
+        <div class="banner mono"><span class="siren" aria-hidden="true"></span>ÚLTIMO MOMENTO</div>
+        <h2 class="headline">{latest.data.headline}</h2>
+        <p class="intro">{latest.data.intro}</p>
+        <span class="cta mono">Leer más →</span>
+      </a>
+    </div>
+  </aside>
+)}
+
+<style>
+  .extra-flash {
+    position: fixed;
+    z-index: 50;
+    left: 0;
+    right: 0;
+    bottom: 12px;
+    margin: 0 auto;
+    width: min(340px, calc(100vw - 24px));
+    perspective: 1000px;
+  }
+  .extra-flash[hidden] { display: none; }
+
+  .paper {
+    position: relative;
+    opacity: 0;
+    transform: rotate(-3deg);
+    transform-origin: 50% 60%;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 25px, rgba(21, 23, 28, 0.05) 25px 26px),
+      #f7f3e8;
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    box-shadow: 0 24px 48px rgba(21, 23, 28, 0.35);
+    overflow: hidden;
+  }
+  .extra-flash.is-in .paper {
+    animation:
+      extra-spin-in 1s cubic-bezier(0.34, 1.35, 0.5, 1) both,
+      extra-float 6s ease-in-out 1s infinite;
+  }
+  .extra-flash.is-in:hover .paper { animation-play-state: running, paused; }
+  .extra-flash.is-out .paper { animation: extra-out 0.35s ease-in both; }
+
+  .extra-close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 2;
+    width: 34px;
+    height: 34px;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--ink);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .extra-close:hover { background: var(--comic-red); color: #fff; }
+
+  .paper-link { display: block; color: var(--ink); text-decoration: none; padding: 0 0 18px; }
+  .paper-link:hover { text-decoration: none; }
+
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 48px 6px 14px;
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    color: var(--ink-dim);
+    border-bottom: 2px solid var(--ink);
+  }
+  .extra-word {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 3.4rem;
+    line-height: 1;
+    text-align: center;
+    color: var(--comic-red);
+    padding: 12px 10px 4px;
+    transform: skewX(-6deg);
+    letter-spacing: -0.02em;
+  }
+  .banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 6px 14px 12px;
+    padding: 6px 10px;
+    background: var(--comic-red);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+  }
+  .siren {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff;
+  }
+  .headline {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.7rem;
+    line-height: 1.08;
+    margin: 0 14px 10px;
+  }
+  .intro {
+    margin: 0 14px 14px;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--ink-dim);
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .cta {
+    display: inline-block;
+    margin: 0 14px;
+    padding: 9px 18px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 700;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .paper-link:hover .cta { background: var(--comic-red); transform: translateX(3px); }
+
+  @media (min-width: 640px) {
+    .extra-flash { left: auto; right: 24px; bottom: 24px; margin: 0; width: 360px; }
+    .headline { font-size: 1.9rem; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .banner { animation: extra-flash 1.1s ease-in-out infinite alternate; }
+    .siren { animation: extra-siren 1.1s ease-out infinite; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .extra-flash.is-in .paper { animation: extra-fade 0.4s ease both; }
+  }
+
+  @keyframes extra-spin-in {
+    0% { transform: translateY(140px) scale(0.1) rotate(-720deg); opacity: 0; }
+    55% { opacity: 1; }
+    100% { transform: translateY(0) scale(1) rotate(-3deg); opacity: 1; }
+  }
+  @keyframes extra-float {
+    0%, 100% { transform: translateY(0) rotate(-3deg); opacity: 1; }
+    50% { transform: translateY(-10px) rotate(2deg); opacity: 1; }
+  }
+  @keyframes extra-out {
+    from { transform: translateY(0) scale(1) rotate(-3deg); opacity: 1; }
+    to { transform: translateY(50px) scale(0.5) rotate(14deg); opacity: 0; }
+  }
+  @keyframes extra-fade {
+    from { opacity: 0; }
+    to { opacity: 1; transform: rotate(-1deg); }
+  }
+  @keyframes extra-flash {
+    from { background: var(--comic-red); }
+    to { background: #a52410; }
+  }
+  @keyframes extra-siren {
+    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.85); }
+    100% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+  }
+</style>
+
+<script>
+  // Con ClientRouter los scripts bundled corren una sola vez: hay que
+  // re-inicializar en `astro:page-load` para que la hoja vuelva a aparecer
+  // al regresar a la home por navegación SPA.
+  const FLOOR_MS = 1200; // retardo pedido: ~1,2 s después de cargar
+  const LOADER_FADE_MS = 700; // lo que tarda el loader de la home en desvanecerse
+
+  // La home "imprime" la edición con un loader fixed a pantalla completa que
+  // tarda ~2 s en irse. Sin esto, la hoja giraría por encima del loader negro.
+  function whenCoverCleared(cb: () => void) {
+    const start = performance.now();
+    const loader = document.querySelector('[data-loader]');
+    let goneAt: number | null = null;
+
+    const poll = () => {
+      const elapsed = performance.now() - start;
+      let cleared = !loader || !loader.isConnected;
+
+      if (!cleared && loader) {
+        if (loader.classList.contains('is-gone')) {
+          goneAt ??= performance.now();
+          cleared = performance.now() - goneAt >= LOADER_FADE_MS;
+        }
+      }
+
+      if (cleared && elapsed >= FLOOR_MS) return cb();
+      if (elapsed > 6000) return cb(); // salvavidas: nunca dejar la hoja sin salir
+      window.setTimeout(poll, 100);
+    };
+
+    window.setTimeout(poll, 100);
+  }
+
+  function initExtraFlash() {
+    const el = document.querySelector<HTMLElement>('.extra-flash');
+    if (!el || el.dataset.init === '1') return;
+    el.dataset.init = '1';
+
+    const key = `iapo:extra-dismissed:${el.dataset.extraId ?? ''}`;
+    let dismissed = false;
+    try { dismissed = localStorage.getItem(key) === '1'; } catch { /* sin storage */ }
+
+    if (!dismissed) {
+      whenCoverCleared(() => {
+        // Puede haber quedado obsoleta por una navegación durante la espera.
+        if (!el.isConnected) return;
+        el.hidden = false;
+        el.classList.add('is-in');
+      });
+    }
+
+    el.querySelector('.extra-close')?.addEventListener('click', () => {
+      el.classList.remove('is-in');
+      el.classList.add('is-out');
+      try { localStorage.setItem(key, '1'); } catch { /* sin storage */ }
+      window.setTimeout(() => { el.hidden = true; }, 360);
+    });
+  }
+
+  initExtraFlash();
+  document.addEventListener('astro:page-load', initExtraFlash);
+</script>
