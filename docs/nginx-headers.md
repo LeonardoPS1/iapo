@@ -41,7 +41,10 @@ Use a single `add_header Cache-Control` per block: `expires 7d` together with
 
 Third-party origins the CSP has to allow (each one is used by the page):
 
-- `https://giscus.app` — comments on `/extra/<slug>` (`script-src`, `connect-src`, `frame-src`).
+- `https://giscus.app` — comments on `/extra/<slug>` (`script-src`, `style-src`, `connect-src`,
+  `frame-src`). It needs `style-src` too: `client.js` injects `https://giscus.app/default.css`
+  into *our* document, so a `style-src` without it blocks the widget stylesheet (it still
+  renders, but unstyled).
 - `https://static.cloudflareinsights.com` (`script-src`) and `https://cloudflareinsights.com`
   (`connect-src`) — Cloudflare Web Analytics beacon, injected by Cloudflare at the edge, not in the repo.
 - `https://db52c710.sibforms.com` — Brevo newsletter iframe on the home (`frame-src`).
@@ -61,6 +64,11 @@ curl -sI https://iapo.cl/og.png                      # cache + nosniff
 curl -sI https://iapo.cl/sitemap-index.xml           # cache 1h
 curl -sI https://iapo.cl/this-does-not-exist         # 404 body
 ```
+
+Headers are not enough: a wrong CSP fails *silently* (a blocked resource only shows up as a
+console error in the browser). After any CSP change, load `/`, a blog post, `/extra/<slug>` and a
+ranking page in a real browser and check the console for `violates the following Content Security
+Policy directive`.
 
 Before this change production returned **none** of the security headers (they were only
 documented here). If any of the greps above come back empty after a deploy, the snippet is
