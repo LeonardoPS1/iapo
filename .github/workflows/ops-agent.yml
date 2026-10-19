@@ -1,0 +1,125 @@
+name: ops-agent
+
+# Diagnóstico y mantenimiento del agente semanal, directo en el VPS.
+#
+# Por qué existe: `ops/weekly-ranking/run.sh` se instala en el VPS desde
+# `install.sh`, que corre por el workflow `bootstrap-vps-agent`
+# (workflow_dispatch). Cuando a un PAT le falta `Actions: write`, un workflow no
+# se puede disparar a mano y un push a main queda como el único disparador
+# disponible. Por eso el disparador real es el archivo centinela
+# `.github/ops-agent.trigger`, que contiene una sola palabra con la acción.
+#
+# Acciones:
+#   diagnose       → corre ops/weekly-ranking/diagnose.sh (timer, logs, toolchain)
+#   install-runner → copia run.sh al VPS y lo instala en /usr/local/bin/iapo-ranking-run
+#   run            → systemctl start iapo-ranking.service (corrida real, hasta 25 min)
+#   all            → install-runner + run + diagnose
+#
+# Nunca publica secretos: la salida se filtra antes de imprimirse. El repo es
+# público, así que el filtrado es obligatorio (mismo criterio que el issue del
+# workflow de diagnóstico).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/ops-agent.trigger'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Acción a correr en el VPS
+        required: true
+        default: diagnose
+        type: choice
+        options:
+          - diagnose
+          - install-runner
+          - run
+          - all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ops-agent
+  cancel-in-progress: false
+
+jobs:
+  ops:
+    name: ops-agent (${{ github.event_name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolver la acción
+        id: action
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            ACTION="${{ inputs.action }}"
+          else
+            ACTION="$(tr -d '[:space:]' < .github/ops-agent.trigger)"
+          fi
+          case "$ACTION" in
+            diagnose|install-runner|run|all) ;;
+            *) echo "acción inválida: '$ACTION'"; exit 1 ;;
+          esac
+          echo "value=$ACTION" >> "$GITHUB_OUTPUT"
+          echo "acción: $ACTION"
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H 51.222.207.250 >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Copiar los scripts al VPS
+        run: |
+          scp -i ~/.ssh/id_ed25519 \
+            ops/weekly-ranking/run.sh \
+            ops/weekly-ranking/diagnose.sh \
+            ops/weekly-ranking/install.sh \
+            ubuntu@51.222.207.250:/tmp/
+
+      - name: Correr la acción en el VPS
+        run: |
+          set +e
+          ssh -i ~/.ssh/id_ed25519 ubuntu@51.222.207.250 \
+            "ACTION='${{ steps.action.outputs.value }}' bash -s" > /tmp/ops.out 2>&1 <<'REMOTE'
+          set -uo pipefail
+          say() { printf '\n========== %s ==========\n' "$*"; }
+
+          if [ "$ACTION" = "install-runner" ] || [ "$ACTION" = "all" ]; then
+            say "install-runner"
+            sudo install -m 0755 -o root -g root /tmp/run.sh /usr/local/bin/iapo-ranking-run
+            echo "runner instalado; md5=$(md5sum /tmp/run.sh | cut -d' ' -f1)"
+          fi
+
+          if [ "$ACTION" = "run" ] || [ "$ACTION" = "all" ]; then
+            say "run (systemctl start bloquea hasta que termine, hasta 25 min)"
+            sudo systemctl start iapo-ranking.service
+            echo "rc del start: $?"
+            sudo systemctl show iapo-ranking.service -p ActiveState -p Result -p ExecMainStatus
+          fi
+
+          say "agent-status.json publicado"
+          sudo cat /opt/iapo-agent/repo/src/data/agent-status.json
+          echo
+
+          if [ "$ACTION" = "diagnose" ] || [ "$ACTION" = "all" ]; then
+            say "diagnose"
+            sudo bash /tmp/diagnose.sh
+          fi
+          REMOTE
+          RC=$?
+          echo "ssh rc=$RC" >> /tmp/ops.out
+          echo
+          echo "========== salida filtrada =========="
+          sed -E \
+            -e 's/(MODEL_API_KEY[=:][[:space:]]*).*/\1REDACTED/' \
+            -e 's/(VPS_SSH_KEY[=:][[:space:]]*).*/\1REDACTED/' \
+            -e 's/(sk-)[A-Za-z0-9_-]{8,}/\1REDACTED/g' \
+            -e 's/(eyJ)[A-Za-z0-9_.-]{20,}/\1REDACTED/g' \
+            /tmp/ops.out
+          exit "$RC"

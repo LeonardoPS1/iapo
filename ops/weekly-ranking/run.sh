@@ -36,6 +36,7 @@ export XDG_DATA_HOME
 
 START_EPOCH="$(date -u +%s)"
 AGENT_RC=""
+AGENT_ERROR=""
 STATUS_STAGE="start"
 STATUS_MESSAGE="corrida iniciada"
 STATUS_PUBLISH=1
@@ -168,6 +169,16 @@ if [ ! -d node_modules ] || [ package-lock.json -nt node_modules/.install-stamp 
   touch node_modules/.install-stamp
 fi
 
+# El dist no puede venir de una corrida anterior: `dist/` está fuera de git y
+# `git reset --hard` no lo toca. Si un build viejo dejó dist/rankings/index.html,
+# la verificación de abajo pasaría siempre y el estado mentiría. Borrarlo es la
+# única forma de que "existe dist/rankings/index.html" signifique "el build de
+# ESTA corrida lo generó".
+if [ -d dist ]; then
+  rm -rf dist
+  log "dist/ borrado (el build del agente tiene que regenerarlo)"
+fi
+
 # --------------------------------------------------- ejecución del agente
 PROMPT='Ejecutá el procedimiento completo de ranking semanal de iapo.cl.
 Esta es una ejecución AUTOMÁTICA PROGRAMADA: el push a origin/main está autorizado.
@@ -175,37 +186,57 @@ Snapshot: usá la fecha actual en runtime. Escribí src/content/rankings/ranking
 validá con npm run build (exit 0), y hacé commit + push a main.
 Al terminar respondé con el formato de salida obligatorio del procedimiento.'
 
+# La salida de opencode va a su propio archivo para poder citar el motivo real
+# del fallo en el estado. Hasta el 2026-10-18 el estado decía "el build no generó
+# dist/rankings/index.html" mientras la causa era que opencode moría en 5
+# segundos porque el modelo no tenía acceso: el mensaje culpaba al build y
+# escondió la causa real durante cinco semanas.
+AGENT_OUT="${RUN_LOG%.log}-agent.log"
 log "corriendo opencode run (máx ${TIMEOUT_MIN} min)…"
 set +e
 timeout --signal=SIGINT --kill-after=5m "${TIMEOUT_MIN}m" \
   opencode run --agent weekly-ranking --model "$MODEL" --auto --title "Ranking semanal automático" "$PROMPT" \
-  >>"$RUN_LOG" 2>&1
+  >"$AGENT_OUT" 2>&1
 AGENT_RC=$?
 set -e
+cat "$AGENT_OUT" >>"$RUN_LOG" 2>/dev/null || true
 log "opencode terminó con rc=$AGENT_RC"
+
+# La causa real del fallo del agente, tal cual la reportó opencode. Sin esto el
+# estado solo puede decir "algo falló", que es lo que hacía inútil el reporte.
+if [ "$AGENT_RC" -ne 0 ]; then
+  if [ "$AGENT_RC" -eq 124 ]; then
+    AGENT_ERROR="timeout: no terminó en ${TIMEOUT_MIN} min"
+  else
+    AGENT_ERROR="$(grep -a -m1 -E 'Error|error:|denied|Insufficient|unauthorized|forbidden|not found' "$AGENT_OUT" 2>/dev/null | tr -d '\r' | cut -c1-180 || true)"
+    [ -n "$AGENT_ERROR" ] || AGENT_ERROR="$(grep -a -v '^[[:space:]]*$' "$AGENT_OUT" 2>/dev/null | tail -n1 | tr -d '\r' | cut -c1-180 || true)"
+  fi
+  log "causa reportada por opencode: ${AGENT_ERROR:-desconocida}"
+fi
 
 # --------------------------------------------------- verificación post
 log "verificando dist…"
 DIST_INDEX="dist/rankings/index.html"
 TODAY="$(date -u +%F)"
 
-if [ ! -f "$DIST_INDEX" ]; then
-  # El build no se regeneró → el agente no commiteó nada o el build falló.
-  # Puede haber commits rotos sin pushear: se avisa antes de publicar el estado.
-  AHEAD="$(git rev-list --count "origin/$BRANCH..HEAD" 2>/dev/null || echo 0)"
-  if [ "${AHEAD:-0}" -gt 0 ]; then
-    log "WARN: hay $AHEAD commits sin pushear y el build no pasó; al pushear el estado también se publicarán"
-  fi
-  STATUS_STAGE="verificacion"
-  STATUS_MESSAGE="el build no generó $DIST_INDEX (el agente no commiteó o el build falló)"
-  log "ERROR: $STATUS_MESSAGE"
+if [ "$AGENT_RC" -ne 0 ]; then
+  # El agente murió: mirar dist no aporta nada y el mensaje anterior ("no hay
+  # dist, culpa del build") era directamente falso.
+  STATUS_STAGE="agente"
+  STATUS_MESSAGE="opencode run falló (rc=$AGENT_RC): ${AGENT_ERROR:-ver $RUN_LOG_NAME}"
   exit 1
 fi
 
-NEW_PAGE="dist/rankings/ranking-${TODAY}/index.html"
-if [ ! -f "$NEW_PAGE" ]; then
+if [ ! -f "$DIST_INDEX" ]; then
+  # Llegó acá con rc=0 pero sin build: o no commiteó, o el build falló.
+  STATUS_STAGE="verificacion"
+  STATUS_MESSAGE="el agente terminó bien (rc=0) pero no generó $DIST_INDEX (no commiteó o el build falló)"
+  exit 1
+fi
+
+if [ ! -f "dist/rankings/ranking-$TODAY/index.html" ]; then
   STATUS_STAGE="aviso"
-  STATUS_MESSAGE="el build pasó pero no existe la página de hoy ($NEW_PAGE): el snapshot salió con otra fecha"
+  STATUS_MESSAGE="el build salió bien pero la edición del día quedó en otra fecha (esperaba ranking-$TODAY)"
   log "WARN: $STATUS_MESSAGE"
 else
   STATUS_STAGE="ok"

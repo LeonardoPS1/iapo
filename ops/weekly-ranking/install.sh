@@ -214,4 +214,26 @@ if [ "$PUSH_TEST" != ok ]; then
   log "Después volvé a correr este workflow: el push test debe dar 'ok'."
   exit 2
 fi
+# ------------------------------------------------- smoke test del modelo
+# Todo lo de arriba comprueba que opencode EXISTE, no que el modelo RESPONDA.
+# Una key sin acceso al modelo (o una cuenta sin saldo) pasa este bootstrap
+# entero en verde y después hace fallar todas las corridas en 5 segundos, una
+# por semana, sin dejar rastro útil: exactamente lo que pasó entre el
+# 2026-09-29 y el 2026-10-18. Es la única comprobación que no se puede simular:
+# una llamada real al modelo.
+log "--- smoke test del modelo ($MODEL) ---"
+SMOKE_OUT="$(mktemp)"
+SMOKE_RC=0
+as_agent timeout 180 opencode run --model "$MODEL" "Respondé exactamente: ok" >"$SMOKE_OUT" 2>&1 || SMOKE_RC=$?
+if [ "$SMOKE_RC" -ne 0 ]; then
+  log "el modelo no respondió. Últimas líneas:"
+  tail -n 15 "$SMOKE_OUT" \
+    | sed -E -e 's/(sk-)[A-Za-z0-9_-]+/\1REDACTED/g' -e 's/(eyJ)[A-Za-z0-9_.-]{20,}/\1REDACTED/g' \
+    | while IFS= read -r linea; do log "  $linea"; done
+  rm -f "$SMOKE_OUT"
+  fail "el modelo $MODEL no responde (rc=$SMOKE_RC): revisá MODEL_API_KEY, el saldo de la cuenta y el acceso al modelo"
+fi
+rm -f "$SMOKE_OUT"
+log "modelo OK: $MODEL"
+
 log "=== bootstrap terminado - el agente corre automaticamente los $CRON ==="
