@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-10-18T04:04:33Z",
+  "updatedAt": "2026-10-19T13:27:16Z",
   "ok": false,
-  "stage": "verificacion",
-  "message": "el build no generó dist/rankings/index.html (el agente no commiteó o el build falló)",
-  "model": "alibaba/qwen3.8-max",
+  "stage": "agente",
+  "message": "opencode run falló (rc=1): [91m[1mError: [0mOpenCode's free models aren't available from your current network because we've detected abusive traffic from this IP address. This isn't related to your accoun",
+  "model": "opencode/big-pickle",
   "agentRc": 1,
   "exitCode": 1,
-  "durationSec": 6,
-  "logFile": "20261018T040427Z-run.log",
-  "head": "bc3c48d"
+  "durationSec": 18,
+  "logFile": "20261019T132658Z-run.log",
+  "head": "78a11f9"
 }
