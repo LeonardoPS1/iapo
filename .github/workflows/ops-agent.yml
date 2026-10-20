@@ -33,6 +33,7 @@ on:
         type: choice
         options:
           - diagnose
+          - inventory
           - install-runner
           - run
           - all
@@ -61,7 +62,7 @@ jobs:
             ACTION="$(tr -d '[:space:]' < .github/ops-agent.trigger)"
           fi
           case "$ACTION" in
-            diagnose|install-runner|run|all) ;;
+            diagnose|inventory|install-runner|run|all) ;;
             *) echo "acción inválida: '$ACTION'"; exit 1 ;;
           esac
           echo "value=$ACTION" >> "$GITHUB_OUTPUT"
@@ -101,6 +102,38 @@ jobs:
             sudo systemctl start iapo-ranking.service
             echo "rc del start: $?"
             sudo systemctl show iapo-ranking.service -p ActiveState -p Result -p ExecMainStatus
+          fi
+
+          if [ "$ACTION" = "inventory" ] || [ "$ACTION" = "all" ]; then
+            say "recursos"
+            free -h; echo "vCPU: $(nproc)"; df -h /
+            grep -m1 'model name' /proc/cpuinfo || true
+            nvidia-smi 2>&1 | sed -n '1,3p' || true
+
+            say "docker"
+            docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Ports}}'
+
+            say "ollama"
+            OC="$(docker ps --format '{{.Names}}' | grep -i ollama | head -1)"
+            OC="${OC:-ollama}"
+            echo "contenedor detectado: $OC"
+            docker inspect "$OC" --format 'puertos: {{json .HostConfig.PortBindings}}' 2>&1 || true
+            docker inspect "$OC" --format 'compose dir: {{index .Config.Labels "com.docker.compose.project.working_dir"}}' 2>&1 || true
+            echo "envs OLLAMA_*:"
+            docker inspect "$OC" --format '{{range .Config.Env}}{{println .}}{{end}}' 2>&1 | grep -iE '^OLLAMA' || echo "  (ninguna)"
+            curl -s -o /dev/null -w '127.0.0.1:11434 => HTTP %{http_code}\n' http://127.0.0.1:11434/api/tags || true
+            echo "modelos (host api):"
+            curl -s http://127.0.0.1:11434/api/tags 2>&1 | head -c 600; echo
+            echo "ollama list:"
+            docker exec "$OC" ollama list 2>&1 || true
+            echo "ollama ps:"
+            docker exec "$OC" ollama ps 2>&1 || true
+            docker stats --no-stream --format 'table {{.Names}}\t{{.CPUPerc}}\t{{.MemUsage}}' 2>&1 | sed -n '1,15p'
+
+            say "smoke: opencode con provider ollama (ollama/qwen3:8b)"
+            runuser -u iapoagent -- env HOME=/home/iapoagent PATH="/home/iapoagent/.local/bin:/home/iapoagent/.opencode/bin:/usr/local/bin:/usr/bin:/bin" \
+              timeout 120 opencode run --model ollama/qwen3:8b "Responde exactamente: ok" 2>&1 | tail -n 15
+            echo "rc del smoke: ${PIPESTATUS[0]}"
           fi
 
           say "agent-status.json publicado"
