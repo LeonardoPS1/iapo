@@ -204,12 +204,21 @@ log "opencode terminó con rc=$AGENT_RC"
 
 # La causa real del fallo del agente, tal cual la reportó opencode. Sin esto el
 # estado solo puede decir "algo falló", que es lo que hacía inútil el reporte.
+#
+# opencode colorea su salida, así que el texto extraído viene con secuencias ANSI
+# (ESC [ 91 m, etc.). Eso NO puede terminar dentro del JSON del estado: los bytes
+# de control rompen el parseo del archivo y con él el build del sitio entero (pasó
+# el 2026-10-19 y el deploy quedó rojo). Se limpian acá, antes de publicar.
+strip_ansi() {
+  tr -d '\r' | sed -E 's/\x1b\[[0-9;]*[A-Za-z]//g; s/\x1b\][^\x07]*\x07//g; s/\x1b[()][0-9A-Za-z]//g' | tr -d '\000-\010\013\014\016-\037'
+}
+
 if [ "$AGENT_RC" -ne 0 ]; then
   if [ "$AGENT_RC" -eq 124 ]; then
     AGENT_ERROR="timeout: no terminó en ${TIMEOUT_MIN} min"
   else
-    AGENT_ERROR="$(grep -a -m1 -E 'Error|error:|denied|Insufficient|unauthorized|forbidden|not found' "$AGENT_OUT" 2>/dev/null | tr -d '\r' | cut -c1-180 || true)"
-    [ -n "$AGENT_ERROR" ] || AGENT_ERROR="$(grep -a -v '^[[:space:]]*$' "$AGENT_OUT" 2>/dev/null | tail -n1 | tr -d '\r' | cut -c1-180 || true)"
+    AGENT_ERROR="$(grep -a -m1 -E 'Error|error:|denied|Insufficient|unauthorized|forbidden|not found' "$AGENT_OUT" 2>/dev/null | strip_ansi | cut -c1-180 || true)"
+    [ -n "$AGENT_ERROR" ] || AGENT_ERROR="$(grep -a -v '^[[:space:]]*$' "$AGENT_OUT" 2>/dev/null | tail -n1 | strip_ansi | cut -c1-180 || true)"
   fi
   log "causa reportada por opencode: ${AGENT_ERROR:-desconocida}"
 fi

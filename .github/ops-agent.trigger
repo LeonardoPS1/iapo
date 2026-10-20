@@ -1,1 +1,1 @@
-inventory
+all
