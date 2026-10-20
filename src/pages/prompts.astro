@@ -1,55 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
 
-const prompts = [
-  {
-    titulo: 'Calificación de leads por WhatsApp',
-    pilar: 'automatizacion',
-    texto: `Eres un asistente de recepción para una clínica de [especialidad]. Un paciente escribió por WhatsApp preguntando por una hora. Tu tarea:
-1. Saluda de forma breve y cálida.
-2. Pregunta el motivo de consulta en una sola pregunta.
-3. Pregunta si es primera vez o control.
-4. No agendes tú: deriva a un horario disponible que te entregará el sistema.
-Responde siempre en español de Chile, en un máximo de 2 líneas por mensaje.`,
-  },
-  {
-    titulo: 'Resumen de ficha clínica para el profesional',
-    pilar: 'salud',
-    texto: `Resume la siguiente ficha clínica en máximo 5 líneas, priorizando: motivo de consulta actual, antecedentes relevantes, medicación activa y alertas (alergias, condiciones crónicas). No inventes datos que no estén en el texto. Si falta un campo, indícalo como "no registrado".`,
-  },
-  {
-    titulo: 'Recordatorio de cita con reprogramación',
-    pilar: 'automatizacion',
-    texto: `Redacta un recordatorio de cita por WhatsApp para mañana a las {hora} con {profesional}. Debe incluir una opción clara para confirmar o reprogramar respondiendo el mismo mensaje, en un tono directo y breve, sin firma formal.`,
-  },
-  {
-    titulo: 'Explicación de resultados de examen en lenguaje simple',
-    pilar: 'salud',
-    texto: `Actúa como asistente de redacción para un profesional de salud. Te entregaré el resultado de un examen de laboratorio con sus valores y rangos de referencia. Reescríbelo en español simple, sin jerga médica, para que un paciente sin formación clínica lo entienda. No emitas diagnósticos ni recomendaciones de tratamiento — solo explica qué mide cada valor y si está dentro o fuera del rango de referencia entregado. Si un valor está fuera de rango, indica que debe conversarlo con su médico tratante.`,
-  },
-  {
-    titulo: 'Resumen de hilo largo en decisiones y pendientes',
-    pilar: 'ia-general',
-    texto: `Te voy a pegar un hilo largo de WhatsApp o Slack. Resúmelo en dos listas separadas: "Decisiones tomadas" y "Pendientes sin resolver". No incluyas nada que no esté explícitamente dicho en el hilo. Si un punto quedó ambiguo o sin cerrar, ponlo en pendientes, no lo des por decidido. Máximo 5 líneas por lista.`,
-  },
-  {
-    titulo: 'Revisión rápida de un PR antes de aprobar',
-    pilar: 'ia-general',
-    texto: `Actúa como revisor de código senior. Te voy a pegar un diff de un pull request. Señala solo: (1) riesgos de seguridad evidentes, (2) cambios que podrían romper funcionalidad existente, (3) código que contradice el resto del archivo en estilo o convención. No comentes sobre preferencias de estilo menores (nombres de variables, formato) a menos que rompan una convención ya establecida en el archivo. Sé breve: máximo una línea por hallazgo.`,
-  },
-  {
-    titulo: 'Checklist de pre-consulta personalizado por especialidad',
-    pilar: 'salud',
-    texto: `Eres un asistente administrativo de una clínica. Te entregaré la especialidad de la consulta y el motivo. Genera un checklist breve (máximo 5 puntos) de qué debe traer o preparar el paciente antes de la cita (documentos, ayuno si aplica, exámenes previos), basado SOLO en las instrucciones estándar que te entregue el equipo clínico para esa especialidad — no inventes requisitos médicos que no te hayan sido provistos. Si no tienes esa información, responde solo con un checklist administrativo genérico (cédula de identidad, llegar 10 minutos antes, previsión de salud).`,
-  },
-  {
-    titulo: 'Extraer datos de un mensaje libre a JSON',
-    pilar: 'automatizacion',
-    texto: `Te voy a pasar un mensaje de WhatsApp escrito en lenguaje libre. Extrae solo estos campos y responde únicamente con un JSON válido, sin texto adicional: {"nombre": string o null, "motivo": string o null, "fecha_preferida": string o null, "urgente": boolean}. Si un dato no aparece explícitamente en el mensaje, usa null. No infieras ni inventes valores. Si el mensaje no corresponde a una consulta, devuelve todos los campos en null y "urgente": false.`,
-  },
-];
+const allPrompts = await getCollection('library', ({ data }) => data.kind === 'prompt' && !data.draft);
+const prompts = allPrompts.sort((a, b) => a.data.order - b.data.order);
 
 const pilarLabel: Record<string, string> = { salud: 'IA en salud', automatizacion: 'Automatización', 'ia-general': 'IA general' };
+
+const slug = (value: string) => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 const collectionPage = {
   '@context': 'https://schema.org',
@@ -63,8 +21,8 @@ const collectionPage = {
     itemListElement: prompts.map((prompt, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      url: `https://iapo.cl/prompts#${prompt.titulo.toLowerCase().replace(/\s+/g, '-')}`,
-      name: prompt.titulo,
+      url: `https://iapo.cl/prompts#${slug(prompt.data.title)}`,
+      name: prompt.data.title,
     })),
   },
 };
@@ -80,13 +38,19 @@ const collectionPage = {
     {prompts.map((p) => (
       <article class="prompt-card coupon" data-reveal>
         <div class="prompt-head">
-          <h2>{p.titulo}</h2>
-          <span class="tag" data-pilar={p.pilar}>{pilarLabel[p.pilar]}</span>
+          <h2>{p.data.title}</h2>
+          {p.data.pilar && <span class="tag" data-pilar={p.data.pilar}>{pilarLabel[p.data.pilar]}</span>}
         </div>
-        <pre><code>{p.texto}</code></pre>
+        <pre><code>{p.data.text}</code></pre>
       </article>
     ))}
   </div>
+
+  {prompts.length === 0 && (
+    <div class="soon panel" data-reveal>
+      <p class="mono">→ primer prompt en camino</p>
+    </div>
+  )}
 </Base>
 
 <style>
@@ -98,4 +62,6 @@ const collectionPage = {
   .prompt-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
   .prompt-head h2 { font-size: 1.05rem; font-weight: 500; font-family: var(--font-body); }
   pre { white-space: pre-wrap; margin: 0; }
+  .soon { max-width: 780px; margin: 34px 0 70px; padding: 40px 32px; text-align: center; }
+  .soon p { color: var(--ink-faint); margin: 0; }
 </style>

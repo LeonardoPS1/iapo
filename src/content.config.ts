@@ -1,29 +1,29 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
+const pilar = z.enum(['salud', 'automatizacion', 'ia-general']);
+
 const blog = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/blog' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
     pubDate: z.coerce.date(),
-    pilar: z.enum(['salud', 'automatizacion', 'ia-general']),
+    pilar,
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
   }),
 });
 
-// Sección "Extra · Último momento": notas urgentes/novedades.
-// Es la ÚNICA sección del sitio con comentarios.
 const extra = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/extra' }),
   schema: z.object({
-    title: z.string(), // título completo de la nota (página + SEO)
-    headline: z.string(), // titular corto y grande del diario flotante
-    intro: z.string(), // 1–2 frases para el diario flotante
-    description: z.string(), // meta description
+    title: z.string(),
+    headline: z.string(),
+    intro: z.string(),
+    description: z.string(),
     pubDate: z.coerce.date(),
-    featured: z.boolean().default(false), // true = candidata al diario flotante de la home
+    featured: z.boolean().default(false),
     sources: z
       .array(z.object({ label: z.string(), url: z.string().url() }))
       .default([]),
@@ -64,11 +64,35 @@ const rankings = defineCollection({
     method: z.object({
       windows: z.array(z.string()),
       warnings: z.array(z.string()),
-      sources: z.array(
-        z.object({ label: z.string(), url: z.string().url() })
-      ),
+      sources: z.array(z.object({ label: z.string(), url: z.string().url() })),
     }),
   }),
 });
 
-export const collections = { blog, rankings, extra };
+/**
+ * Curated library: prompts, repos and cases share one collection so the schema
+ * and the loader live in one place. Each page filters by `kind`.
+ */
+const library = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/library' }),
+  schema: z.object({
+    kind: z.enum(['prompt', 'repo', 'caso']),
+    title: z.string(),
+    description: z.string(),
+    /** Ordering hint; defaults to 0 so new items land at the end. */
+    order: z.number().default(0),
+    draft: z.boolean().default(false),
+    /** prompt */
+    pilar: pilar.optional(),
+    text: z.string().optional(),
+    /** repo */
+    repo: z.string().optional(),
+    url: z.string().url().optional(),
+    /** caso */
+    clinic: z.string().optional(),
+    result: z.string().optional(),
+    pubDate: z.coerce.date().optional(),
+  }),
+});
+
+export const collections = { blog, rankings, extra, library };

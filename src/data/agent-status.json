@@ -2,7 +2,7 @@
   "updatedAt": "2026-10-19T13:27:16Z",
   "ok": false,
   "stage": "agente",
-  "message": "opencode run falló (rc=1): [91m[1mError: [0mOpenCode's free models aren't available from your current network because we've detected abusive traffic from this IP address. This isn't related to your accoun",
+  "message": "opencode run falló (rc=1): Error: OpenCode's free models aren't available from your current network because we've detected abusive traffic from this IP address. This isn't related to your accoun",
   "model": "opencode/big-pickle",
   "agentRc": 1,
   "exitCode": 1,

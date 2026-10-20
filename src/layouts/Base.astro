@@ -167,8 +167,14 @@ const paperTransition = {
             },
             { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
           );
-          els.forEach((el, i) => {
-            (el as HTMLElement).style.transitionDelay = `${Math.min(i % 6, 5) * 60}ms`;
+          let step = 0;
+          els.forEach((el) => {
+            // Stamps are decorative and sit between content blocks in DOM order,
+            // so they must not consume a slot of the stagger cycle.
+            if (!el.hasAttribute('data-stamp') && !el.hasAttribute('data-print-in')) {
+              (el as HTMLElement).style.transitionDelay = `${(step % 6) * 60}ms`;
+              step += 1;
+            }
             io.observe(el);
           });
         } else {

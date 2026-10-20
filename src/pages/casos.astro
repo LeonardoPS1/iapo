@@ -1,5 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const allCasos = await getCollection('library', ({ data }) => data.kind === 'caso' && !data.draft);
+const casos = allCasos.sort((a, b) => {
+  const dateA = a.data.pubDate?.valueOf() ?? 0;
+  const dateB = b.data.pubDate?.valueOf() ?? 0;
+  return dateB - dateA;
+});
 
 const collectionPage = {
   '@context': 'https://schema.org',
@@ -8,6 +16,15 @@ const collectionPage = {
   name: 'Casos — iapo.cl',
   description: 'Casos reales de clínicas que automatizaron captación y gestión de pacientes.',
   url: 'https://iapo.cl/casos',
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: casos.map((caso, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: `https://iapo.cl/casos#${caso.id}`,
+      name: caso.data.title,
+    })),
+  },
 };
 ---
 <Base title="Casos" description="Casos reales de clínicas que automatizaron captación y gestión de pacientes." structuredData={[collectionPage]}>
@@ -19,15 +36,38 @@ const collectionPage = {
       clínicas en Chile. Los primeros casos con datos y testimonios se publican aquí.
     </p>
   </section>
-  <div class="soon panel" data-reveal>
-    <p class="mono">→ primer caso en camino</p>
+
+  <div class="caso-list">
+    {casos.map((caso) => (
+      <article class="caso-card panel" id={caso.id} data-reveal>
+        <div class="caso-head">
+          <h2>{caso.data.title}</h2>
+          {caso.data.clinic && <span class="caso-clinic mono">{caso.data.clinic}</span>}
+        </div>
+        {caso.data.result && <p class="caso-result">{caso.data.result}</p>}
+        <p>{caso.data.description}</p>
+      </article>
+    ))}
   </div>
+
+  {casos.length === 0 && (
+    <div class="soon panel" data-reveal>
+      <p class="mono">→ primer caso en camino</p>
+    </div>
+  )}
 </Base>
 
 <style>
   .page-head { padding: 40px 0 10px; }
   .page-head h1 { font-size: clamp(1.9rem, 4vw, 2.3rem); margin: 10px 0 14px; }
   .lede { color: var(--ink-dim); max-width: 55ch; margin: 0; }
+  .caso-list { display: flex; flex-direction: column; gap: 20px; margin: 34px 0 70px; max-width: 780px; }
+  .caso-card { padding: 24px; }
+  .caso-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .caso-head h2 { font-size: 1.1rem; font-weight: 500; font-family: var(--font-body); margin: 0; }
+  .caso-clinic { font-size: 0.85rem; color: var(--ink-faint); }
+  .caso-result { color: var(--core); margin: 12px 0 0; }
+  .caso-card p { color: var(--ink-dim); margin: 10px 0 0; }
   .soon { max-width: 780px; margin: 34px 0 80px; padding: 40px 32px; text-align: center; }
   .soon p { color: var(--ink-faint); margin: 0; }
 </style>
