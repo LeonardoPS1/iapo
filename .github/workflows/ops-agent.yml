@@ -251,6 +251,85 @@ jobs:
             sudo iptables -S DOCKER-USER 2>&1 | sed -n '1,10p' || true
           fi
 
+          # ---------------------------------------------------- ollama-close
+          # Cierra el 11434 a internet sin romper a nadie. Docker publica
+          # puertos saltandose ufw, por eso el servicio estaba abierto con ufw
+          # en "deny (incoming)". Se atan DOS binds explicitos:
+          #   127.0.0.1  -> opencode (el agente semanal) corre en el host
+          #   172.18.0.1 -> el dashboard (swarm) usa http://172.18.0.1:11434
+          # La IP publica se queda sin listener: deja de ser alcanzable.
+          if [ "$ACTION" = "ollama-close" ]; then
+            say "ollama-close"
+            COMPOSE="/etc/dokploy/compose/aicore-n8nrunnerpostgresollama-a715gi/code/docker-compose.yml"
+            if [ ! -f "$COMPOSE" ]; then
+              echo "ABORTADO: no existe $COMPOSE"
+              exit 5
+            fi
+            cp -a "$COMPOSE" "$COMPOSE.bak-$(date +%Y%m%dT%H%M%S)"
+            echo "backup: $(ls -1t "$COMPOSE".bak-* | head -1)"
+
+            if grep -q '127.0.0.1:11434' "$COMPOSE"; then
+              echo "el mapeo ya estaba atado a loopback; no se toca"
+            else
+              awk '
+                $0 ~ /^[[:space:]]*-[[:space:]]*"?11434:11434"?[[:space:]]*$/ {
+                  print "      - \"127.0.0.1:11434:11434\""
+                  print "      - \"172.18.0.1:11434:11434\""
+                  next
+                }
+                { print }
+              ' "$COMPOSE" > /tmp/compose.new || exit 6
+              if ! grep -q '172.18.0.1:11434' /tmp/compose.new; then
+                echo "ABORTADO: no se encontro la linea '- 11434:11434' en el compose"
+                exit 6
+              fi
+              cp /tmp/compose.new "$COMPOSE"
+              echo "mapeo reemplazado por 127.0.0.1 y 172.18.0.1"
+            fi
+
+            if grep -q 'OLLAMA_CONTEXT_LENGTH' "$COMPOSE"; then
+              echo "OLLAMA_CONTEXT_LENGTH ya estaba; no se toca"
+            else
+              awk '
+                /^  ollama:[[:space:]]*$/ { inside=1 }
+                inside && !done && /^    image:[[:space:]]*ollama\/ollama/ {
+                  print
+                  print "    environment:"
+                  print "      - OLLAMA_CONTEXT_LENGTH=16384"
+                  print "      - OLLAMA_KEEP_ALIVE=10m"
+                  done=1
+                  next
+                }
+                { print }
+              ' "$COMPOSE" > /tmp/compose.new || exit 7
+              cp /tmp/compose.new "$COMPOSE"
+              echo "agregado OLLAMA_CONTEXT_LENGTH=16384 (el default de 4096 no alcanza para el agente)"
+            fi
+
+            # init-ollama vuelve a bajar los modelos en cada deploy del stack:
+            # si sigue pidiendo llama3.2, el modelo borrado reaparece solo.
+            if grep -q 'ollama pull llama3.2' "$COMPOSE"; then
+              sed -i 's|ollama pull llama3.2:latest; ||; s|sleep 3; ollama pull gemma3:latest|sleep 3; ollama pull gemma3:latest|' "$COMPOSE"
+              echo "init-ollama ya no baja llama3.2"
+            fi
+
+            echo "--- diff contra el backup ---"
+            diff -u "$(ls -1t "$COMPOSE".bak-* | head -1)" "$COMPOSE" | sed -n '1,40p' || true
+
+            say "ollama-close: recreando solo el servicio ollama"
+            ( cd "$(dirname "$COMPOSE")" && docker compose up -d ollama ) 2>&1 | tail -n 8
+            sleep 6
+
+            OC="$(docker ps --format '{{.Names}}\t{{.Image}}' | awk -F'\t' 'tolower($2) ~ /ollama/ {print $1; exit}')"
+            echo "bindings: $(docker inspect "$OC" --format '{{json .HostConfig.PortBindings}}' 2>&1)"
+            for u in http://127.0.0.1:11434/api/tags http://172.18.0.1:11434/api/tags; do
+              curl -s -o /dev/null -w "$u => HTTP %{http_code}\n" --max-time 6 "$u" || true
+            done
+            echo "desde la IP publica (tiene que fallar):"
+            curl -s -o /dev/null -w "51.222.207.250:11434 => HTTP %{http_code}\n" --max-time 6 \
+              http://51.222.207.250:11434/api/tags || echo "  conexion rechazada — correcto"
+          fi
+
           # ---------------------------------------------------- ollama-setup
           # Deja el agente semanal corriendo contra Ollama local en vez de un
           # modelo pago. La verificación de capacidad va PRIMERO y aborta sin
@@ -289,7 +368,28 @@ jobs:
                   timeout 300 opencode run --model ollama/qwen3:8b "Responde exactamente: ok"' 2>&1 | tail -n 20
                 SMOKE_RC=${PIPESTATUS[0]}
                 echo "rc del smoke: $SMOKE_RC"
-                [ "$SMOKE_RC" -eq 0 ] || OLLAMA_RC=6
+                if [ "$SMOKE_RC" -eq 0 ]; then
+                  # Solo se borra DESPUES de que el modelo nuevo respondio: si el
+                  # smoke falla se conserva todo para poder diagnosticar.
+                  say "limpieza: un modelo por consumidor"
+                  # gemma3:latest NO se borra. El dashboard (consultorio-medico)
+                  # lo usa para vision/OCR (lib/vision-ocr.ts), IA clinica,
+                  # encuestas y transcripcion; qwen3:8b es solo texto.
+                  KEEP="gemma3:latest qwen3:8b"
+                  docker exec "$OC" sh -c 'ollama list | awk "NR>1 {print \$1}"' | while read -r M; do
+                    [ -n "$M" ] || continue
+                    case " $KEEP " in
+                      *" $M "*) echo "  se queda: $M" ;;
+                      *) echo "  borrando: $M"; docker exec "$OC" ollama rm "$M" >/dev/null 2>&1 || echo "    no se pudo borrar" ;;
+                    esac
+                  done
+                  echo "--- modelos finales ---"
+                  docker exec "$OC" ollama list
+                  echo "--- disco del volumen ---"
+                  du -sh /var/lib/docker/volumes/aicore-n8nrunnerpostgresollama-a715gi_ollama_storage 2>/dev/null || true
+                else
+                  OLLAMA_RC=6
+                fi
               else
                 echo "falló el pull de qwen3:8b"
                 OLLAMA_RC=5
