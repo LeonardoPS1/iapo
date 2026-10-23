@@ -12,6 +12,7 @@ name: ops-agent
 # Acciones:
 #   diagnose       → corre ops/weekly-ranking/diagnose.sh (timer, logs, toolchain)
 #   inventory      → recursos, contenedores y capacidad para un modelo local
+#   ollama-audit   → solo lectura: quién consume Ollama y por qué dirección
 #   ollama-setup   → verifica capacidad, baja el modelo y apunta IAPO_MODEL a Ollama
 #   install-runner → copia run.sh al VPS y lo instala en /usr/local/bin/iapo-ranking-run
 #   run            → systemctl start iapo-ranking.service (corrida real, hasta 25 min)
@@ -36,6 +37,7 @@ on:
         options:
           - diagnose
           - inventory
+          - ollama-audit
           - ollama-setup
           - install-runner
           - run
@@ -65,7 +67,7 @@ jobs:
             ACTION="$(tr -d '[:space:]' < .github/ops-agent.trigger)"
           fi
           case "$ACTION" in
-            diagnose|inventory|ollama-setup|install-runner|run|all) ;;
+            diagnose|inventory|ollama-audit|ollama-setup|install-runner|run|all) ;;
             *) echo "acción inválida: '$ACTION'"; exit 1 ;;
           esac
           echo "value=$ACTION" >> "$GITHUB_OUTPUT"
@@ -152,6 +154,69 @@ jobs:
             else
               echo "VEREDICTO: NO entra — bajar el modelo acá termina en OOM/swap"
             fi
+          fi
+
+          # ---------------------------------------------------- ollama-audit
+          # Solo lectura. Antes de cerrar el 11434 a internet hay que saber quién
+          # le habla y por qué dirección: si un consumidor usa la IP pública o el
+          # gateway del host (172.x.0.1) en vez del nombre de servicio del
+          # compose, atar el puerto a 127.0.0.1 lo rompe en silencio.
+          if [ "$ACTION" = "ollama-audit" ]; then
+            say "ollama-audit: contenedor, puertos y redes"
+            OC="$(docker ps --format '{{.Names}}\t{{.Image}}' | awk -F'\t' 'tolower($2) ~ /ollama/ {print $1; exit}')"
+            if [ -z "$OC" ]; then
+              echo "no hay contenedor con imagen de ollama corriendo"
+            else
+              echo "contenedor: $OC"
+              docker inspect "$OC" --format 'puertos: {{json .HostConfig.PortBindings}}' 2>&1 || true
+              echo "redes de ollama:"
+              docker inspect "$OC" --format '{{range $k, $v := .NetworkSettings.Networks}}  {{$k}} => {{$v.IPAddress}}{{println}}{{end}}' 2>&1 || true
+            fi
+
+            say "ollama-audit: envs de los contenedores que nombran ollama/11434"
+            for c in $(docker ps --format '{{.Names}}'); do
+              docker inspect "$c" --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null \
+                | grep -iE 'ollama|11434' | sed "s|^|  $c: |" || true
+            done
+
+            say "ollama-audit: compose files y .env de dokploy"
+            grep -rniE 'ollama|11434' \
+              /etc/dokploy/compose/*/code/docker-compose.y*ml \
+              /etc/dokploy/compose/*/code/.env 2>/dev/null | sed -n '1,60p' || true
+
+            say "ollama-audit: workflows de n8n que mencionan ollama/11434"
+            PG="$(docker ps --format '{{.Names}}\t{{.Image}}' | awk -F'\t' 'tolower($2) ~ /postgres/ {print $1; exit}')"
+            echo "postgres: ${PG:-(ninguno)}"
+            if [ -n "$PG" ]; then
+              DBS="$(docker exec "$PG" psql -U postgres -Atc \
+                "SELECT datname FROM pg_database WHERE datname NOT IN ('template0','template1')" 2>/dev/null | tr '\n' ' ')"
+              echo "bases: ${DBS:-(no se pudo listar)}"
+              for db in $DBS; do
+                WF="$(docker exec "$PG" psql -U postgres -d "$db" -Atc \
+                  "SELECT name FROM workflow_entity WHERE nodes::text ILIKE '%ollama%' OR nodes::text ILIKE '%11434%'" 2>/dev/null)"
+                if [ -n "$WF" ]; then
+                  echo "  [$db] workflows: $(echo "$WF" | tr '\n' ';')"
+                fi
+              done
+              N8NDB="$(echo "$DBS" | tr ' ' '\n' | grep -x n8n | head -1)"
+              if [ -n "$N8NDB" ]; then
+                echo "URLs y modelos referenciados en los workflows de $N8NDB:"
+                docker exec "$PG" psql -U postgres -d "$N8NDB" -Atc \
+                  "SELECT nodes::text FROM workflow_entity" 2>/dev/null \
+                  | grep -oiE 'https?://[^"\\ ]*11434[^"\\ ]*|"(gemma3|llama3\.2|qwen3|mistral)[^"]*"' \
+                  | sort | uniq -c | sort -rn | sed -n '1,15p' | sed 's/^/  /' || true
+              fi
+            fi
+
+            say "ollama-audit: clientes que aparecen en el log de ollama"
+            if [ -n "$OC" ]; then
+              docker logs "$OC" --tail 1000 2>&1 \
+                | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort | uniq -c | sort -rn | sed -n '1,12p' || true
+            fi
+
+            say "ollama-audit: firewall del host"
+            sudo ufw status verbose 2>&1 | sed -n '1,12p' || true
+            sudo iptables -S DOCKER-USER 2>&1 | sed -n '1,10p' || true
           fi
 
           # ---------------------------------------------------- ollama-setup
