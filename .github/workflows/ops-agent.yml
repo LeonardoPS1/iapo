@@ -380,15 +380,15 @@ jobs:
                 echo "--- que ve opencode como modelos ollama ---"
                 sudo -u iapoagent bash -c 'export PATH="$HOME/.opencode/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"; opencode models 2>&1 | grep -i ollama | head -5' || echo "  opencode no lista ningun modelo ollama"
                 # Copiar config de opencode v1 al home de iapoagent (carga config.json primero)
-      sudo mkdir -p /home/iapoagent/.config/opencode
-      if [ -f /opt/iapo-agent/repo/.opencode/config.json ]; then
-        sudo cp /opt/iapo-agent/repo/.opencode/config.json /home/iapoagent/.config/opencode/config.json
-      elif [ -f /opt/iapo-agent/repo/.opencode/opencode.json ]; then
-        sudo cp /opt/iapo-agent/repo/.opencode/opencode.json /home/iapoagent/.config/opencode/config.json
-      fi
-      sudo chown -R iapoagent:iapoagent /home/iapoagent/.config/opencode 2>/dev/null || true
+                sudo mkdir -p /home/iapoagent/.config/opencode
+                if [ -f /opt/iapo-agent/repo/.opencode/config.json ]; then
+                  sudo cp /opt/iapo-agent/repo/.opencode/config.json /home/iapoagent/.config/opencode/config.json
+                elif [ -f /opt/iapo-agent/repo/.opencode/opencode.json ]; then
+                  sudo cp /opt/iapo-agent/repo/.opencode/opencode.json /home/iapoagent/.config/opencode/config.json
+                fi
+                sudo chown -R iapoagent:iapoagent /home/iapoagent/.config/opencode 2>/dev/null || true
 
-      echo "smoke: opencode run --model ollama/qwen3:8b como iapoagent (cwd = repo)"
+                echo "smoke: opencode run --model ollama/qwen3:8b como iapoagent (cwd = repo)"
                 # sudo -u y no runuser: el usuario de servicio tiene shell nologin.
                 # El cd al repo es obligatorio: opencode corre con el proyecto como
                 # cwd (agente weekly-ranking + permisos) y sincroniza el clon.
