@@ -326,7 +326,9 @@ jobs:
               curl -s -o /dev/null -w "$u => HTTP %{http_code}\n" --max-time 6 "$u" || true
             done
             echo "desde la IP publica (tiene que fallar):"
-            PUB="$(curl -s -o /dev/null -w '%{http_code}' --max-time 6 http://51.222.207.250:11434/api/tags || echo 000)"
+            PUB="$(curl -s -o /dev/null -w '%{http_code}' --max-time 6 http://51.222.207.250:11434/api/tags || true)"
+            # curl ya imprime 000 cuando no hay conexion: no agregar otro 000.
+            [ -n "$PUB" ] || PUB=000
             echo "51.222.207.250:11434 => HTTP $PUB"
             if [ "$PUB" != "000" ]; then
               echo "FALLO: el puerto sigue alcanzable desde internet"
@@ -360,6 +362,17 @@ jobs:
               echo "bajando qwen3:8b (varios minutos)…"
               if docker exec "$OC" ollama pull qwen3:8b; then
                 docker exec "$OC" ollama list
+                echo "--- inferencia real (CPU, sin GPU): mide si sirve para el agente ---"
+                T0=$(date +%s)
+                R="$(curl -s --max-time 300 http://127.0.0.1:11434/api/generate \
+                  -d '{"model":"qwen3:8b","prompt":"/no_think Responde exactamente: ok","stream":false,"options":{"num_predict":32}}')"
+                T1=$(date +%s)
+                echo "$R" | tr ',' '\n' | grep -E '"(response|eval_count|eval_duration|load_duration)"' | sed 's/^/  /'
+                echo "  wall_clock: $((T1-T0))s"
+                curl -s -o /dev/null -w '  /v1/chat/completions (API que usa el dashboard) => HTTP %{http_code}\n' \
+                  --max-time 300 http://127.0.0.1:11434/v1/chat/completions \
+                  -H 'Content-Type: application/json' \
+                  -d '{"model":"qwen3:8b","messages":[{"role":"user","content":"/no_think Hola"}],"max_tokens":16}' || true
                 echo "apuntando IAPO_MODEL a ollama/qwen3:8b"
                 sudo sed -i -E 's|^IAPO_MODEL=.*|IAPO_MODEL=ollama/qwen3:8b|' /etc/iapo-agent/secrets.env
                 grep '^IAPO_MODEL=' /etc/iapo-agent/secrets.env || echo "  (no se pudo leer IAPO_MODEL)"
