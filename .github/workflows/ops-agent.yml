@@ -267,60 +267,58 @@ jobs:
               echo "ABORTADO: no existe $COMPOSE"
               exit 5
             fi
-            cp -a "$COMPOSE" "$COMPOSE.bak-$(date +%Y%m%dT%H%M%S)"
-            echo "backup: $(ls -1t "$COMPOSE".bak-* | head -1)"
-
-            if grep -q '127.0.0.1:11434' "$COMPOSE"; then
-              echo "el mapeo ya estaba atado a loopback; no se toca"
-            else
-              awk '
-                $0 ~ /^[[:space:]]*-[[:space:]]*"?11434:11434"?[[:space:]]*$/ {
-                  print "      - \"127.0.0.1:11434:11434\""
-                  print "      - \"172.18.0.1:11434:11434\""
-                  next
-                }
-                { print }
-              ' "$COMPOSE" > /tmp/compose.new || exit 6
-              if ! grep -q '172.18.0.1:11434' /tmp/compose.new; then
-                echo "ABORTADO: no se encontro la linea '- 11434:11434' en el compose"
-                exit 6
-              fi
-              cp /tmp/compose.new "$COMPOSE"
-              echo "mapeo reemplazado por 127.0.0.1 y 172.18.0.1"
+            # /etc/dokploy es de root: sin sudo el cp falla y el awk "sigue como
+            # si nada". Todo se escribe a /tmp y se valida ANTES de instalar.
+            if ! sudo -n true 2>/dev/null; then
+              echo "ABORTADO: sudo sin password no disponible"
+              exit 5
             fi
+            sudo cp -a "$COMPOSE" "$COMPOSE.bak-$(date +%Y%m%dT%H%M%S)" || exit 5
+            echo "backup: $(sudo ls -1t "$COMPOSE".bak-* | head -1)"
 
-            if grep -q 'OLLAMA_CONTEXT_LENGTH' "$COMPOSE"; then
-              echo "OLLAMA_CONTEXT_LENGTH ya estaba; no se toca"
-            else
-              awk '
-                /^  ollama:[[:space:]]*$/ { inside=1 }
-                inside && !done && /^    image:[[:space:]]*ollama\/ollama/ {
-                  print
-                  print "    environment:"
-                  print "      - OLLAMA_CONTEXT_LENGTH=16384"
-                  print "      - OLLAMA_KEEP_ALIVE=10m"
-                  done=1
-                  next
-                }
-                { print }
-              ' "$COMPOSE" > /tmp/compose.new || exit 7
-              cp /tmp/compose.new "$COMPOSE"
-              echo "agregado OLLAMA_CONTEXT_LENGTH=16384 (el default de 4096 no alcanza para el agente)"
+            awk '
+              /^  ollama:[[:space:]]*$/ { inollama=1 }
+              /^[[:space:]]*-[[:space:]]*"?11434:11434"?[[:space:]]*$/ {
+                print "      - \"127.0.0.1:11434:11434\""
+                print "      - \"172.18.0.1:11434:11434\""
+                next
+              }
+              inollama && !done && /^    image:[[:space:]]*ollama\/ollama/ {
+                print
+                print "    environment:"
+                print "      - OLLAMA_CONTEXT_LENGTH=16384"
+                print "      - OLLAMA_KEEP_ALIVE=10m"
+                done=1
+                next
+              }
+              { gsub(/ollama pull llama3\.2:latest; /, ""); print }
+            ' "$COMPOSE" > /tmp/compose.new || exit 6
+
+            if ! grep -q '127.0.0.1:11434' /tmp/compose.new; then
+              echo "ABORTADO: no se encontro la linea '- 11434:11434' en el compose"
+              exit 6
             fi
-
-            # init-ollama vuelve a bajar los modelos en cada deploy del stack:
-            # si sigue pidiendo llama3.2, el modelo borrado reaparece solo.
-            if grep -q 'ollama pull llama3.2' "$COMPOSE"; then
-              sed -i 's|ollama pull llama3.2:latest; ||; s|sleep 3; ollama pull gemma3:latest|sleep 3; ollama pull gemma3:latest|' "$COMPOSE"
-              echo "init-ollama ya no baja llama3.2"
+            if ! grep -q '172.18.0.1:11434' /tmp/compose.new; then
+              echo "ABORTADO: falta el bind del dashboard"
+              exit 6
+            fi
+            if ! grep -q 'OLLAMA_CONTEXT_LENGTH' /tmp/compose.new; then
+              echo "ABORTADO: no se pudo insertar el bloque environment"
+              exit 7
+            fi
+            sudo cp /tmp/compose.new "$COMPOSE" || exit 8
+            # verificar que el archivo en su lugar tenga los cambios, no el /tmp
+            if ! sudo grep -q '172.18.0.1:11434' "$COMPOSE"; then
+              echo "ABORTADO: el compose del VPS no quedo modificado"
+              exit 8
             fi
 
             echo "--- diff contra el backup ---"
-            diff -u "$(ls -1t "$COMPOSE".bak-* | head -1)" "$COMPOSE" | sed -n '1,40p' || true
+            sudo diff -u "$(sudo ls -1t "$COMPOSE".bak-* | head -1)" "$COMPOSE" | sed -n '1,40p' || true
 
             say "ollama-close: recreando solo el servicio ollama"
             ( cd "$(dirname "$COMPOSE")" && docker compose up -d ollama ) 2>&1 | tail -n 8
-            sleep 6
+            sleep 8
 
             OC="$(docker ps --format '{{.Names}}\t{{.Image}}' | awk -F'\t' 'tolower($2) ~ /ollama/ {print $1; exit}')"
             echo "bindings: $(docker inspect "$OC" --format '{{json .HostConfig.PortBindings}}' 2>&1)"
@@ -328,8 +326,13 @@ jobs:
               curl -s -o /dev/null -w "$u => HTTP %{http_code}\n" --max-time 6 "$u" || true
             done
             echo "desde la IP publica (tiene que fallar):"
-            curl -s -o /dev/null -w "51.222.207.250:11434 => HTTP %{http_code}\n" --max-time 6 \
-              http://51.222.207.250:11434/api/tags || echo "  conexion rechazada — correcto"
+            PUB="$(curl -s -o /dev/null -w '%{http_code}' --max-time 6 http://51.222.207.250:11434/api/tags || echo 000)"
+            echo "51.222.207.250:11434 => HTTP $PUB"
+            if [ "$PUB" != "000" ]; then
+              echo "FALLO: el puerto sigue alcanzable desde internet"
+              exit 9
+            fi
+            echo "OK: el 11434 ya no responde en la IP publica"
           fi
 
           # ---------------------------------------------------- ollama-setup
