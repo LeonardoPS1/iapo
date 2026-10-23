@@ -1,1 +1,1 @@
-ollama-close  
+ollama-setup
