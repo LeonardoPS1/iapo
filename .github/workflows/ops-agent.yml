@@ -185,27 +185,59 @@ jobs:
               /etc/dokploy/compose/*/code/.env 2>/dev/null | sed -n '1,60p' || true
 
             say "ollama-audit: workflows de n8n que mencionan ollama/11434"
-            PG="$(docker ps --format '{{.Names}}\t{{.Image}}' | awk -F'\t' 'tolower($2) ~ /postgres/ {print $1; exit}')"
-            echo "postgres: ${PG:-(ninguno)}"
+            docker ps --format '{{.Names}}\t{{.Image}}' | grep -i postgres || true
+            # El primer contenedor con imagen postgres puede ser dokploy-postgres
+            # (otro stack). Se prefiere el del compose del proyecto aicore.
+            PG="$(docker ps --format '{{.Names}}\t{{.Image}}\t{{.Label "com.docker.compose.project"}}' \
+              | awk -F'\t' 'tolower($2) ~ /postgres/ && tolower($3) ~ /aicore/ {print $1; exit}')"
+            [ -n "$PG" ] || PG="$(docker ps --format '{{.Names}}\t{{.Image}}' | awk -F'\t' 'tolower($2) ~ /postgres/ {print $1; exit}')"
+            echo "postgres elegido: ${PG:-(ninguno)}"
             if [ -n "$PG" ]; then
-              DBS="$(docker exec "$PG" psql -U postgres -Atc \
-                "SELECT datname FROM pg_database WHERE datname NOT IN ('template0','template1')" 2>/dev/null | tr '\n' ' ')"
-              echo "bases: ${DBS:-(no se pudo listar)}"
+              PSQL="$PG"
+              echo "--- listar bases (probando -U postgres y -U n8n) ---"
+              DBS="$(docker exec "$PSQL" psql -U postgres -Atc \
+                "SELECT datname FROM pg_database WHERE datname NOT IN ('template0','template1')" 2>&1 | tr '\n' ' ')"
+              case "$DBS" in
+                *FATAL*|*denied*|*error*|"") DBS="$(docker exec "$PSQL" sh -c \
+                  "psql -U \"\${POSTGRES_USER:-postgres}\" -Atc \"SELECT datname FROM pg_database WHERE datname NOT IN ('template0','template1')\"" 2>&1 | tr '\n' ' ')" ;;
+              esac
+              echo "bases: $DBS"
               for db in $DBS; do
-                WF="$(docker exec "$PG" psql -U postgres -d "$db" -Atc \
-                  "SELECT name FROM workflow_entity WHERE nodes::text ILIKE '%ollama%' OR nodes::text ILIKE '%11434%'" 2>/dev/null)"
-                if [ -n "$WF" ]; then
-                  echo "  [$db] workflows: $(echo "$WF" | tr '\n' ';')"
-                fi
+                WF="$(docker exec "$PSQL" psql -U postgres -d "$db" -Atc \
+                  "SELECT name FROM workflow_entity WHERE nodes::text ILIKE '%ollama%' OR nodes::text ILIKE '%11434%'" 2>&1)"
+                case "$WF" in
+                  *relation*|*FATAL*|"") continue ;;
+                esac
+                echo "  [$db] workflows: $(echo "$WF" | tr '\n' ';')"
               done
               N8NDB="$(echo "$DBS" | tr ' ' '\n' | grep -x n8n | head -1)"
+              echo "--- modelos referenciados en $N8NDB ---"
               if [ -n "$N8NDB" ]; then
-                echo "URLs y modelos referenciados en los workflows de $N8NDB:"
-                docker exec "$PG" psql -U postgres -d "$N8NDB" -Atc \
-                  "SELECT nodes::text FROM workflow_entity" 2>/dev/null \
+                docker exec "$PSQL" psql -U postgres -d "$N8NDB" -Atc \
+                  "SELECT nodes::text FROM workflow_entity" 2>&1 \
                   | grep -oiE 'https?://[^"\\ ]*11434[^"\\ ]*|"(gemma3|llama3\.2|qwen3|mistral)[^"]*"' \
                   | sort | uniq -c | sort -rn | sed -n '1,15p' | sed 's/^/  /' || true
               fi
+            fi
+
+            say "ollama-audit: bloque ollama + init-ollama del compose"
+            COMPOSE="/etc/dokploy/compose/aicore-n8nrunnerpostgresollama-a715gi/code/docker-compose.yml"
+            awk '/^  ollama:/,/^  [a-z-]+:$/' "$COMPOSE" 2>/dev/null | head -40 || true
+            echo "--- init-ollama ---"
+            awk '/^  init-ollama:/,0' "$COMPOSE" 2>/dev/null | sed -n '1,18p' || true
+
+            say "ollama-audit: que hace el dashboard con OLLAMA_MODEL"
+            DASH=/etc/dokploy/applications/app-hack-back-end-sensor-jd2eu3/code
+            if [ -d "$DASH" ]; then
+              grep -rn --include=*.ts --include=*.tsx --include=*.js -E 'OLLAMA_MODEL|OLLAMA_BASE_URL' "$DASH/src" 2>/dev/null | sed -n '1,10p' || true
+              echo "--- prompt / llamada al modelo (contexto) ---"
+              F="$(grep -rln --include=*.ts -E 'OLLAMA_MODEL|OLLAMA_BASE_URL' "$DASH/src" 2>/dev/null | head -1)"
+              if [ -n "$F" ]; then
+                echo "archivo: $F"
+                grep -n -B4 -A12 -E 'OLLAMA_MODEL|chat/completions|generate' "$F" 2>/dev/null | sed -n '1,45p' || true
+              fi
+            else
+              echo "no existe $DASH"
             fi
 
             say "ollama-audit: clientes que aparecen en el log de ollama"
