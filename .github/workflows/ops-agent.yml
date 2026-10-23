@@ -436,9 +436,11 @@ jobs:
             sudo bash /tmp/diagnose.sh
           fi
 
-          if [ "${OLLAMA_RC:-0}" -ne 0 ]; then
-            echo "ollama-setup NO completó (rc=$OLLAMA_RC)"
-            exit "$OLLAMA_RC"
+          if [ "$ACTION" = "ollama-setup" ] || [ "$ACTION" = "ollama-close" ] || [ "$ACTION" = "ollama-audit" ]; then
+            if [ "${OLLAMA_RC:-0}" -ne 0 ]; then
+              echo "ollama-setup NO completó (rc=$OLLAMA_RC)"
+              exit "$OLLAMA_RC"
+            fi
           fi
           REMOTE
           RC=$?
