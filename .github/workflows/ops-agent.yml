@@ -375,7 +375,10 @@ jobs:
                   -d '{"model":"qwen3:8b","messages":[{"role":"user","content":"/no_think Hola"}],"max_tokens":16}' || true
                 echo "apuntando IAPO_MODEL a ollama/qwen3:8b"
                 sudo sed -i -E 's|^IAPO_MODEL=.*|IAPO_MODEL=ollama/qwen3:8b|' /etc/iapo-agent/secrets.env
-                grep '^IAPO_MODEL=' /etc/iapo-agent/secrets.env || echo "  (no se pudo leer IAPO_MODEL)"
+                # secrets.env es 640 root:iapoagent: sin sudo ni siquiera se lee.
+                sudo grep '^IAPO_MODEL=' /etc/iapo-agent/secrets.env || echo "  (no se pudo leer IAPO_MODEL)"
+                echo "--- que ve opencode como modelos ollama ---"
+                sudo -u iapoagent bash -c 'export PATH="$HOME/.opencode/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"; opencode models 2>&1 | grep -i ollama | head -5' || echo "  opencode no lista ningun modelo ollama"
                 echo "smoke: opencode run --model ollama/qwen3:8b como iapoagent (cwd = repo)"
                 # sudo -u y no runuser: el usuario de servicio tiene shell nologin.
                 # El cd al repo es obligatorio: opencode corre con el proyecto como
@@ -383,7 +386,7 @@ jobs:
                 sudo -u iapoagent bash -c 'cd /opt/iapo-agent/repo || exit 1
                   export PATH="$HOME/.opencode/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
                   git fetch --prune origin main >/dev/null 2>&1 && git reset --hard origin/main >/dev/null 2>&1
-                  timeout 300 opencode run --model ollama/qwen3:8b "Responde exactamente: ok"' 2>&1 | tail -n 20
+                  timeout 300 opencode run --model ollama/qwen3:8b --print-logs "Responde exactamente: ok"' 2>&1 | tail -n 30
                 SMOKE_RC=${PIPESTATUS[0]}
                 echo "rc del smoke: $SMOKE_RC"
                 if [ "$SMOKE_RC" -eq 0 ]; then
