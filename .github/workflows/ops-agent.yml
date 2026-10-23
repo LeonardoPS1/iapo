@@ -13,6 +13,7 @@ name: ops-agent
 #   diagnose       → corre ops/weekly-ranking/diagnose.sh (timer, logs, toolchain)
 #   inventory      → recursos, contenedores y capacidad para un modelo local
 #   ollama-audit   → solo lectura: quién consume Ollama y por qué dirección
+#   ollama-close   → ata el 11434 a loopback y al gateway del dashboard
 #   ollama-setup   → verifica capacidad, baja el modelo y apunta IAPO_MODEL a Ollama
 #   install-runner → copia run.sh al VPS y lo instala en /usr/local/bin/iapo-ranking-run
 #   run            → systemctl start iapo-ranking.service (corrida real, hasta 25 min)
@@ -38,6 +39,7 @@ on:
           - diagnose
           - inventory
           - ollama-audit
+          - ollama-close
           - ollama-setup
           - install-runner
           - run
@@ -67,7 +69,7 @@ jobs:
             ACTION="$(tr -d '[:space:]' < .github/ops-agent.trigger)"
           fi
           case "$ACTION" in
-            diagnose|inventory|ollama-audit|ollama-setup|install-runner|run|all) ;;
+            diagnose|inventory|ollama-audit|ollama-close|ollama-setup|install-runner|run|all) ;;
             *) echo "acción inválida: '$ACTION'"; exit 1 ;;
           esac
           echo "value=$ACTION" >> "$GITHUB_OUTPUT"
