@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-11-01T04:02:30Z",
+  "updatedAt": "2026-11-08T04:04:16Z",
   "ok": false,
   "stage": "agente",
   "message": "opencode run falló (rc=1): Error: model 'qwen3:8b' not found",
   "model": "ollama/qwen3:8b",
   "agentRc": 1,
   "exitCode": 1,
-  "durationSec": 7,
-  "logFile": "20261101T040223Z-run.log",
-  "head": "38cdb12"
+  "durationSec": 9,
+  "logFile": "20261108T040407Z-run.log",
+  "head": "26454fd"
 }
